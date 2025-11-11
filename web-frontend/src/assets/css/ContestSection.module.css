@@ -1,0 +1,73 @@
+.contestSection {
+  margin-bottom: 64px;
+}
+
+.contestList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contestGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+}
+
+.emptyText {
+  font-size: 16px;
+  color: var(--muted-foreground);
+  margin: 0;
+  font-weight: 500;
+}
+
+
+/* Responsive design */
+@media (max-width: 1200px) {
+  .contestGrid {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .contestSection {
+    margin-bottom: 48px;
+  }
+  
+  .contestGrid {
+    gap: 12px;
+  }
+  
+  .contestList {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contestSection {
+    margin-bottom: 32px;
+  }
+  
+  .contestGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .emptyState {
+    padding: 32px 16px;
+  }
+  
+  .emptyText {
+    font-size: 14px;
+  }
+}

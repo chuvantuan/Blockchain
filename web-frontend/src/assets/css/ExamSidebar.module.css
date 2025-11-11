@@ -1,0 +1,68 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: 90px;
+}
+
+.cameraContainer {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.cameraHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.cameraTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.cameraIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--primary);
+}
+
+.minimizeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted-foreground);
+  padding: 4px;
+  transition: color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.minimizeButton:hover {
+  color: var(--primary);
+}
+
+.minimizeIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.cameraContent {
+  padding: var(--space-4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+

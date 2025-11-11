@@ -1,0 +1,10 @@
+/* Main Theme File - Imports all CSS modules */
+
+/* Import CSS modules in order */
+@import './css/variables.css';
+@import './css/base.css';
+@import './css/typography.css';
+@import './css/animations.css';
+@import './css/components.css';
+@import './css/utilities.css';
+@import './css/cards.css';

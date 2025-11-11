@@ -1,0 +1,86 @@
+/* Sidebar Responsive Styles */
+
+/* Hide Sidebar Scrollbar */
+.sidebar-slide-in::-webkit-scrollbar {
+	width: 0px;
+	background: transparent;
+}
+
+.sidebar-slide-in::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.sidebar-slide-in::-webkit-scrollbar-thumb {
+	background: transparent;
+}
+
+/* Firefox - hide scrollbar */
+.sidebar-slide-in {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+	.sidebar-slide-in {
+		width: 240px;
+	}
+	
+	main {
+		margin-left: 240px !important;
+	}
+}
+
+@media (max-width: 992px) {
+	.sidebar-slide-in {
+		width: 220px;
+	}
+	
+	main {
+		margin-left: 220px !important;
+	}
+}
+
+@media (max-width: 768px) {
+	.sidebar-slide-in {
+		width: 200px;
+		top: 60px;
+		height: calc(100vh - 60px);
+		transform: translateX(-100%);
+		transition: transform 0.3s ease;
+	}
+	
+	.sidebar-slide-in.open {
+		transform: translateX(0);
+	}
+	
+	main {
+		margin-left: 0 !important;
+	}
+}
+
+@media (max-width: 576px) {
+	.sidebar-slide-in {
+		width: 100%;
+		top: 60px;
+		height: calc(100vh - 60px);
+		transform: translateX(-100%);
+	}
+	
+	.sidebar-slide-in.open {
+		transform: translateX(0);
+	}
+}
+
+/* Ensure sidebar always scrolls properly */
+.sidebar-slide-in {
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+}
+
+/* Fix for high DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+	.sidebar-slide-in::-webkit-scrollbar {
+		width: 8px;
+	}
+}

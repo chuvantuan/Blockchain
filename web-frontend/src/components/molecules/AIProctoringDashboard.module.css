@@ -1,0 +1,480 @@
+.dashboard {
+  background: var(--background);
+  min-height: 100vh;
+  font-family: var(--font-sans);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  position: relative;
+}
+
+.title h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.alertBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--destructive);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.activeButton {
+  background: var(--primary);
+  color: white;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.statCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-light);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.statContent {
+  flex: 1;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1;
+  margin-bottom: var(--space-1);
+}
+
+.statLabel {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6) var(--space-4);
+  gap: var(--space-4);
+}
+
+.searchBar {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchBar svg {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.filterButtons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.mainContent {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-6);
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+.sessionsSection {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: var(--space-4);
+}
+
+.sessionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sessionCard {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.sessionCard:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.sessionCard.active {
+  border-left: 4px solid var(--success);
+}
+
+.sessionCard.flagged {
+  border-left: 4px solid var(--destructive);
+}
+
+.sessionCard.completed {
+  border-left: 4px solid var(--muted);
+}
+
+.sessionCard.terminated {
+  border-left: 4px solid var(--warning);
+}
+
+.sessionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.sessionInfo {
+  flex: 1;
+}
+
+.studentName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.examTitle {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.sessionStatus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.riskBadge {
+  color: white;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusBadge {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.sessionDetails {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+
+.active {
+  color: var(--success);
+}
+
+.inactive {
+  color: var(--destructive);
+}
+
+.violationsList {
+  margin-bottom: var(--space-3);
+}
+
+.violationItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.violationSeverity {
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.violationDescription {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.moreViolations {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.sessionActions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.alertsSection {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.alertsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.alertCard {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.alertCard:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.alertCard.unread {
+  border-left: 4px solid var(--primary);
+  background: var(--primary-light);
+}
+
+.alertCard.read {
+  opacity: 0.7;
+}
+
+.alertHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.alertSeverity {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.alertTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  flex: 1;
+}
+
+.alertTime {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+}
+
+.alertDescription {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin-bottom: var(--space-2);
+}
+
+.actionRequired {
+  background: var(--destructive-light);
+  color: var(--destructive);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+  }
+  
+  .alertsSection {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--space-4);
+    align-items: stretch;
+  }
+  
+  .controls {
+    justify-content: center;
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: var(--space-4);
+  }
+  
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .searchBar {
+    max-width: none;
+  }
+  
+  .filterButtons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .mainContent {
+    padding: 0 var(--space-4) var(--space-4);
+  }
+  
+  .sessionsSection,
+  .alertsSection {
+    padding: var(--space-4);
+  }
+  
+  .sessionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  
+  .sessionStatus {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .sessionDetails {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .sessionActions {
+    flex-direction: column;
+  }
+}

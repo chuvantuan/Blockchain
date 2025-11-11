@@ -1,0 +1,357 @@
+.alertOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.alertOverlay.stopping {
+  animation: shake 0.5s ease-in-out;
+}
+
+.alertContainer {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+  position: relative;
+}
+
+.alertContainer.low {
+  border-left-color: #10b981;
+}
+
+.alertContainer.medium {
+  border-left-color: #f59e0b;
+}
+
+.alertContainer.high {
+  border-left-color: #ef4444;
+}
+
+.alertContainer.critical {
+  border-left-color: #dc2626;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.alertHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background: linear-gradient(135deg, var(--muted) 0%, var(--card) 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.alertTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.severityIcon {
+  width: 24px;
+  height: 24px;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.titleContent {
+  flex: 1;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 0;
+  font-weight: 500;
+}
+
+.alertActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--background);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.countdownText {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+}
+
+.dismissButton {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  cursor: pointer;
+  color: var(--muted-foreground);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dismissButton:hover {
+  background: var(--destructive-light);
+  color: var(--destructive);
+  border-color: var(--destructive);
+}
+
+.alertContent {
+  padding: var(--space-4);
+}
+
+.violationInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.detectionIcon {
+  width: 32px;
+  height: 32px;
+  background: var(--muted);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+.violationDetails {
+  flex: 1;
+}
+
+.description {
+  font-size: 15px;
+  color: var(--foreground);
+  margin: 0 0 var(--space-2) 0;
+  line-height: 1.5;
+}
+
+.confidence {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+
+.warningMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--warning-light);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+
+.warningText {
+  font-size: 14px;
+  color: var(--warning-foreground);
+  line-height: 1.5;
+}
+
+.alertFooter {
+  padding: var(--space-4);
+  background: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+.actionButtons {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.acknowledgeButton {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex: 1;
+}
+
+.acknowledgeButton:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.stopExamButton {
+  background: var(--destructive);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex: 1;
+}
+
+.stopExamButton:hover {
+  background: var(--destructive-hover);
+  transform: translateY(-1px);
+}
+
+.autoStopWarning {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.normalWarning {
+  color: var(--muted-foreground);
+}
+
+.criticalWarning {
+  color: var(--destructive);
+  font-weight: 700;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.progressContainer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--muted);
+}
+
+.progressBar {
+  height: 100%;
+  transition: width 1s linear;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.5;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .alertContainer {
+    width: 95%;
+    margin: var(--space-4);
+  }
+  
+  .alertHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  
+  .alertActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+  }
+  
+  .acknowledgeButton,
+  .stopExamButton {
+    flex: none;
+  }
+}

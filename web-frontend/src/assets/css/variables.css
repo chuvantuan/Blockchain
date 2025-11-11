@@ -1,0 +1,212 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Dark Theme (Default) - giống test.html với cải tiến */
+:root {
+	/* Color System */
+	--background: oklch(0.1450 0 0);
+	--foreground: oklch(0.9850 0 0);
+	--card: oklch(0.2050 0 0);
+	--card-foreground: oklch(0.9850 0 0);
+	--popover: oklch(0.2050 0 0);
+	--popover-foreground: oklch(0.9850 0 0);
+	--primary: #10b981;
+	--primary-foreground: #ffffff;
+	--secondary: oklch(0.9700 0 0);
+	--secondary-foreground: oklch(0.2050 0 0);
+	--muted: oklch(0.25 0 0);
+	--muted-foreground: oklch(0.6 0 0);
+	--accent: #f59e0b;
+	--accent-foreground: #000000;
+	--destructive: oklch(0.5770 0.2450 27.3250);
+	--destructive-foreground: oklch(0.9850 0 0);
+	--border: oklch(0.3 0 0);
+	--input: oklch(0.3 0 0);
+	--ring: oklch(0.7080 0 0);
+	
+	/* Chart Colors */
+	--chart-1: oklch(0.8100 0.1000 252);
+	--chart-2: oklch(0.6200 0.1900 260);
+	--chart-3: oklch(0.5500 0.2200 263);
+	--chart-4: oklch(0.4900 0.2200 264);
+	--chart-5: oklch(0.4200 0.1800 266);
+	
+	/* Sidebar Colors */
+	--sidebar: oklch(0.2050 0 0);
+	--sidebar-foreground: oklch(0.9850 0 0);
+	--sidebar-primary: oklch(0.1450 0 0);
+	--sidebar-primary-foreground: oklch(0.9850 0 0);
+	--sidebar-accent: oklch(0.1450 0 0);
+	--sidebar-accent-foreground: oklch(0.9850 0 0);
+	--sidebar-border: oklch(0.3 0 0);
+	--sidebar-ring: oklch(0.7080 0 0);
+	--sidebar-hover: oklch(0.25 0 0);
+	--sidebar-hover-foreground: oklch(0.9850 0 0);
+	
+	/* Typography */
+	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+	--font-serif: 'Space Grotesk', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+	--font-mono: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+	--font-display: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+	
+	/* Spacing System */
+	--space-1: 0.25rem;   /* 4px */
+	--space-2: 0.5rem;    /* 8px */
+	--space-3: 0.75rem;   /* 12px */
+	--space-4: 1rem;      /* 16px */
+	--space-5: 1.25rem;   /* 20px */
+	--space-6: 1.5rem;    /* 24px */
+	--space-8: 2rem;      /* 32px */
+	--space-10: 2.5rem;   /* 40px */
+	--space-12: 3rem;     /* 48px */
+	--space-16: 4rem;     /* 64px */
+	--space-20: 5rem;     /* 80px */
+	--space-24: 6rem;     /* 96px */
+	
+	/* Container spacing */
+	--container-padding: var(--space-6);
+	--section-spacing: var(--space-16);
+	--card-spacing: var(--space-8);
+	
+	/* Border Radius */
+	--radius: 0.625rem;
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	
+	/* Shadows */
+	--shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+	--shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+	--shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+	--shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+	--shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+	--shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+	--shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+	
+	/* Transitions */
+	--transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-bounce: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	
+	/* Gradients */
+	--gradient-primary: #10b981;
+	--gradient-accent: #f59e0b;
+	--gradient-card: linear-gradient(135deg, var(--card) 0%, oklch(0.22 0 0) 100%);
+	--gradient-background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); /* Match certify page dark mode */
+	--gradient-success: linear-gradient(135deg, oklch(0.6 0.2 140) 0%, oklch(0.7 0.15 160) 100%);
+	--gradient-warning: linear-gradient(135deg, oklch(0.7 0.2 60) 0%, oklch(0.8 0.15 80) 100%);
+	--gradient-info: linear-gradient(135deg, oklch(0.6 0.2 200) 0%, oklch(0.7 0.15 220) 100%);
+	
+	/* Glow Effects */
+	--glow-primary: 0 0 20px oklch(0.6489 0.2370 26.9728 / 0.3);
+	--glow-accent: 0 0 20px oklch(0.7323 0.2492 142.4953 / 0.3);
+	--glow-success: 0 0 20px oklch(0.6 0.2 140 / 0.3);
+	--glow-warning: 0 0 20px oklch(0.7 0.2 60 / 0.3);
+	--glow-info: 0 0 20px oklch(0.6 0.2 200 / 0.3);
+	
+	/* Glassmorphism */
+	--glass-bg: oklch(0.2 0 0 / 0.8);
+	--glass-border: oklch(0.3 0 0 / 0.3);
+	--glass-bg-light: oklch(0.15 0 0 / 0.6);
+	--glass-border-light: oklch(0.25 0 0 / 0.2);
+
+	/* Leaderboard Medal Colors - Dark Mode */
+	--medal-gold: #FFD700;
+	--medal-silver: #C0C0C0;
+	--medal-bronze: #CD7F32;
+	--rank-gold-bg: rgba(255, 215, 0, 0.05);
+	--rank-silver-bg: rgba(192, 192, 192, 0.05);
+	--rank-bronze-bg: rgba(205, 127, 50, 0.05);
+
+	/* Primary/Accent Light variants for gradients */
+	--primary-light: oklch(0.6489 0.2370 26.9728 / 0.15);
+	--accent-light: oklch(0.7323 0.2492 142.4953 / 0.15);
+	--primary-rgb: 255, 107, 53;
+
+	/* Typography */
+	--tracking-normal: 0em;
+}
+
+/* Light Theme - Class based (user toggle) */
+.light {
+	--background: oklch(0.98 0 0);
+	--foreground: oklch(0.15 0 0);
+	--card: oklch(1 0 0);
+	--card-foreground: oklch(0.15 0 0);
+	--popover: oklch(1 0 0);
+	--popover-foreground: oklch(0.15 0 0);
+	--primary: #10b981;
+	--primary-foreground: #ffffff;
+	--secondary: oklch(0.9 0.05 160);
+	--secondary-foreground: oklch(0.15 0 0);
+	--muted: oklch(0.92 0 0);
+	--muted-foreground: oklch(0.5 0 0);
+	--accent: #f59e0b;
+	--accent-foreground: #000000;
+	--destructive: oklch(0.6 0.2 20);
+	--destructive-foreground: oklch(0.98 0 0);
+	--border: oklch(0.88 0 0);
+	--input: oklch(0.88 0 0);
+	--ring: oklch(0.7 0.1 160);
+	--chart-1: oklch(0.6 0.15 160);
+	--chart-2: oklch(0.7 0.1 50);
+	--chart-3: oklch(0.5 0.2 200);
+	--chart-4: oklch(0.8 0.1 300);
+	--chart-5: oklch(0.6 0.15 260);
+	--sidebar: oklch(0.95 0 0);
+	--sidebar-foreground: oklch(0.15 0 0);
+	--sidebar-primary: #10b981;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #f59e0b;
+	--sidebar-accent-foreground: #000000;
+	--sidebar-border: oklch(0.88 0 0);
+	--sidebar-ring: oklch(0.7 0.1 160);
+	--sidebar-hover: oklch(0.9 0 0);
+	--sidebar-hover-foreground: oklch(0.15 0 0);
+
+	/* Enhanced colors and gradients for light theme */
+	--gradient-primary: #10b981;
+	--gradient-accent: #f59e0b;
+	--gradient-card: linear-gradient(135deg, var(--card) 0%, oklch(0.95 0 0) 100%);
+	--gradient-background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+	--glow-primary: 0 0 20px rgba(16, 185, 129, 0.3);
+	--glow-accent: 0 0 20px rgba(245, 158, 11, 0.3);
+	--glass-bg: oklch(0.95 0 0 / 0.8);
+	--glass-border: oklch(0.85 0 0 / 0.3);
+
+	/* Leaderboard Medal Colors - Light Mode */
+	--medal-gold: #D4AF37;
+	--medal-silver: #A8A9AD;
+	--medal-bronze: #CD7F32;
+	--rank-gold-bg: rgba(212, 175, 55, 0.1);
+	--rank-silver-bg: rgba(168, 169, 173, 0.1);
+	--rank-bronze-bg: rgba(205, 127, 50, 0.1);
+
+	/* Primary/Accent Light variants - adjusted for light mode */
+	--primary-light: rgba(16, 185, 129, 0.2);
+	--accent-light: rgba(245, 158, 11, 0.2);
+	--primary-rgb: 16, 185, 129;
+}
+
+/* Dark Theme - Class based (user toggle) */
+.dark {
+	/* Uses default :root variables */
+}
+
+/* Ensure smooth theme transitions */
+html {
+	transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Force theme application to html element */
+html.light {
+	background: var(--background);
+	color: var(--foreground);
+}
+
+html.dark {
+	background: var(--background);
+	color: var(--foreground);
+}

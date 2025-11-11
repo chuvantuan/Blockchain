@@ -1,0 +1,35 @@
+.summaryCard {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--space-4);
+}
+
+.summaryItem {
+  text-align: center;
+}
+
+.summaryValue {
+  font-size: 36px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.summaryLabel {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+}
+

@@ -1,0 +1,42 @@
+/* Base Styles */
+@import './effects.css';
+
+html {
+	height: 100%;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+body {
+	min-height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+#root {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+body {
+	background: var(--background);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	margin: 0;
+	padding: 0;
+	transition: background-color var(--transition-normal), color var(--transition-normal);
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth transitions for theme changes */
+* {
+	transition: background-color var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
+}
+
+/* Fix header z-index to prevent content overlap */
+header {
+	z-index: 9999 !important;
+}

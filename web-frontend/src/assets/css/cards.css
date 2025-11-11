@@ -1,0 +1,484 @@
+/* Enhanced Card Styles for All Components */
+
+/* Inner card items with gradient hover */
+.card-item {
+  position: relative;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  background: var(--card);
+  overflow: hidden;
+}
+
+.card-item::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  z-index: -1;
+}
+
+.card-item:hover {
+  border-color: transparent;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1),
+              0 2px 6px rgba(245, 158, 11, 0.08);
+}
+
+.card-item:hover::before {
+  opacity: 0.15;
+}
+
+/* Exam Card specific styles */
+.exam-card {
+  position: relative;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  background: var(--card);
+  overflow: hidden;
+}
+
+.exam-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.05) 50%,
+    transparent 100%
+  );
+  transition: left 0.5s ease;
+}
+
+.exam-card:hover::after {
+  left: 100%;
+}
+
+.exam-card:hover {
+  border-color: var(--primary);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15),
+              0 2px 6px rgba(245, 158, 11, 0.1);
+}
+
+/* Course Card with progress animation */
+.course-card {
+  position: relative;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  background: var(--card);
+  overflow: hidden;
+}
+
+.course-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-normal);
+}
+
+.course-card:hover::before {
+  transform: scaleX(1);
+}
+
+.course-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.12),
+              0 4px 10px rgba(245, 158, 11, 0.08);
+}
+
+/* Interview Card with special glow */
+.interview-card {
+  position: relative;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  background: var(--card);
+  overflow: hidden;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.interview-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at top right,
+    rgba(16, 185, 129, 0.1) 0%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.interview-card:hover::before {
+  opacity: 1;
+}
+
+.interview-card:hover {
+  border-color: var(--primary);
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15),
+              0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+.interview-card.locked {
+  opacity: 0.6;
+}
+
+.interview-card.locked:hover {
+  transform: scale(1);
+  box-shadow: none;
+}
+
+/* Status badges with glow */
+.status-badge {
+  position: relative;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all var(--transition-normal);
+}
+
+.status-badge.completed {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--primary);
+}
+
+.status-badge.completed:hover {
+  background: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.in-progress {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--accent);
+}
+
+.status-badge.in-progress:hover {
+  background: rgba(245, 158, 11, 0.2);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+.status-badge.failed {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--destructive);
+}
+
+/* Enhanced button styles */
+.card-button {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.card-button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.card-button.primary {
+  background: linear-gradient(135deg, var(--primary), #059669);
+  color: var(--primary-foreground);
+}
+
+.card-button.primary:hover {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+}
+
+.card-button.secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.card-button.secondary:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.card-button.accent {
+  background: linear-gradient(135deg, var(--accent), #d97706);
+  color: var(--accent-foreground);
+}
+
+.card-button.accent:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Score display with gradient */
+.score-display {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: scoreGlow 2s ease-in-out infinite;
+}
+
+@keyframes scoreGlow {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.2);
+  }
+}
+
+/* Progress bar in cards */
+.card-progress {
+  position: relative;
+  height: 6px;
+  background: var(--muted);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.card-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg,
+    var(--primary) 0%,
+    var(--accent) 50%,
+    var(--primary) 100%);
+  background-size: 200% 100%;
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: progressFlow 2s ease-in-out infinite;
+  position: relative;
+}
+
+@keyframes progressFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.card-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: progressShine 1.5s ease-in-out infinite;
+}
+
+@keyframes progressShine {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* Icon containers with pulse */
+.icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--primary-light);
+  color: var(--primary);
+  transition: all var(--transition-normal);
+}
+
+.icon-container:hover {
+  transform: scale(1.1) rotate(5deg);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Lock icon with shake animation */
+.lock-icon {
+  animation: lockShake 0.5s ease;
+}
+
+@keyframes lockShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+/* Certificate badge */
+.certificate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
+  }
+}
+
+/* "New" badge */
+.new-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  padding: 4px 8px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  animation: newBadgeBounce 1s ease-in-out infinite;
+}
+
+@keyframes newBadgeBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Difficulty badge colors */
+.difficulty-easy {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.difficulty-medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.difficulty-hard {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--destructive);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Hover overlay for locked items */
+.locked-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  border-radius: inherit;
+}
+
+.interview-card.locked:hover .locked-overlay {
+  opacity: 1;
+}
+
+/* Scrollbar styling for card containers */
+.card ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.card ::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 9999px;
+}
+
+.card ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--accent));
+  border-radius: 9999px;
+}
+
+.card ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent), var(--primary));
+}

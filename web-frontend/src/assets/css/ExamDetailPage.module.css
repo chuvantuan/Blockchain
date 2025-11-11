@@ -1,0 +1,80 @@
+.page {
+  min-height: 100vh;
+  background: var(--gradient-background);
+  font-family: var(--font-sans);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-12);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  color: var(--foreground);
+  font-family: var(--font-display);
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.questionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.bottomActions {
+  margin-top: var(--space-8);
+  display: flex;
+  justify-content: center;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 12px 32px;
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.backIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.noDataContainer {
+  min-height: 100vh;
+  background: var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.noDataCard {
+  background: var(--card);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.noDataText {
+  color: var(--muted-foreground);
+  margin-bottom: 20px;
+}
+

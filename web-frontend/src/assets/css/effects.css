@@ -1,0 +1,269 @@
+/* 
+ * Global Effects Synchronized with Certify Page
+ * These classes provide consistent hover and click effects across all pages
+ */
+
+/* Card Hover Effect (from CertificationCard) */
+.card-hover-effect {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.card-hover-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.card-hover-effect:hover::before {
+  opacity: 1;
+}
+
+.card-hover-effect:active {
+  transform: translateY(-4px) scale(1.01);
+}
+
+/* Button Hover Effect (from getCertifiedButton) */
+.button-hover-effect {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.button-hover-effect::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.button-hover-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 10px 20px -5px rgba(16, 185, 129, 0.3),
+    0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.button-hover-effect:active {
+  transform: translateY(0);
+}
+
+.button-hover-effect:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* Subtle Card Hover (for smaller cards) */
+.subtle-hover-effect {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.subtle-hover-effect:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.subtle-hover-effect:active {
+  transform: translateY(-2px);
+}
+
+/* Link/Text Hover Effect */
+.link-hover-effect {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.link-hover-effect::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: currentColor;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.link-hover-effect:hover::after {
+  width: 100%;
+}
+
+.link-hover-effect:active {
+  transform: scale(0.98);
+}
+
+/* Icon Button Hover (from infoButton) */
+.icon-button-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.icon-button-hover:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.icon-button-hover:active {
+  transform: scale(1.05) rotate(5deg);
+}
+
+/* Badge Hover Effect */
+.badge-hover-effect {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.badge-hover-effect:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-hover-effect:active {
+  transform: scale(1.02);
+}
+
+/* Input Focus Effect */
+.input-focus-effect {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-focus-effect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .card-hover-effect::before {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  }
+  
+  .card-hover-effect:hover {
+    box-shadow: 
+      0 20px 25px -5px rgba(0, 0, 0, 0.3),
+      0 10px 10px -5px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(59, 130, 246, 0.3);
+  }
+  
+  .button-hover-effect:hover {
+    box-shadow: 
+      0 10px 20px -5px rgba(16, 185, 129, 0.4),
+      0 0 15px rgba(16, 185, 129, 0.3);
+  }
+  
+  .subtle-hover-effect:hover {
+    box-shadow: 
+      0 10px 15px -3px rgba(0, 0, 0, 0.3),
+      0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.dark .card-hover-effect::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.dark .card-hover-effect:hover {
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 10px 10px -5px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(59, 130, 246, 0.3);
+}
+
+.dark .button-hover-effect:hover {
+  box-shadow: 
+    0 10px 20px -5px rgba(16, 185, 129, 0.4),
+    0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.dark .subtle-hover-effect:hover {
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.3),
+    0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Smooth Page Transitions */
+.page-transition {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse Effect for Important Elements */
+.pulse-effect {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Ripple Effect (for buttons) */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.5s, opacity 0.5s;
+  opacity: 0;
+}
+
+.ripple-effect:active::after {
+  transform: translate(-50%, -50%) scale(30);
+  opacity: 1;
+  transition: 0s;
+}
+

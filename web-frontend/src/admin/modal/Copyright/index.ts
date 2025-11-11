@@ -1,0 +1,5 @@
+export * from './DocumentDetailModal'
+export * from './RegisterDocumentModal'
+export * from './EditDocumentModal'
+export * from './ExportModal'
+export * from './SettingsModal'

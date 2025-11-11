@@ -1,0 +1,202 @@
+.page {
+  background: var(--gradient-background);
+  min-height: 100vh;
+  position: relative;
+  padding-top: 80px;
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: 1000px 1000px;
+  background-position: 0 0, 0 0, 0 0;
+  background-repeat: no-repeat;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Light mode pattern */
+:global(.light) .page::before {
+  background: url("data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1000 1000\"><defs><radialGradient id=\"bg\" cx=\"50%\" cy=\"50%\"><stop offset=\"0%\" stop-color=\"%23f0f9ff\" stop-opacity=\"0.3\"/><stop offset=\"100%\" stop-color=\"%23f0f9ff\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"200\" cy=\"200\" r=\"400\" fill=\"url(%23bg)\"/><circle cx=\"800\" cy=\"300\" r=\"300\" fill=\"url(%23bg)\"/><circle cx=\"400\" cy=\"800\" r=\"350\" fill=\"url(%23bg)\"/></svg>");
+}
+
+/* Dark mode pattern */
+:global(.dark) .page::before {
+  background: url("data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1000 1000\"><defs><radialGradient id=\"bg\" cx=\"50%\" cy=\"50%\"><stop offset=\"0%\" stop-color=\"%23374151\" stop-opacity=\"0.3\"/><stop offset=\"100%\" stop-color=\"%23374151\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"200\" cy=\"200\" r=\"400\" fill=\"url(%23bg)\"/><circle cx=\"800\" cy=\"300\" r=\"300\" fill=\"url(%23bg)\"/><circle cx=\"400\" cy=\"800\" r=\"350\" fill=\"url(%23bg)\"/></svg>");
+  opacity: 0.4;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.content {
+  display: flex;
+  gap: 32px;
+  padding: 24px 24px 60px 24px;
+  align-items: flex-start;
+}
+
+.mainContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.challengesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted-foreground);
+}
+
+.emptyState h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 12px 0;
+}
+
+.emptyState p {
+  font-size: 16px;
+  margin: 0;
+}
+
+.errorPage {
+  background: var(--background);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorPage .container {
+  text-align: center;
+  padding: 40px;
+}
+
+.errorPage h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0 0 16px 0;
+}
+
+.errorPage p {
+  font-size: 16px;
+  color: var(--muted-foreground);
+  margin: 0 0 24px 0;
+}
+
+.backButton {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .mainContent {
+    order: 1;
+  }
+
+  .sidebar {
+    order: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 0 16px 40px 16px;
+    gap: 16px;
+  }
+
+  .container {
+    padding: 0;
+  }
+
+  .emptyState {
+    padding: 40px 16px;
+  }
+
+  .emptyState h3 {
+    font-size: 20px;
+  }
+
+  .emptyState p {
+    font-size: 14px;
+  }
+
+  .errorPage .container {
+    padding: 20px;
+  }
+
+  .errorPage h1 {
+    font-size: 24px;
+  }
+
+  .errorPage p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 0 12px 30px 12px;
+  }
+
+  .emptyState {
+    padding: 30px 12px;
+  }
+
+  .emptyState h3 {
+    font-size: 18px;
+  }
+
+  .emptyState p {
+    font-size: 13px;
+  }
+
+  .backButton {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+}

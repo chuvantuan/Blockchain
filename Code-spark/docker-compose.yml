@@ -1,0 +1,415 @@
+services:
+  # 1. Dịch vụ giám sát Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      # Ánh xạ file cấu hình prometheus.yml từ máy host vào container
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - microservice-net
+
+  # 2. Dịch vụ trực quan hóa Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      # Dùng volume để lưu trữ dữ liệu của Grafana (dashboards, datasources)
+      - grafana-data:/var/lib/grafana
+    networks:
+      - microservice-net
+
+  # 3. Cơ sở dữ liệu
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: "Asia/Ho_Chi_Minh"
+      PGTZ: "Asia/Ho_Chi_Minh"
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - microservice-net
+
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - microservice-net
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservice-net
+
+  # 4. Ganache local blockchain
+  ganache:
+    image: trufflesuite/ganache-cli:latest
+    container_name: ganache
+    ports:
+      - "7545:7545"
+    volumes:
+      - ganache_data:/ganache/data
+    command: >
+      --db /ganache/data 
+      --host 0.0.0.0 
+      --port 7545 
+      -m "${GANACHE_MNEMONIC}" 
+      --networkId 5777
+    networks:
+      microservice-net:
+        aliases:
+          - ganache-cli
+
+  # 5. Apache Kafka message broker
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      # It is recommended to generate a new Cluster ID with a command like:
+      # docker run --rm confluentinc/cp-kafka:latest kafka-storage random-uuid
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENERS: 'PLAINTEXT://:29092,CONTROLLER://:9093,PLAINTEXT_HOST://:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - microservice-net
+
+  # 6. Các microservices của ứng dụng
+  discovery-service:
+    build: ./services/discovery-service
+    container_name: discovery-service
+    ports:
+      - "9999:9999"
+    networks:
+      - microservice-net
+
+  config-server:
+    build: ./services/config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - microservice-net
+    depends_on:
+      - discovery-service
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - microservice-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_HOSTNAME}
+    depends_on:
+      - discovery-service
+      - config-server
+      - postgres-db
+      - mongo-db
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: services/identity-service/Dockerfile
+    container_name: identity-service
+    ports:
+      - "9000:9000"
+    networks:
+      - microservice-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${DB_NAME_IDENTITY}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_REDIS_HOST=${REDIS_HOST}
+      - SPRING_REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - APP_INTER_SERVICE_SECRET=${INTER_SERVICE_SECRET}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_HOSTNAME}
+      - TZ=Asia/Ho_Chi_Minh
+      - PGTZ=Asia/Ho_Chi_Minh
+    depends_on:
+      - discovery-service
+      - config-server
+      - postgres-db
+      - mongo-db
+      - redis
+  organization-service:
+    build: ./services/organization-service
+    container_name: organization-service
+    ports:
+      - "9006:9006"
+    networks:
+      - microservice-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${DB_NAME_ORGANIZATION}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_HOSTNAME}
+    depends_on:
+      - discovery-service
+      - config-server
+      - postgres-db
+  file-service:
+    build: ./services/file-service
+    container_name: file-service
+    ports:
+      - "9003:9003"
+    networks:
+      - microservice-net
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${DB_NAME_IDENTITY}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-db:27017/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:9999/eureka
+      - EUREKA_INSTANCE_HOSTNAME=file-service
+    depends_on:
+      - discovery-service
+      - config-server
+      - postgres-db
+      - mongo-db
+    volumes:
+      - ./services/file-service/uploads:/usr/src/app/uploads
+
+  profile-service:
+    build:
+      context: .
+      dockerfile: services/profile-service/Dockerfile
+    container_name: profile-service
+    ports:
+      - "9002:9002"
+    networks:
+      - microservice-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${DB_NAME_PROFILE}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_HOSTNAME}
+    depends_on:
+      - discovery-service
+      - config-server
+      - postgres-db
+      - kafka
+
+  notification-service:
+    build: ./services/notification-service
+    container_name: notification-service
+    ports:
+      - "9004:9004"
+    networks:
+      - microservice-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_HOSTNAME}
+    depends_on:
+      - discovery-service
+      - config-server
+      - kafka
+
+  copyright-service:
+    build: ./services/copyright-service
+    container_name: copyright-service
+    ports:
+      - "9005:3000"
+    networks:
+      - microservice-net
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+
+      # Database
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=copyright_db
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+
+      # Blockchain
+      - WEB3_PROVIDER_URL=http://ganache:7545
+      - ACCOUNT_PRIVATE_KEY=${ACCOUNT_PRIVATE_KEY}
+
+      # Service Discovery
+      - EUREKA_HOST=discovery-service
+      - EUREKA_PORT=9999
+      - SERVICE_DISCOVERY_ENABLED=true
+
+      # API Gateway
+      - API_GATEWAY_BASE_URL=http://api-gateway:8080
+    depends_on:
+      - postgres-db
+      - discovery-service
+      - ganache
+    volumes:
+      - copyright_uploads:/app/uploads
+      - ./services/copyright-service/contract-address.txt:/app/contract-address.txt:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  exam-service:
+    build:
+      context: .
+      dockerfile: services/exam-service/Dockerfile
+    container_name: exam-service
+    ports:
+      - "9007:9005"
+    networks:
+      - microservice-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/exam_db
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_HOSTNAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+    depends_on:
+      - discovery-service
+      - config-server
+      - postgres-db
+
+  analytics-service:
+    build:
+      context: ./services
+      dockerfile: analytics-service/Dockerfile
+    container_name: analytics-service
+    ports:
+      - "9008:9004"
+    networks:
+      - microservice-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/analytics_db
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-db:27017/analytics_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_HOSTNAME}
+    depends_on:
+      - discovery-service
+      - config-server
+      - postgres-db
+      - mongo-db
+
+  # Contract Deployer for Copyright Service
+  contract-deployer:
+    build:
+      context: ./services/copyright-service
+      dockerfile: Dockerfile.deployer
+    container_name: copyright-deployer
+    networks:
+      - microservice-net
+    environment:
+      - GANACHE_URL=http://ganache:7545
+      - CONTRACT_ADDRESS_FILE=/app/contract-address.txt
+    volumes:
+      - ./services/copyright-service/contract-address.txt:/app/contract-address.txt
+      - ./services/copyright-service/contracts:/app/contracts
+      - ./services/copyright-service/artifacts:/app/artifacts
+    depends_on:
+      - ganache
+    profiles:
+      - deploy
+    restart: "no"
+
+  token-reward-service:
+    build: ./services/token-reward-service
+    container_name: token-reward-service
+    ports:
+      - "9009:3000"
+    networks:
+      - microservice-net
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+
+      # Database
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=course_db
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+
+      # Blockchain
+      - WEB3_PROVIDER_URL=http://ganache:7545
+      - ACCOUNT_PRIVATE_KEY=${ACCOUNT_PRIVATE_KEY}
+
+      # Service Discovery
+      - EUREKA_HOST=discovery-service
+      - EUREKA_PORT=9999
+      - SERVICE_DISCOVERY_ENABLED=true
+
+      # API Gateway
+      - API_GATEWAY_BASE_URL=http://api-gateway:8080
+    depends_on:
+      - postgres-db
+      - discovery-service
+      - ganache
+    volumes:
+      - ./services/token-reward-service/artifacts:/app/artifacts:ro
+      - ./services/token-reward-service/contracts:/app/contracts:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Khai báo mạng chung cho các container
+networks:
+  microservice-net:
+    driver: bridge
+
+# Khai báo volume để lưu trữ dữ liệu
+volumes:
+  grafana-data:
+  postgres_data:
+  mongo_data:
+  redis_data:
+  ganache_data: # Thêm volume cho Ganache
+  copyright_uploads: # Volume cho uploads của copyright service

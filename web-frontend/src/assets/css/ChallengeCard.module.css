@@ -1,0 +1,254 @@
+.challengeCard {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.challengeCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.challengeCard:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  border-color: var(--primary);
+}
+
+.challengeCard:hover::before {
+  opacity: 1;
+}
+
+.challengeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.challengeInfo {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.challengeTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+  transition: color 0.2s ease;
+}
+
+.challengeCard:hover .challengeTitle {
+  color: var(--primary);
+}
+
+.challengeStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+}
+
+.difficulty {
+  font-weight: 500;
+}
+
+.difficultyEasy {
+  color: var(--primary);
+}
+
+.difficultyMedium {
+  color: var(--accent);
+}
+
+.difficultyHard {
+  color: var(--destructive);
+}
+
+.challengeActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.actionIcons {
+  display: flex;
+  gap: 8px;
+}
+
+.actionIcon {
+  background: var(--muted);
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.8;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionIcon:hover {
+  opacity: 1;
+  background: var(--primary-light);
+  transform: scale(1.15) rotate(5deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.solveButton {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.solveButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.solveButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.solveButton:hover::before {
+  left: 100%;
+}
+
+.solveButton:active {
+  transform: translateY(0);
+}
+
+.challengeDescription {
+  margin-bottom: 12px;
+  padding-top: 12px;
+}
+
+.challengeDescription p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.challengeTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.tag {
+  background: linear-gradient(135deg, var(--muted) 0%, var(--card) 100%);
+  color: var(--foreground);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.tag:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .challengeHeader {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .challengeInfo {
+    margin-right: 0;
+  }
+
+  .challengeActions {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .actionIcons {
+    align-self: flex-start;
+  }
+
+  .solveButton {
+    align-self: stretch;
+    text-align: center;
+  }
+
+  .challengeStats {
+    gap: 12px;
+  }
+
+  .challengeTitle {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .challengeCard {
+    padding: 16px;
+  }
+
+  .challengeStats {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .challengeTitle {
+    font-size: 15px;
+  }
+
+  .solveButton {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+}

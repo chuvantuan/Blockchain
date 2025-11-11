@@ -1,0 +1,270 @@
+.featuredContest {
+  background: var(--gradient-primary);
+  border-radius: 16px;
+  margin-bottom: 48px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: fadeInScale 0.8s ease-out;
+  transition: all 0.3s ease;
+}
+
+.featuredContest:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2),
+              0 10px 30px rgba(245, 158, 11, 0.15);
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.container {
+  position: relative;
+  z-index: 2;
+  padding: 48px 32px;
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.textContent {
+  flex: 1;
+  max-width: 600px;
+}
+
+.username {
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #ffffff !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-clip: unset !important;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.description {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.actionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.registerButton {
+  background: var(--card);
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.registerButton::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.registerButton:hover {
+  background: var(--muted);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.registerButton:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.registerButton:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.registerButton:active {
+  transform: translateY(0);
+}
+
+.registrationInfo {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.dateInfo {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  color: white;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.calendarIcon {
+  font-size: 18px;
+}
+
+.backgroundPattern {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'><defs><radialGradient id='bg' cx='50%' cy='50%'><stop offset='0%' stop-color='%23ffffff' stop-opacity='0.1'/><stop offset='100%' stop-color='%23ffffff' stop-opacity='0'/></radialGradient></defs><circle cx='200' cy='200' r='400' fill='url(%23bg)'/><circle cx='800' cy='300' r='300' fill='url(%23bg)'/><circle cx='400' cy='800' r='350' fill='url(%23bg)'/></svg>");
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 1;
+  animation: patternPulse 15s ease-in-out infinite;
+}
+
+@keyframes patternPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .content {
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .dateInfo {
+    align-items: flex-start;
+  }
+  
+  .title {
+    font-size: 32px;
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 32px 24px;
+  }
+  
+  .title {
+    font-size: 28px;
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+  }
+  
+  .description {
+    font-size: 16px;
+  }
+  
+  .registerButton {
+    font-size: 15px;
+    padding: 10px 20px;
+  }
+  
+  .date {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 24px 16px;
+  }
+  
+  .title {
+    font-size: 24px;
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+  }
+  
+  .description {
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+  
+  .registerButton {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+  
+  .date {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  
+  .calendarIcon {
+    font-size: 16px;
+  }
+}
