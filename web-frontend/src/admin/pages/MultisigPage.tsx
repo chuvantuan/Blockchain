@@ -2,6 +2,7 @@ import React, { FormEvent, Fragment, useCallback, useMemo, useState } from 'reac
 import {
 	AlertCircle,
 	CheckCircle2,
+	ClipboardList,
 	FilePlus2,
 	Link2,
 	ListChecks,
@@ -10,22 +11,25 @@ import {
 	Search,
 	Send,
 	ShieldCheck,
+	UserRound,
 	Users,
 	Wallet,
 } from 'lucide-react'
 import multisigApi, {
 	ConfirmTransactionRequest,
 	CreateWalletRequest,
+	IdentityUser,
 	LinkWalletRequest,
 	MultisigTransaction,
 	MultisigWallet,
 	SubmitTransactionRequest,
 } from '../../services/api/multisigApi'
-import { parseOwners, formatWeiToEth } from '../../utils/multisig'
+import { parseOwnerIds, formatWeiToEth } from '../../utils/multisig'
 import '../styles/common.css'
 import '../styles/form.css'
 import '../styles/table.css'
 import '../styles/multisig.css'
+import { useOwnerPreview } from '../../hooks/useOwnerPreview'
 
 type AlertState = {
 	type: 'success' | 'error' | 'info'
@@ -56,6 +60,9 @@ const MultisigPage = (): JSX.Element => {
 	const [trackedWallets, setTrackedWallets] = useState<TrackedWallet[]>([])
 	const [transactions, setTransactions] = useState<MultisigTransaction[]>([])
 	const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
+	const [creatorInfo, setCreatorInfo] = useState<IdentityUser | null>(null)
+	const [creatorLoading, setCreatorLoading] = useState(false)
+	const [creatorError, setCreatorError] = useState<string | null>(null)
 
 	const [createForm, setCreateForm] = useState({
 		name: '',
@@ -68,6 +75,7 @@ const MultisigPage = (): JSX.Element => {
 		name: '',
 		description: '',
 		contractAddress: '',
+		ownerIdsText: '',
 	})
 
 	const [transactionForm, setTransactionForm] = useState({
@@ -83,6 +91,18 @@ const MultisigPage = (): JSX.Element => {
 		search: '',
 	})
 
+	const { entries: createOwnerPreview, loading: createOwnerPreviewLoading } = useOwnerPreview(createForm.ownersText)
+	const { entries: linkOwnerPreview, loading: linkOwnerPreviewLoading } = useOwnerPreview(linkForm.ownerIdsText)
+
+	const createOwnerPreviewHasError = useMemo(
+		() => createOwnerPreview.some((entry) => entry.status === 'error'),
+		[createOwnerPreview],
+	)
+	const linkOwnerPreviewHasError = useMemo(
+		() => linkOwnerPreview.some((entry) => entry.status === 'error'),
+		[linkOwnerPreview],
+	)
+
 	const showAlert = useCallback((alert: AlertState) => {
 		setAlertState(alert)
 		if (alert) {
@@ -91,6 +111,28 @@ const MultisigPage = (): JSX.Element => {
 			}, 5000)
 		}
 	}, [])
+
+	const loadCreator = useCallback(
+		async (creatorId?: string | null) => {
+			if (!creatorId) {
+				setCreatorInfo(null)
+				setCreatorError(null)
+				return
+			}
+			setCreatorLoading(true)
+			setCreatorError(null)
+			try {
+				const user = await multisigApi.getIdentityUserById(creatorId)
+				setCreatorInfo(user)
+			} catch (error: any) {
+				setCreatorInfo(null)
+				setCreatorError(error.message)
+			} finally {
+				setCreatorLoading(false)
+			}
+		},
+		[],
+	)
 
 	const upsertTrackedWallet = useCallback((next: MultisigWallet, loadedAt?: string) => {
 		setTrackedWallets((prev) => {
@@ -117,6 +159,7 @@ const MultisigPage = (): JSX.Element => {
 				const data = await multisigApi.getWalletById(walletId)
 				setWallet(data)
 				setActiveWalletId(walletId)
+				await loadCreator(data.creatorId)
 				const now = new Date().toISOString()
 				if (options?.track !== false) {
 					upsertTrackedWallet(data, now)
@@ -129,6 +172,9 @@ const MultisigPage = (): JSX.Element => {
 				}
 			} catch (error: any) {
 				setWallet(null)
+				setCreatorInfo(null)
+				setCreatorError(null)
+				setCreatorLoading(false)
 				showAlert({
 					type: 'error',
 					message: 'Không thể tải ví multisig',
@@ -138,7 +184,7 @@ const MultisigPage = (): JSX.Element => {
 				setLoadingWallet(false)
 			}
 		},
-		[showAlert, upsertTrackedWallet],
+		[showAlert, upsertTrackedWallet, loadCreator],
 	)
 
 	const fetchTransactions = useCallback(
@@ -169,11 +215,11 @@ const MultisigPage = (): JSX.Element => {
 
 	const handleCreateWallet = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		const owners = parseOwners(createForm.ownersText)
-		if (owners.length === 0) {
+		const ownerIds = parseOwnerIds(createForm.ownersText)
+		if (ownerIds.length === 0) {
 			showAlert({
 				type: 'error',
-				message: 'Vui lòng nhập ít nhất 1 owner',
+				message: 'Vui lòng nhập ít nhất 1 ID sinh viên làm owner',
 			})
 			return
 		}
@@ -181,7 +227,7 @@ const MultisigPage = (): JSX.Element => {
 		const payload: CreateWalletRequest = {
 			name: createForm.name.trim(),
 			description: createForm.description.trim() || undefined,
-			owners,
+			ownerUserIds: ownerIds,
 			threshold: Number(createForm.threshold),
 		}
 
@@ -197,6 +243,14 @@ const MultisigPage = (): JSX.Element => {
 			showAlert({
 				type: 'error',
 				message: 'Ngưỡng chữ ký phải là số nguyên dương',
+			})
+			return
+		}
+
+		if (payload.threshold > payload.ownerUserIds.length + 1) {
+			showAlert({
+				type: 'error',
+				message: 'Threshold không được lớn hơn số lượng owner (bao gồm service account)',
 			})
 			return
 		}
@@ -236,6 +290,11 @@ const MultisigPage = (): JSX.Element => {
 			contractAddress: linkForm.contractAddress.trim(),
 		}
 
+		const ownerIds = parseOwnerIds(linkForm.ownerIdsText)
+		if (ownerIds.length > 0) {
+			payload.ownerUserIds = ownerIds
+		}
+
 		if (!payload.name || !payload.contractAddress) {
 			showAlert({
 				type: 'error',
@@ -251,6 +310,7 @@ const MultisigPage = (): JSX.Element => {
 				name: '',
 				description: '',
 				contractAddress: '',
+				ownerIdsText: '',
 			})
 			setWalletIdInput(linkedWallet.id)
 			await fetchWallet(linkedWallet.id, { suppressAlert: true })
@@ -541,7 +601,7 @@ const MultisigPage = (): JSX.Element => {
 							/>
 						</div>
 						<div className="form-group form-group-full">
-							<label className="form-label">Danh sách owners (mỗi dòng hoặc dấu phẩy)</label>
+							<label className="form-label">Danh sách ID sinh viên (mỗi dòng hoặc dấu phẩy)</label>
 							<textarea
 								className="form-textarea"
 								style={{ fontFamily: 'var(--font-mono)' }}
@@ -549,11 +609,57 @@ const MultisigPage = (): JSX.Element => {
 								onChange={(event) =>
 									setCreateForm((prev) => ({ ...prev, ownersText: event.target.value }))
 								}
-								placeholder={'0xabc...\n0xdef...'}
+								placeholder={'101\n102\n103'}
 								required
 							/>
-							<div className="form-hint">
-								Đảm bảo Service Account hoặc địa chỉ multisig signer chính nằm trong danh sách này.
+							<div className="owner-helper">
+								<p className="owner-helper-text">
+									Hệ thống sẽ tự gán private key Ganache chưa sử dụng cho mỗi sinh viên và tự động thêm
+									Service Account. Threshold không nên vượt quá tổng số sinh viên + 1.
+								</p>
+								{createOwnerPreviewLoading && (
+									<div className="owner-preview-loading">Đang kiểm tra danh sách sinh viên...</div>
+								)}
+								{createOwnerPreview.length > 0 && (
+									<ul className="owner-preview-list">
+										{createOwnerPreview.map((entry) => (
+											<li
+												key={entry.userId}
+												className={`owner-preview-item ${
+													entry.status === 'error'
+														? 'owner-preview-item-error'
+														: entry.status === 'success'
+														? 'owner-preview-item-success'
+														: ''
+												}`}
+											>
+												<span className="owner-preview-id">ID #{entry.userId}</span>
+												{entry.status === 'loading' && (
+													<span className="owner-preview-status">Đang tra cứu...</span>
+												)}
+												{entry.status === 'error' && (
+													<span className="owner-preview-status">{entry.error}</span>
+												)}
+												{entry.status === 'success' && entry.user && (
+													<span className="owner-preview-status">
+														{entry.user.firstName || entry.user.lastName
+															? `${entry.user.firstName ?? ''} ${entry.user.lastName ?? ''}`.trim()
+															: entry.user.username}
+														{entry.user.email ? ` • ${entry.user.email}` : ''}
+													</span>
+												)}
+											</li>
+										))}
+									</ul>
+								)}
+								{createOwnerPreview.length === 0 && !createOwnerPreviewLoading && (
+									<div className="owner-preview-empty">Nhập ID để xem trước thông tin sinh viên.</div>
+								)}
+								{createOwnerPreviewHasError && !createOwnerPreviewLoading && (
+									<div className="owner-preview-warning">
+										Một số ID không hợp lệ hoặc không tìm thấy. Vui lòng kiểm tra trước khi tạo ví.
+									</div>
+								)}
 							</div>
 						</div>
 						<div className="form-group form-group-full" style={{ marginTop: 8 }}>
@@ -611,6 +717,66 @@ const MultisigPage = (): JSX.Element => {
 								}
 								placeholder="Thông tin quản trị, ghi chú backup key..."
 							/>
+						</div>
+						<div className="form-group form-group-full">
+							<label className="form-label">Gán thêm ID sinh viên (tùy chọn)</label>
+							<textarea
+								className="form-textarea"
+								style={{ fontFamily: 'var(--font-mono)' }}
+								value={linkForm.ownerIdsText}
+								onChange={(event) =>
+									setLinkForm((prev) => ({ ...prev, ownerIdsText: event.target.value }))
+								}
+								placeholder={'201\n202'}
+							/>
+							<div className="owner-helper">
+								<p className="owner-helper-text">
+									Nếu ví on-chain chưa có mapping sinh viên, nhập ID tại đây để gán private key tự động.
+								</p>
+								{linkOwnerPreviewLoading && (
+									<div className="owner-preview-loading">Đang kiểm tra danh sách sinh viên...</div>
+								)}
+								{linkOwnerPreview.length > 0 && (
+									<ul className="owner-preview-list">
+										{linkOwnerPreview.map((entry) => (
+											<li
+												key={entry.userId}
+												className={`owner-preview-item ${
+													entry.status === 'error'
+														? 'owner-preview-item-error'
+														: entry.status === 'success'
+														? 'owner-preview-item-success'
+														: ''
+												}`}
+											>
+												<span className="owner-preview-id">ID #{entry.userId}</span>
+												{entry.status === 'loading' && (
+													<span className="owner-preview-status">Đang tra cứu...</span>
+												)}
+												{entry.status === 'error' && (
+													<span className="owner-preview-status">{entry.error}</span>
+												)}
+												{entry.status === 'success' && entry.user && (
+													<span className="owner-preview-status">
+														{entry.user.firstName || entry.user.lastName
+															? `${entry.user.firstName ?? ''} ${entry.user.lastName ?? ''}`.trim()
+															: entry.user.username}
+														{entry.user.email ? ` • ${entry.user.email}` : ''}
+													</span>
+												)}
+											</li>
+										))}
+									</ul>
+								)}
+								{linkOwnerPreview.length === 0 && !linkOwnerPreviewLoading && (
+									<div className="owner-preview-empty">Bỏ trống nếu không cần gán thêm sinh viên.</div>
+								)}
+								{linkOwnerPreviewHasError && !linkOwnerPreviewLoading && (
+									<div className="owner-preview-warning">
+										Một số ID không hợp lệ hoặc không tìm thấy. Vui lòng kiểm tra trước khi lưu.
+									</div>
+								)}
+							</div>
 						</div>
 						<div className="form-group form-group-full" style={{ marginTop: 8 }}>
 							<button
@@ -677,7 +843,8 @@ const MultisigPage = (): JSX.Element => {
 											ID: {item.id}
 										</span>
 										<span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
-											Chủ sở hữu: {item.owners?.length ?? 0} • Threshold: {item.threshold}
+											Chủ sở hữu: {item.ownerDetails?.length ?? item.owners?.length ?? 0} • Threshold:{' '}
+											{item.threshold}
 										</span>
 									</button>
 								))}
@@ -698,7 +865,9 @@ const MultisigPage = (): JSX.Element => {
 							<div className="multisig-summary-grid">
 								<div className="multisig-summary-card">
 									<div className="multisig-summary-label">Chủ sở hữu</div>
-									<div className="multisig-summary-value">{wallet.owners?.length ?? 0}</div>
+									<div className="multisig-summary-value">
+										{wallet.ownerDetails?.length ?? wallet.owners?.length ?? 0}
+									</div>
 									<div className="multisig-summary-extra">Địa chỉ yêu cầu ký duyệt</div>
 								</div>
 								<div className="multisig-summary-card">
@@ -721,6 +890,39 @@ const MultisigPage = (): JSX.Element => {
 									</div>
 								</div>
 							</div>
+							{wallet.creatorId && (
+								<div className="multisig-user-card">
+									<div className="multisig-user-header">
+										<div className="multisig-user-icon">
+											<UserRound size={18} />
+										</div>
+										<div>
+											<div className="multisig-user-label">Người tạo ví</div>
+											{creatorLoading ? (
+												<div className="multisig-user-loading">Đang tải thông tin người dùng...</div>
+											) : creatorInfo ? (
+												<>
+													<div className="multisig-user-name">
+														{creatorInfo.firstName || creatorInfo.lastName
+															? `${creatorInfo.firstName ?? ''} ${creatorInfo.lastName ?? ''}`.trim()
+															: creatorInfo.username}
+													</div>
+													<div className="multisig-user-meta">
+														<span>Email: {creatorInfo.email || '—'}</span>
+														{creatorInfo.roles && creatorInfo.roles.length > 0 && (
+															<span>Roles: {creatorInfo.roles.join(', ')}</span>
+														)}
+													</div>
+												</>
+											) : (
+												<div className="multisig-user-error">
+													{creatorError || 'Không thể tải được thông tin người dùng.'}
+												</div>
+											)}
+										</div>
+									</div>
+								</div>
+							)}
 						</div>
 
 						<div className="multisig-card multisig-owners">
@@ -729,11 +931,39 @@ const MultisigPage = (): JSX.Element => {
 								Danh sách owners
 							</h2>
 							<div className="multisig-owner-list">
-								{wallet.owners?.map((owner) => (
-									<span key={owner} className="multisig-owner">
-										{owner}
-									</span>
-								))}
+								{wallet.ownerDetails && wallet.ownerDetails.length > 0 ? (
+									wallet.ownerDetails.map((owner) => (
+										<div key={`${owner.userId}-${owner.address}`} className="multisig-owner-card">
+											<div className="multisig-owner-card-header">
+												<div className="multisig-owner-card-name">
+													{owner.identity?.firstName || owner.identity?.lastName
+														? `${owner.identity?.firstName ?? ''} ${
+																owner.identity?.lastName ?? ''
+														  }`.trim()
+														: owner.identity?.username || `User #${owner.userId}`}
+												</div>
+												<span className="multisig-owner-card-id">ID #{owner.userId}</span>
+											</div>
+											<div className="multisig-owner-card-meta">Địa chỉ: {owner.address}</div>
+											{owner.identity?.email && (
+												<div className="multisig-owner-card-meta">Email: {owner.identity.email}</div>
+											)}
+											{owner.privateKeyMasked && (
+												<div className="multisig-owner-card-key">
+													Private key: {owner.privateKeyMasked}
+												</div>
+											)}
+										</div>
+									))
+								) : wallet.owners && wallet.owners.length > 0 ? (
+									wallet.owners.map((owner) => (
+										<span key={owner} className="multisig-owner">
+											{owner}
+										</span>
+									))
+								) : (
+									<div className="multisig-owner-empty">Chưa có owner nào được cấu hình.</div>
+								)}
 							</div>
 							{wallet.onChainWarning && (
 								<div className="multisig-owner-warning">

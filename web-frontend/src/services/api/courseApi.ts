@@ -103,6 +103,8 @@ export interface Material {
   storageKey?: string;
   content?: string;
   displayOrder?: number;
+  duration?: number | string | null;
+  description?: string;
   createdAt?: string;
 }
 
@@ -165,6 +167,8 @@ export interface Progress {
   percentComplete: number;
   lastMaterialId?: string;
   updatedAt: string;
+  progressPercentage?: number;
+  completedMaterials?: string[];
 }
 
 export interface PageResponse<T> {

@@ -36,6 +36,9 @@ export default function CourseDetailPage(): JSX.Element {
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [hasFetched, setHasFetched] = useState(false)
 
+const completedMaterials = progress?.completedMaterials ?? []
+const progressPercent = progress?.progressPercentage ?? progress?.percentComplete ?? 0
+
   // ✅ FIX: Add guard to prevent duplicate fetch in React StrictMode
   useEffect(() => {
     if (courseId && !hasFetched) {
@@ -52,25 +55,28 @@ export default function CourseDetailPage(): JSX.Element {
       
       // Fetch course details
       const courseResponse = await courseApi.getCourseById(courseId)
-      setCourse(courseResponse.data)
+      setCourse(courseResponse?.data ?? null)
 
       // Fetch materials
       try {
         const materialsResponse = await courseApi.getCourseMaterials(courseId)
-        setMaterials(materialsResponse.data)
+        setMaterials(materialsResponse?.data ?? [])
       } catch (err) {
         console.log('No materials found or error fetching materials')
+        setMaterials([])
       }
 
       // Fetch progress if user is enrolled
       if (user?.id) {
         try {
           const progressResponse = await courseApi.getStudentProgress(Number(user.id), courseId)
-          setProgress(progressResponse.data)
-          setIsEnrolled(true)
+          const progressData = progressResponse?.data ?? null
+          setProgress(progressData)
+          setIsEnrolled(Boolean(progressData))
         } catch (err) {
           console.log('User not enrolled or no progress found')
           setIsEnrolled(false)
+          setProgress(null)
         }
       }
 
@@ -187,9 +193,7 @@ export default function CourseDetailPage(): JSX.Element {
     }
   }
 
-  const isMaterialCompleted = (materialId: string) => {
-    return progress?.completedMaterials.includes(materialId) || false
-  }
+  const isMaterialCompleted = (materialId: string) => completedMaterials.includes(materialId)
 
   const getMaterialStatusMeta = (materialId: string) => {
     if (isMaterialCompleted(materialId)) {
@@ -311,7 +315,7 @@ export default function CourseDetailPage(): JSX.Element {
                   <Play size={20} />
                   <span>Tiếp tục học</span>
                   {progress && (
-                    <span className="progress-badge">{progress.progressPercentage}%</span>
+                    <span className="progress-badge">{Math.round(progressPercent)}%</span>
                   )}
                 </button>
               ) : (
@@ -357,11 +361,11 @@ export default function CourseDetailPage(): JSX.Element {
                 <div className="progress-bar">
                   <div 
                     className="progress-fill" 
-                    style={{ width: `${progress.progressPercentage}%` }}
+                    style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
                   ></div>
                 </div>
                 <p className="progress-text">
-                  {progress.completedMaterials.length} / {materials.length} tài liệu hoàn thành
+                  {completedMaterials.length} / {materials.length} tài liệu hoàn thành
                 </p>
               </div>
             )}

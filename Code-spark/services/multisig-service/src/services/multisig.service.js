@@ -2,28 +2,35 @@ const db = require('../models');
 const MultisigWallet = db.MultisigWallet;
 const MultisigTransaction = db.MultisigTransaction;
 const blockchainService = require('./blockchain.service.js');
+const walletOwnerService = require('./walletOwner.service');
 const { account, web3 } = require('../config/web3'); // Lấy service account và web3
-
-// Hàm giả lập lấy user ID từ token (sẽ được thay thế bằng middleware)
-const getUserIdFromToken = (req) => {
-    // TODO: Triển khai JWT middleware để giải mã token
-    // Tạm thời hardcode
-    return "123e4567-e89b-12d3-a456-426614174000"; // UUID Giả
-};
 
 // API: Tạo ví mới
 const createWallet = async (req) => {
-    const { name, description, owners, threshold } = req.body;
-    const creatorId = getUserIdFromToken(req);
+    const { name, description, ownerUserIds, threshold } = req.body;
+    const creatorId = req.userId;
+    const authHeader = req.headers['authorization'];
 
-    // KIỂM TRA QUAN TRỌNG: Đảm bảo service account là một owner
-    const serviceAddress = account.address;
-    if (!owners.some(owner => owner.toLowerCase() === serviceAddress.toLowerCase())) {
-        throw new Error(`Service Account ${serviceAddress} phải nằm trong danh sách owners để ký giao dịch`);
+    if (!name || !ownerUserIds || !threshold) {
+        throw new Error('Thiếu tham số name, ownerUserIds hoặc threshold');
+    }
+
+    const assignments = await walletOwnerService.prepareOwnerAssignments(ownerUserIds);
+    const ownerAddresses = assignments.map((assignment) => assignment.address.toLowerCase());
+    const serviceAddress = account.address.toLowerCase();
+
+    if (!ownerAddresses.includes(serviceAddress)) {
+        ownerAddresses.push(serviceAddress);
+    }
+
+    const uniqueOwners = Array.from(new Set(ownerAddresses));
+
+    if (threshold > uniqueOwners.length) {
+        throw new Error(`Threshold (${threshold}) lớn hơn số lượng owner (${uniqueOwners.length})`);
     }
     
     // 1. Deploy lên Blockchain
-    const contractAddress = await blockchainService.deployMultisigContract(owners, threshold);
+    const contractAddress = await blockchainService.deployMultisigContract(uniqueOwners, threshold);
     
     // 2. Fund ETH vào contract wallet (mặc định 500 ETH)
     // Có thể config qua environment variable INITIAL_WALLET_BALANCE_ETH
@@ -43,21 +50,28 @@ const createWallet = async (req) => {
         name,
         description,
         contractAddress,
-        owners,
+        owners: uniqueOwners,
         threshold
     });
+
+    await walletOwnerService.persistOwnerAssignments(newWallet.id, assignments);
+    const ownerDetails = await walletOwnerService.getOwnerDetailsForWallet(newWallet.id, authHeader);
     
-    return newWallet;
+    return {
+        ...newWallet.toJSON(),
+        ownerDetails
+    };
 };
 
 // API: Liên kết ví đã có
 const linkWallet = async (req) => {
-    const { name, description, contractAddress } = req.body;
-    const creatorId = getUserIdFromToken(req);
+    const { name, description, contractAddress, ownerUserIds } = req.body;
+    const creatorId = req.userId;
+    const authHeader = req.headers['authorization'];
 
     // 1. Kiểm tra ví trên chain
     const onChainData = await blockchainService.getOnChainWalletDetails(contractAddress);
-    
+
     // 2. Lưu vào DB
     const linkedWallet = await MultisigWallet.create({
         creatorId,
@@ -67,12 +81,22 @@ const linkWallet = async (req) => {
         owners: onChainData.owners,
         threshold: onChainData.threshold
     });
-    
-    return linkedWallet;
+
+    let ownerDetails = [];
+    if (ownerUserIds && ownerUserIds.length > 0) {
+        const assignments = await walletOwnerService.prepareOwnerAssignments(ownerUserIds);
+        await walletOwnerService.persistOwnerAssignments(linkedWallet.id, assignments);
+        ownerDetails = await walletOwnerService.getOwnerDetailsForWallet(linkedWallet.id, authHeader);
+    }
+
+    return {
+        ...linkedWallet.toJSON(),
+        ownerDetails
+    };
 };
 
 // API: Lấy ví (kết hợp DB và On-chain)
-const getWalletById = async (walletId) => {
+const getWalletById = async (walletId, authHeader) => {
     const wallet = await MultisigWallet.findByPk(walletId);
     if (!wallet) {
         throw new Error('Không tìm thấy ví trong DB');
@@ -93,9 +117,12 @@ const getWalletById = async (walletId) => {
     }
     
     // Kết hợp 2 nguồn dữ liệu
+    const ownerDetails = await walletOwnerService.getOwnerDetailsForWallet(walletId, authHeader);
+
     const result = {
         ...wallet.toJSON(),
-        onChainBalance: onChainBalance
+        onChainBalance: onChainBalance,
+        ownerDetails
     };
     
     // Nếu có lỗi, thêm thông tin lỗi vào response để user biết

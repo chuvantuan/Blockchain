@@ -1,17 +1,36 @@
-import { FormEvent, useCallback, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, FilePlus2, Link2, Play, RefreshCcw, Send, Shield, Wallet } from 'lucide-react'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+	AlertCircle,
+	CheckCircle2,
+	Copy,
+	Eye,
+	EyeOff,
+	FilePlus2,
+	KeyRound,
+	Link2,
+	Play,
+	RefreshCcw,
+	Send,
+	Shield,
+	Wallet,
+} from 'lucide-react'
 import multisigApi, {
 	ConfirmTransactionRequest,
 	CreateWalletRequest,
+	IdentityUser,
+	OwnerCredential,
 	LinkWalletRequest,
 	MultisigTransaction,
 	MultisigWallet,
 	SubmitTransactionRequest,
 } from '../services/api/multisigApi'
-import { parseOwners, formatWeiToEth } from '../utils/multisig'
+import { parseOwnerIds, formatWeiToEth } from '../utils/multisig'
 import styles from '../assets/css/MultisigWalletPage.module.css'
 import WalletSummary from '../components/multisig/WalletSummary'
 import TransactionForm, { TransactionFormValues } from '../components/multisig/TransactionForm'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../store'
+import { useOwnerPreview } from '../hooks/useOwnerPreview'
 
 type AlertState = {
 	type: 'success' | 'error' | 'info'
@@ -20,6 +39,9 @@ type AlertState = {
 } | null
 
 const MultisigWalletPage = (): JSX.Element => {
+	const authUser = useSelector((state: RootState) => state.auth.user)
+	const currentUserId = authUser?.id ?? null
+
 	const [alertState, setAlertState] = useState<AlertState>(null)
 	const [walletIdInput, setWalletIdInput] = useState('')
 	const [activeWalletId, setActiveWalletId] = useState<string | null>(null)
@@ -53,6 +75,53 @@ const MultisigWalletPage = (): JSX.Element => {
 	})
 
 	const [confirmKeys, setConfirmKeys] = useState<Record<string, string>>({})
+	const [creatorInfo, setCreatorInfo] = useState<IdentityUser | null>(null)
+	const [creatorLoading, setCreatorLoading] = useState(false)
+	const [creatorError, setCreatorError] = useState<string | null>(null)
+	const [myCredential, setMyCredential] = useState<OwnerCredential | null>(null)
+	const [myCredentialLoading, setMyCredentialLoading] = useState(false)
+	const [myCredentialError, setMyCredentialError] = useState<string | null>(null)
+const [showPrivateKey, setShowPrivateKey] = useState(false)
+const [copySuccess, setCopySuccess] = useState(false)
+
+const { entries: ownerPreviewEntries, loading: ownerPreviewLoading } = useOwnerPreview(createForm.ownersText)
+
+	const isCurrentUserOwner = useMemo(() => {
+		if (!currentUserId || !wallet?.ownerDetails) return false
+		return wallet.ownerDetails.some((owner) => owner.userId === currentUserId)
+	}, [currentUserId, wallet?.ownerDetails])
+
+const ownerPreviewHasError = useMemo(
+	() => ownerPreviewEntries.some((entry) => entry.status === 'error'),
+	[ownerPreviewEntries],
+)
+
+useEffect(() => {
+	setShowPrivateKey(false)
+	setCopySuccess(false)
+}, [myCredential?.walletId, myCredential?.userId, myCredential?.privateKey])
+
+const handleCopyPrivateKey = useCallback(async () => {
+	if (!myCredential) return
+	try {
+		if (navigator?.clipboard) {
+			await navigator.clipboard.writeText(myCredential.privateKey)
+			setCopySuccess(true)
+			window.setTimeout(() => setCopySuccess(false), 2000)
+		}
+	} catch (error) {
+		console.warn('Không thể copy private key:', (error as Error).message)
+		setCopySuccess(false)
+	}
+}, [myCredential])
+
+	const handleUseMyKey = useCallback(
+		(transactionId: string) => {
+			if (!myCredential) return
+			setConfirmKeys((prev) => ({ ...prev, [transactionId]: myCredential.privateKey }))
+		},
+		[myCredential],
+	)
 
 	const showAlert = useCallback((alert: AlertState) => {
 		setAlertState(alert)
@@ -63,6 +132,28 @@ const MultisigWalletPage = (): JSX.Element => {
 		}
 	}, [])
 
+	const loadCreator = useCallback(
+		async (creatorId?: string | null) => {
+			if (!creatorId) {
+				setCreatorInfo(null)
+				setCreatorError(null)
+				return
+			}
+			setCreatorLoading(true)
+			setCreatorError(null)
+			try {
+				const user = await multisigApi.getIdentityUserById(creatorId)
+				setCreatorInfo(user)
+			} catch (error: any) {
+				setCreatorInfo(null)
+				setCreatorError(error.message)
+			} finally {
+				setCreatorLoading(false)
+			}
+		},
+		[],
+	)
+
 	const fetchWallet = useCallback(
 		async (walletId: string, options?: { suppressAlert?: boolean }) => {
 			if (!walletId) return
@@ -71,6 +162,26 @@ const MultisigWalletPage = (): JSX.Element => {
 				const data = await multisigApi.getWalletById(walletId)
 				setWallet(data)
 				setActiveWalletId(walletId)
+				await loadCreator(data.creatorId)
+
+				if (currentUserId && data.ownerDetails?.some((owner) => owner.userId === currentUserId)) {
+					setMyCredentialLoading(true)
+					setMyCredentialError(null)
+					try {
+						const credential = await multisigApi.getMyOwnerCredential(walletId)
+						setMyCredential(credential)
+					} catch (error: any) {
+						setMyCredential(null)
+						setMyCredentialError(error.message)
+					} finally {
+						setMyCredentialLoading(false)
+					}
+				} else {
+					setMyCredential(null)
+					setMyCredentialError(null)
+					setMyCredentialLoading(false)
+				}
+
 				if (!options?.suppressAlert) {
 					showAlert({
 						type: 'success',
@@ -79,6 +190,12 @@ const MultisigWalletPage = (): JSX.Element => {
 				}
 			} catch (error: any) {
 				setWallet(null)
+				setCreatorInfo(null)
+				setCreatorError(null)
+				setCreatorLoading(false)
+				setMyCredential(null)
+				setMyCredentialError(null)
+				setMyCredentialLoading(false)
 				showAlert({
 					type: 'error',
 					message: 'Không thể tải ví multisig',
@@ -88,7 +205,7 @@ const MultisigWalletPage = (): JSX.Element => {
 				setLoadingWallet(false)
 			}
 		},
-		[showAlert],
+		[showAlert, loadCreator, currentUserId],
 	)
 
 	const fetchTransactions = useCallback(
@@ -126,18 +243,18 @@ const MultisigWalletPage = (): JSX.Element => {
 
 	const handleCreateWallet = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		const owners = parseOwners(createForm.ownersText)
-		if (owners.length === 0) {
+		const ownerIds = parseOwnerIds(createForm.ownersText)
+		if (ownerIds.length === 0) {
 			showAlert({
 				type: 'error',
-				message: 'Vui lòng nhập ít nhất 1 owner',
+				message: 'Vui lòng nhập ít nhất 1 ID sinh viên làm owner',
 			})
 			return
 		}
 		const payload: CreateWalletRequest = {
 			name: createForm.name.trim(),
 			description: createForm.description.trim() || undefined,
-			owners,
+			ownerUserIds: ownerIds,
 			threshold: Number(createForm.threshold),
 		}
 
@@ -153,6 +270,14 @@ const MultisigWalletPage = (): JSX.Element => {
 			showAlert({
 				type: 'error',
 				message: 'Ngưỡng chữ ký phải là số nguyên dương',
+			})
+			return
+		}
+
+		if (payload.threshold > payload.ownerUserIds.length + 1) {
+			showAlert({
+				type: 'error',
+				message: 'Threshold không được lớn hơn số lượng owner (bao gồm service account)',
 			})
 			return
 		}
@@ -396,17 +521,67 @@ const MultisigWalletPage = (): JSX.Element => {
 							/>
 						</label>
 						<label className={styles.formLabel}>
-							Danh sách owners (mỗi dòng hoặc cách nhau bởi dấu phẩy)
+							Danh sách ID sinh viên (mỗi dòng hoặc cách nhau bởi dấu phẩy)
 							<textarea
 								className={`${styles.input} ${styles.textarea} ${styles.textareaOwners}`}
 								value={createForm.ownersText}
 								onChange={(event) =>
 									setCreateForm((prev) => ({ ...prev, ownersText: event.target.value }))
 								}
-								placeholder={'0xabc...\n0xdef...'}
+								placeholder={'101\n102\n103'}
 								required
 							/>
 						</label>
+						<div className={styles.ownerHelper}>
+							<p className={styles.ownerHelperText}>
+								Hệ thống sẽ tự gán mỗi sinh viên với một private key Ganache chưa sử dụng. Service
+								Account được thêm tự động nên threshold không nên vượt quá tổng số sinh viên + 1.
+							</p>
+							{ownerPreviewLoading && (
+								<div className={styles.ownerPreviewLoading}>Đang kiểm tra danh sách sinh viên...</div>
+							)}
+							{ownerPreviewEntries.length > 0 && (
+								<ul className={styles.ownerPreviewList}>
+									{ownerPreviewEntries.map((entry) => (
+										<li
+											key={entry.userId}
+											className={`${styles.ownerPreviewItem} ${
+												entry.status === 'error'
+													? styles.ownerPreviewItemError
+													: entry.status === 'success'
+													? styles.ownerPreviewItemSuccess
+													: ''
+											}`}
+										>
+											<span className={styles.ownerPreviewId}>ID #{entry.userId}</span>
+											{entry.status === 'loading' && (
+												<span className={styles.ownerPreviewStatus}>Đang tra cứu...</span>
+											)}
+											{entry.status === 'error' && (
+												<span className={styles.ownerPreviewStatus}>{entry.error}</span>
+											)}
+											{entry.status === 'success' && entry.user && (
+												<span className={styles.ownerPreviewStatus}>
+													{entry.user.firstName || entry.user.lastName
+														? `${entry.user.firstName ?? ''} ${entry.user.lastName ?? ''}`.trim()
+														: entry.user.username}
+													{entry.user.email ? ` • ${entry.user.email}` : ''}
+												</span>
+											)}
+										</li>
+									))}
+								</ul>
+							)}
+							{ownerPreviewEntries.length === 0 && !ownerPreviewLoading && (
+								<div className={styles.ownerPreviewEmpty}>Nhập ID sinh viên để xem trước thông tin.</div>
+							)}
+							{ownerPreviewHasError && !ownerPreviewLoading && (
+								<div className={styles.ownerPreviewWarning}>
+									Một số ID không hợp lệ hoặc không tìm thấy người dùng. Vui lòng kiểm tra lại trước khi
+									tạo ví.
+								</div>
+							)}
+						</div>
 						<label className={styles.formLabel}>
 							Ngưỡng chữ ký (threshold)
 							<input
@@ -517,13 +692,76 @@ const MultisigWalletPage = (): JSX.Element => {
 				<div className={styles.contentStack}>
 					<WalletSummary
 						wallet={wallet}
+						creator={creatorInfo}
+						creatorLoading={creatorLoading}
+						creatorError={creatorError}
 						onRefresh={() => {
 							if (wallet.id) {
-								fetchWallet(wallet.id)
+								fetchWallet(wallet.id, { suppressAlert: true })
 								fetchTransactions(wallet.id)
 							}
 						}}
 					/>
+
+					{isCurrentUserOwner && (
+						<div className={styles.card}>
+							<div className={styles.sectionTitle}>
+								<KeyRound size={20} />
+								Thông tin owner của bạn
+							</div>
+							{myCredentialLoading && (
+								<div className={styles.ownerCredentialLoading}>Đang tải private key của bạn...</div>
+							)}
+							{!myCredentialLoading && myCredentialError && (
+								<div className={styles.ownerCredentialError}>{myCredentialError}</div>
+							)}
+							{!myCredentialLoading && !myCredential && !myCredentialError && (
+								<div className={styles.ownerCredentialInfo}>
+									Bạn không nằm trong danh sách owner của ví này.
+								</div>
+							)}
+							{!myCredentialLoading && myCredential && (
+								<div className={styles.ownerCredentialBody}>
+									<div className={styles.ownerCredentialRow}>
+										<span className={styles.ownerCredentialLabel}>Địa chỉ ví</span>
+										<span className={styles.ownerCredentialValue}>{myCredential.address}</span>
+									</div>
+									<div className={styles.ownerCredentialRow}>
+										<span className={styles.ownerCredentialLabel}>Private key</span>
+										<div className={styles.ownerCredentialKey}>
+											<input
+												className={`${styles.input} ${styles.inputMono}`}
+												type={showPrivateKey ? 'text' : 'password'}
+												value={myCredential.privateKey}
+												readOnly
+											/>
+											<div className={styles.ownerCredentialActions}>
+												<button
+													type="button"
+													className={styles.ghostButton}
+													onClick={() => setShowPrivateKey((prev) => !prev)}
+												>
+													{showPrivateKey ? <EyeOff size={16} /> : <Eye size={16} />}
+												</button>
+												<button
+													type="button"
+													className={styles.ghostButton}
+													onClick={handleCopyPrivateKey}
+												>
+													{copySuccess ? <CheckCircle2 size={16} /> : <Copy size={16} />}
+												</button>
+											</div>
+										</div>
+									</div>
+									<p className={styles.ownerCredentialHint}>
+										Giữ bí mật private key và chỉ dùng để xác nhận giao dịch. Bạn có thể dán trực
+										tiếp vào ô xác nhận giao dịch hoặc nhấn nút “Xác nhận dùng private key của tôi”
+										trong từng giao dịch.
+									</p>
+								</div>
+							)}
+						</div>
+					)}
 
 					<TransactionForm
 						values={transactionForm}
@@ -613,6 +851,16 @@ const MultisigWalletPage = (): JSX.Element => {
 											/>
 										</label>
 										<div className={styles.transactionActionsButtons}>
+											{myCredential && (
+												<button
+													type="button"
+													className={`${styles.button} ${styles.buttonGhost}`}
+													onClick={() => handleUseMyKey(tx.id)}
+												>
+													<KeyRound size={16} />
+													Dùng private key của tôi
+												</button>
+											)}
 											<button
 												type="button"
 												className={`${styles.button} ${styles.buttonPrimary}`}

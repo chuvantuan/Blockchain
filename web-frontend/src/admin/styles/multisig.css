@@ -95,10 +95,143 @@
 	font-family: var(--font-mono);
 }
 
+.owner-helper {
+	margin-top: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	background: var(--muted);
+	border-radius: var(--radius-md);
+	padding: 12px 14px;
+}
+
+.owner-helper-text {
+	margin: 0;
+	font-size: 13px;
+	color: var(--muted-foreground);
+}
+
+.owner-preview-loading {
+	font-size: 13px;
+	color: var(--muted-foreground);
+	font-style: italic;
+}
+
+.owner-preview-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.owner-preview-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-radius: var(--radius-md);
+	background: var(--background);
+	border: 1px solid transparent;
+}
+
+.owner-preview-item-success {
+	border-color: rgba(34, 197, 94, 0.35);
+}
+
+.owner-preview-item-error {
+	border-color: rgba(239, 68, 68, 0.35);
+}
+
+.owner-preview-id {
+	font-weight: 600;
+	font-size: 13px;
+	color: var(--foreground);
+}
+
+.owner-preview-status {
+	font-size: 13px;
+	color: var(--muted-foreground);
+}
+
+.owner-preview-empty {
+	font-size: 13px;
+	color: var(--muted-foreground);
+}
+
+.owner-preview-warning {
+	font-size: 13px;
+	color: #b45309;
+	background: rgba(251, 191, 36, 0.18);
+	border-radius: var(--radius-md);
+	padding: 10px 12px;
+}
+
 .multisig-summary-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 	gap: 16px;
+}
+
+.multisig-user-card {
+	margin-top: 16px;
+	padding: 18px;
+	border-radius: var(--radius-lg);
+	background: var(--muted);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.multisig-user-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.multisig-user-icon {
+	width: 36px;
+	height: 36px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--background);
+	color: var(--primary);
+	box-shadow: var(--shadow-xs);
+}
+
+.multisig-user-label {
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--muted-foreground);
+}
+
+.multisig-user-name {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--foreground);
+}
+
+.multisig-user-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	font-size: 13px;
+	color: var(--muted-foreground);
+}
+
+.multisig-user-loading {
+	font-size: 13px;
+	color: var(--muted-foreground);
+	font-style: italic;
+}
+
+.multisig-user-error {
+	font-size: 13px;
+	color: #b91c1c;
 }
 
 .multisig-summary-card {
@@ -145,6 +278,50 @@
 	padding: 8px 12px;
 	font-size: 13px;
 	font-family: var(--font-mono);
+	color: var(--muted-foreground);
+}
+
+.multisig-owner-card {
+	background: var(--background);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+	padding: 12px 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 220px;
+}
+
+.multisig-owner-card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+}
+
+.multisig-owner-card-name {
+	font-weight: 600;
+	color: var(--foreground);
+}
+
+.multisig-owner-card-id {
+	font-size: 12px;
+	color: var(--muted-foreground);
+}
+
+.multisig-owner-card-meta {
+	font-size: 13px;
+	color: var(--muted-foreground);
+}
+
+.multisig-owner-card-key {
+	font-size: 12px;
+	color: var(--muted-foreground);
+	font-family: var(--font-mono);
+}
+
+.multisig-owner-empty {
+	font-size: 13px;
 	color: var(--muted-foreground);
 }
 
