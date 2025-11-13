@@ -14,6 +14,7 @@ import { AnalyticsPage } from '../pages/AnalyticsPage'
 import { CopyrightPage } from '../pages/CopyrightPage'
 import CertifyPage from '../pages/CertifyPage'
 import MultisigPage from '../pages/MultisigPage'
+import SecurityDemoPage from '../../pages/SecurityDemoPage'
 
 export default function AdminRoutes(): JSX.Element {
 	return (
@@ -25,6 +26,7 @@ export default function AdminRoutes(): JSX.Element {
 				<Route path="exams" element={<ExamsPage />} />
 				<Route path="proctoring" element={<ProctoringPage />} />
 				<Route path="security" element={<SecurityPage />} />
+				<Route path="security-demo" element={<SecurityDemoPage />} />
 				<Route path="reward" element={<RewardPage />} />
 				<Route path="multisig" element={<MultisigPage />} />
 				<Route path="courses" element={<CoursesPage />} />
