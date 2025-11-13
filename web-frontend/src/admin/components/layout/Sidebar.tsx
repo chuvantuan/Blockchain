@@ -14,6 +14,7 @@ import {
 	Copyright,
 	Badge,
 	ShieldCheck,
+	Beaker,
 } from 'lucide-react'
 import '../../styles/sidebar.css'
 
@@ -25,6 +26,7 @@ const items: Item[] = [
 	{ icon: <FileText className="w-5 h-5" />, label: 'Quản lý bài thi', path: '/admin/exams' },
 	{ icon: <Video className="w-5 h-5" />, label: 'Giám sát & Chống gian lận', path: '/admin/proctoring' },
 	{ icon: <Lock className="w-5 h-5" />, label: 'Bảo mật & Blockchain', path: '/admin/security' },
+	{ icon: <Beaker className="w-5 h-5" />, label: 'Demo Bảo mật', path: '/admin/security-demo' },
 	{ icon: <ShieldCheck className="w-5 h-5" />, label: 'Quản lý Multisig', path: '/admin/multisig' },
 	{ icon: <Award className="w-5 h-5" />, label: 'Hệ thống thưởng Token', path: '/admin/reward' },
 	{ icon: <BookOpen className="w-5 h-5" />, label: 'Quản lý khóa học', path: '/admin/courses' },

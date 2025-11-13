@@ -14,6 +14,11 @@ spring:
           filters:
             - StripPrefix=1
 
+        - id: admin-service
+          uri: lb://admin-service
+          predicates:
+            - Path=/api/v1/admin/**
+
         - id: profile-service
           uri: lb://profile-service
           predicates:
