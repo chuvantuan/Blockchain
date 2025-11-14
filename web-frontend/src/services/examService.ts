@@ -1,11 +1,12 @@
 import { ExamDetails, ExamQuestion, ExamSubmission, ExamResult } from '../utils/types';
 import onlineExamApi, { type Quiz, type Question as ApiQuestion, type SubmitAnswer } from './api/onlineExamApi';
+import { EXAM_API } from '../config/api';
 
 class ExamService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    this.baseUrl = import.meta.env.VITE_API_URL || EXAM_API || 'http://localhost:3001/api';
   }
 
   /**

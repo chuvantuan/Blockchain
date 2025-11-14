@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const API_BASE_URL = `${import.meta.env.VITE_MULTISIG_SERVICE_URL || 'http://localhost:3001'}/api/v1/multisig`
+import { MULTISIG_API } from '../../config/api';
+
+const API_BASE_URL = import.meta.env.VITE_MULTISIG_SERVICE_URL ? `${import.meta.env.VITE_MULTISIG_SERVICE_URL}/api/v1/multisig` : MULTISIG_API || 'http://localhost:3001/api/v1/multisig'
 
 const multisigAxios = axios.create({
 	baseURL: API_BASE_URL,

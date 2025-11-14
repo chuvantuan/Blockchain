@@ -18,9 +18,11 @@ import {
   UploadProgress
 } from '../../types/copyright';
 
+import { API_BASE } from '../../config/api';
+
 // API Gateway endpoint for copyright service
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL 
-  ? `${import.meta.env.VITE_API_BASE_URL}/api/copyrights`
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || API_BASE)
+  ? `${import.meta.env.VITE_API_BASE_URL || API_BASE}/api/copyrights`
   : 'http://localhost:8080/api/copyrights';
 
 const copyrightApi = axios.create({

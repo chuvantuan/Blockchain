@@ -4,7 +4,9 @@ import axios from 'axios';
 // Call directly to token-reward-service 
 // Port 3000 for local development (npm run dev)
 // Port 9009 for Docker deployment
-const API_BASE_URL = `${import.meta.env.VITE_TOKEN_REWARD_API_URL || 'http://localhost:9009'}/api/tokens`;
+import { TOKEN_REWARD_API } from '../../config/api';
+
+const API_BASE_URL = import.meta.env.VITE_TOKEN_REWARD_API_URL ? `${import.meta.env.VITE_TOKEN_REWARD_API_URL}/api/tokens` : TOKEN_REWARD_API || 'http://localhost:9009/api/tokens';
 
 // Create axios instance with JWT interceptors
 const tokenRewardAxios = axios.create({

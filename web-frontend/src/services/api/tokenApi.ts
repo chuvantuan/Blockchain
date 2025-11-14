@@ -10,7 +10,9 @@ import tokenRewardApi, {
   type HistoryResponse,
 } from './tokenRewardApi'
 
-const API_BASE_URL = import.meta.env.VITE_TOKEN_API_URL || 'http://localhost:9009'
+import { TOKEN_API } from '../../config/api';
+
+const API_BASE_URL = import.meta.env.VITE_TOKEN_API_URL || TOKEN_API || 'http://localhost:9009'
 
 // Create axios instance with interceptors
 const api = axios.create({
@@ -144,9 +146,9 @@ export async function awardContestWin(request: RewardRequest & { rank: number })
  * Uses token-reward-service backend
  */
 export async function getAvailableGifts(category?: string): Promise<GiftItem[]> {
-	const API_BASE_URL = import.meta.env.VITE_TOKEN_REWARD_API_URL || 'http://localhost:9009'
+	const API_BASE_URL = import.meta.env.VITE_TOKEN_REWARD_API_URL ? `${import.meta.env.VITE_TOKEN_REWARD_API_URL}/api/tokens` : (typeof window !== 'undefined' ? (await import('../../config/api')).TOKEN_REWARD_API : undefined) || 'http://localhost:9009/api/tokens'
 	const params = category && category !== 'all' ? `?category=${category}` : ''
-	const res = await fetch(`${API_BASE_URL}/api/tokens/gifts${params}`)
+	const res = await fetch(`${API_BASE_URL}/gifts${params}`)
 	if (!res.ok) {
 		throw new Error('Failed to fetch gifts')
 	}
