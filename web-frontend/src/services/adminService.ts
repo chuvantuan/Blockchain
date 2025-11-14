@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // The base URL should point to your API Gateway
-const API_BASE_URL = 'http://localhost:8080/api/v1/admin/security';
+const API_BASE_URL = import.meta.env.VITE_ADMIN_SERVICE_URL || 'http://localhost:8080/api/v1/admin/security';
+
+console.log("API Admin Service đang gọi đến:", API_BASE_URL); // Dòng này giúp bạn debug
 
 // --- Type Definitions for API Responses ---
 
