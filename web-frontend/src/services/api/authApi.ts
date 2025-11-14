@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { IDENTITY_API } from '../../config/api';
 
-// Base URL cho API - use relative path for Vite proxy
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || ''}/identity/api/v1/auth`;
+// Identity auth base (supports gateway or direct service)
+const API_BASE_URL = `${IDENTITY_API}/auth`;
 
 // Interface cho credentials (backend expects usernameOrEmail và password)
 interface LoginCredentials {

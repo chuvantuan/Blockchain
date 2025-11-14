@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import AuthForm from '../components/molecules/AuthForm'
 import Input from '../components/atoms/Input'
+import { IDENTITY_API } from '../config/api'
 import Checkbox from '../components/atoms/Checkbox'
 import SocialAuthButtons from '../components/molecules/SocialAuthButtons'
 import { validateEmail, validatePassword } from '../utils/authValidation'
@@ -95,7 +96,7 @@ export default function LoginPage(): JSX.Element {
 		setWebAuthnLoading(true)
 		try {
 			// Step 1: Get assertion options from server (qua API Gateway - localhost:8080)
-			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/identity/api/webauthn/assertion/options`, {
+			const response = await fetch(`${IDENTITY_API}/webauthn/assertion/options`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -157,7 +158,7 @@ export default function LoginPage(): JSX.Element {
 				clientExtensionResults: (assertion as any).getClientExtensionResults ? (assertion as any).getClientExtensionResults() : {}
 			}
 
-			const response2 = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/identity/api/webauthn/assertion/result`, {
+			const response2 = await fetch(`${IDENTITY_API}/webauthn/assertion/result`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

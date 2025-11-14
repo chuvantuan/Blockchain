@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_ONLINE_EXAM_API_URL || 'http://localhost:3000'
+import { ONLINE_EXAM_API } from '../config/api'
+
+const API_BASE_URL = import.meta.env.VITE_ONLINE_EXAM_API_URL || ONLINE_EXAM_API || 'http://localhost:3000'
 
 interface Submission {
 	id: string

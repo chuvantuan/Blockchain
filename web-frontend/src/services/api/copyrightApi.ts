@@ -12,7 +12,9 @@ import {
 } from '../../types/copyright';
 
 // Base API configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+import { API_BASE } from '../../config/api';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || API_BASE) || '/api';
 
 const copyrightApi = axios.create({
   baseURL: `${API_BASE_URL}/copyright`,

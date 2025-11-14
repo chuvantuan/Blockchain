@@ -14,6 +14,13 @@ spring:
           filters:
             - StripPrefix=1
 
+        - id: admin-gateway
+          uri: lb://admin-service
+          predicates:
+            - Path=/admin/**
+          filters:
+            - RewritePath=/admin/(?<remaining>.*), /api/v1/admin/security/${remaining}
+
         - id: admin-service
           uri: lb://admin-service
           predicates:

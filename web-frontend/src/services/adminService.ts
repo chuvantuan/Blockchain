@@ -1,9 +1,7 @@
 import axios from 'axios';
+import { ADMIN_API } from '../config/api';
 
-// The base URL should point to your API Gateway
-const API_BASE_URL = import.meta.env.VITE_ADMIN_SERVICE_URL || 'http://localhost:8080/api/v1/admin/security';
-
-console.log("API Admin Service đang gọi đến:", API_BASE_URL); // Dòng này giúp bạn debug
+console.log('Admin API base:', ADMIN_API);
 
 // --- Type Definitions for API Responses ---
 
@@ -42,7 +40,7 @@ export interface CrackDemoHistory {
  */
 export const runCrackDemo = async (password: string): Promise<CrackDemoResponse> => {
     try {
-        const response = await axios.post<CrackDemoResponse>(`${API_BASE_URL}/crack-demo`, { password });
+        const response = await axios.post<CrackDemoResponse>(`${ADMIN_API}/crack-demo`, { password });
         return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -59,7 +57,7 @@ export const runCrackDemo = async (password: string): Promise<CrackDemoResponse>
  */
 export const getCrackDemoHistory = async (): Promise<CrackDemoHistory[]> => {
     try {
-        const response = await axios.get<CrackDemoHistory[]>(`${API_BASE_URL}/crack-demo/history`);
+        const response = await axios.get<CrackDemoHistory[]>(`${ADMIN_API}/crack-demo/history`);
         return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
