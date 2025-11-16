@@ -466,3 +466,124 @@ docker-compose up -d
 
 ⛔ **KHÔNG** sử dụng MD5/SHA-1 để lưu trữ mật khẩu trong production
 ✅ **NÊN** sử dụng Bcrypt, Argon2, hoặc PBKDF2
+
+---
+
+## 🔐 Quản Lý Bí Mật (Secrets Management)
+
+### Nguyên Tắc: KHÔNG Hard-Code Bí Mật
+
+⛔ **KHÔNG** viết thẳng vào code: password DB, API keys, pepper, JWT secret
+
+### 3 Cấp Độ Quản Lý
+
+**🟢 Cơ Bản: File `.env`** (cho dev/test)
+```env
+DB_PASSWORD=your_password
+PASSWORD_PEPPER=random_string
+JWT_SECRET=your_secret_key
+```
+- Thêm `.env` vào `.gitignore`
+- Đọc bằng `@Value("${PASSWORD_PEPPER}")`
+
+**🟡 Tốt: Environment Variables** (cho production)
+```bash
+export DB_PASSWORD="secure_password"
+export JWT_SECRET="your_jwt_secret"
+```
+
+**🔵 Chuyên Nghiệp: Secrets Manager** (cho enterprise)
+- HashiCorp Vault, AWS Secrets Manager, Google Secret Manager
+- Tự động rotate, audit log, access control
+
+---
+
+## 🛡️ Xác Thực & Bảo Vệ (Authentication & Protection)
+
+### 1. Rate Limiting - Chống Brute Force
+
+**Mục đích:** Giới hạn 5 lần đăng nhập/phút để ngăn tấn công
+
+**Dependency:**
+```xml
+<dependency>
+    <groupId>com.bucket4j</groupId>
+    <artifactId>bucket4j-core</artifactId>
+    <version>8.1.0</version>
+</dependency>
+```
+
+**Config:**
+```properties
+rate.limit.login.max-requests=5
+rate.limit.login.duration-minutes=1
+```
+
+### 2. MFA/2FA - Xác Thực 2 Lớp
+
+**Mục đích:** Bảo vệ ngay cả khi mật khẩu bị lộ
+
+**Dependency:**
+```xml
+<dependency>
+    <groupId>com.warrenstrange</groupId>
+    <artifactId>googleauth</artifactId>
+    <version>1.5.0</version>
+</dependency>
+```
+
+**Flow:** Login → Verify Password → Yêu cầu OTP → Verify OTP → Cấp Token
+
+### 3. JWT Token - Quản Lý Phiên An Toàn
+
+**Kiến trúc 2 Token:**
+- **Access Token:** 15 phút, dùng cho API requests
+- **Refresh Token:** 30 ngày, lưu DB, rotate sau mỗi lần dùng
+
+**Bảo mật:**
+- Detect token reuse → Revoke tất cả sessions
+- Lưu refresh token trong DB để có thể thu hồi
+- Cookie: `HttpOnly`, `Secure`, `SameSite=Strict`
+
+**Config:**
+```properties
+jwt.secret=${JWT_SECRET}
+jwt.access-token.expiration=900000
+jwt.refresh-token.expiration=2592000000
+spring.session.timeout=15m
+```
+
+---
+
+## 📋 Checklist Bảo Mật
+
+**Mật Khẩu:**
+- [ ] Dùng Bcrypt/Argon2 + Pepper
+- [ ] Yêu cầu mật khẩu mạnh (8+ ký tự)
+
+**Secrets:**
+- [ ] Không hard-code bí mật
+- [ ] Dùng `.env` + `.gitignore` (dev)
+- [ ] Environment variables (production)
+
+**Authentication:**
+- [ ] Rate limiting (5 lần/phút)
+- [ ] MFA/2FA cho admin
+- [ ] JWT: Access (15 phút) + Refresh (30 ngày)
+- [ ] Rotate refresh token
+- [ ] Detect token reuse
+
+**Session & Network:**
+- [ ] Cookie: `HttpOnly`, `Secure`, `SameSite=Strict`
+- [ ] HTTPS cho production
+- [ ] CORS đúng cách
+
+---
+
+## 🚨 Xử Lý Sự Cố
+
+**Token bị đánh cắp:** Revoke all tokens → Force logout → Đổi password → Bật MFA
+
+**Brute Force:** Rate limiter block → Log event → Khóa tài khoản sau 10 lần
+
+**Database leak:** Bcrypt không crack được → Pepper riêng biệt → Revoke tokens → Reset passwords
