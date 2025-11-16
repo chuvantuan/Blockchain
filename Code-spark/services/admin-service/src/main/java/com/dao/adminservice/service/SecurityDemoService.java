@@ -107,14 +107,23 @@ public class SecurityDemoService {
 
     private BruteForceResult bruteForceAttack(String targetHash, String algorithm) {
         long attempts = 0;
+        long startTime = System.currentTimeMillis();
+        long timeout = 10000; // 10 second timeout for MD5/SHA-1
+        
         // A simple character set for the demo
-        String charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+        // Using only digits for faster demo (0-9 = 10 chars instead of 36)
+        String charset = "0123456789abcdefghijklmnopqrstuvwxyz";
         int maxLength = 8; // Limit length to avoid running forever
 
         for (int length = 1; length <= maxLength; length++) {
             char[] currentGuess = new char[length];
             Generator generator = new Generator(charset, currentGuess);
             while (generator.hasNext()) {
+                // Check timeout every 10000 attempts for performance
+                if (attempts % 10000 == 0 && System.currentTimeMillis() - startTime > timeout) {
+                    return new BruteForceResult(false, attempts, null);
+                }
+                
                 attempts++;
                 String guess = generator.next();
                 String guessHash = hashWith(algorithm, guess);

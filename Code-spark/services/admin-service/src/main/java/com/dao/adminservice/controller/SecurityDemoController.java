@@ -18,6 +18,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin/security")
 @RequiredArgsConstructor
+@org.springframework.web.bind.annotation.CrossOrigin(
+    origins = {"http://localhost:5173", "http://localhost:3000", "http://localhost:4173", "http://localhost:44173"},
+    allowedHeaders = "*",
+    methods = {org.springframework.web.bind.annotation.RequestMethod.GET, 
+               org.springframework.web.bind.annotation.RequestMethod.POST, 
+               org.springframework.web.bind.annotation.RequestMethod.PUT, 
+               org.springframework.web.bind.annotation.RequestMethod.DELETE}
+)
 public class SecurityDemoController {
 
     private final SecurityDemoService securityDemoService;
@@ -29,9 +37,9 @@ public class SecurityDemoController {
         }
         // To make the demo effective, we limit the password length.
         // Cracking long passwords with brute force would take too long even for MD5.
-        if (request.getPassword().length() > 6) {
+        if (request.getPassword().length() > 4) {
             // You can return a specific error message if you prefer
-             throw new IllegalArgumentException("Password is too long for this demo. Please use a password with 6 characters or less.");
+             throw new IllegalArgumentException("Password is too long for this demo. Please use a password with 4 characters or less.");
         }
         CrackDemoResponse response = securityDemoService.runDemo(request.getPassword());
         return ResponseEntity.ok(response);
