@@ -789,7 +789,7 @@ export default function CopyrightPage(): JSX.Element {
 
               {/* Debug info */}
               {process.env.NODE_ENV === 'development' && similarityCheckResult && (
-                <div style={{ padding: '10px', background: '#f0f0f0', margin: '10px 0', fontSize: '12px' }}>
+                <div className={styles.debugInfo}>
                   Debug: isSimilar={String(similarityCheckResult.isSimilar)}, 
                   score={similarityCheckResult.similarityScore}, 
                   docs={similarityCheckResult.similarDocuments.length}
@@ -809,8 +809,8 @@ export default function CopyrightPage(): JSX.Element {
                     <div className={styles.resultInfo}>
                       <h3>
                         {similarityCheckResult.isSimilar 
-                          ? `⚠️ Phát hiện tương đồng: ${(similarityCheckResult.similarityScore * 100).toFixed(1)}%`
-                          : '✅ Không phát hiện tương đồng đáng kể'
+                          ? `Phát hiện tương đồng: ${(similarityCheckResult.similarityScore * 100).toFixed(1)}%`
+                          : 'Không phát hiện tương đồng đáng kể'
                         }
                       </h3>
                       <p>

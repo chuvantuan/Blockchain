@@ -1,9 +1,8 @@
 // Exam API Service
 import axios from 'axios';
 
-import { EXAM_API } from '../../config/api';
-
-const API_BASE_URL = import.meta.env.VITE_EXAM_API_URL || EXAM_API || 'http://localhost:9005';
+// Use API Gateway for all requests
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/exam`;
 
 // Create axios instance with interceptors
 const examAxios = axios.create({

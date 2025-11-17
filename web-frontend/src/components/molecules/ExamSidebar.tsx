@@ -59,8 +59,8 @@ export const ExamSidebar: React.FC<ExamSidebarProps> = ({
 
           <div className={styles.cameraContent}>
             <ProctoringView
-              width={352}
-              height={264}
+              width={typeof window !== 'undefined' ? Math.min(352, window.innerWidth - 40) : 352}
+              height={typeof window !== 'undefined' ? Math.min(264, Math.floor((window.innerWidth - 40) * 0.75)) : 264}
               onStreamReady={onCameraReady}
               onError={onCameraError}
               showControls={false}
@@ -69,8 +69,8 @@ export const ExamSidebar: React.FC<ExamSidebarProps> = ({
         </div>
       ) : (
         <ProctoringView
-          width={352}
-          height={264}
+          width={typeof window !== 'undefined' ? Math.min(352, window.innerWidth - 40) : 352}
+          height={typeof window !== 'undefined' ? Math.min(264, Math.floor((window.innerWidth - 40) * 0.75)) : 264}
           onStreamReady={onCameraReady}
           onError={onCameraError}
           showControls={false}

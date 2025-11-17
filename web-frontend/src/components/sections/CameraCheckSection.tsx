@@ -23,7 +23,6 @@ export const CameraCheckSection: React.FC<CameraCheckSectionProps> = ({
   // Handle AI violations during camera check
   const handleViolationDetected = useCallback((detection: CheatingDetection) => {
     setAiViolations(prev => [...prev, detection]);
-    console.log('AI detected violation during camera check:', detection);
   }, []);
 
   // Handle AI metrics update
@@ -216,7 +215,7 @@ export const CameraCheckSection: React.FC<CameraCheckSectionProps> = ({
             <li>• Hành vi bất thường khác</li>
           </ul>
           <p style={{ fontSize: '12px', color: '#92400e', marginTop: 'var(--space-2)', fontWeight: 600 }}>
-            ⚠️ Nếu phát hiện vi phạm, hệ thống sẽ hiển thị cảnh báo và có thể dừng bài thi.
+            Nếu phát hiện vi phạm, hệ thống sẽ hiển thị cảnh báo và có thể dừng bài thi.
           </p>
         </div>
       </div>

@@ -1,78 +1,91 @@
 /* User Courses Page Styles */
 
 .user-courses-page {
-  padding: 32px 24px 64px;
-  max-width: 1280px;
+  padding: clamp(16px, 3vw, 32px) clamp(12px, 2vw, 24px) clamp(32px, 6vw, 64px);
+  max-width: min(1280px, 100%);
   margin: 0 auto;
   animation: fadeIn 0.3s ease;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: clamp(16px, 2.5vw, 24px);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Header */
 .courses-header {
-  padding: 24px;
+  padding: clamp(16px, 2.5vw, 24px);
   background: linear-gradient(160deg, rgba(34, 197, 94, 0.14), rgba(59, 130, 246, 0.18));
   border-radius: var(--radius-xl);
   border: 1px solid rgba(148, 163, 184, 0.25);
   box-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.45);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px;
+  gap: clamp(16px, 2.5vw, 24px);
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: clamp(12px, 2vw, 16px);
+  flex: 1;
+  min-width: 0;
 }
 
 .header-icon {
-  width: 64px;
-  height: 64px;
+  width: clamp(48px, 6vw, 64px);
+  height: clamp(48px, 6vw, 64px);
   background: linear-gradient(135deg, var(--primary), var(--accent));
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  flex-shrink: 0;
 }
 
 .courses-header h1 {
-  margin: 0 0 4px 0;
-  font-size: 28px;
+  margin: 0 0 clamp(2px, 0.5vw, 4px) 0;
+  font-size: clamp(20px, 3.5vw, 28px);
   font-weight: 700;
   color: var(--foreground);
+  word-break: break-word;
 }
 
 .courses-header p {
   margin: 0;
   color: var(--muted-foreground);
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
+  word-break: break-word;
 }
 
 .header-stats {
   display: flex;
-  gap: 24px;
+  gap: clamp(16px, 2.5vw, 24px);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: clamp(6px, 1vw, 8px);
+  padding: clamp(6px, 1vw, 8px) clamp(12px, 2vw, 16px);
   background: var(--muted);
   border-radius: var(--radius-md);
   color: var(--muted-foreground);
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   font-weight: 500;
+  white-space: nowrap;
 }
 
 /* Filters */
@@ -80,33 +93,45 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
-  padding: 20px;
+  gap: clamp(12px, 2vw, 16px);
+  padding: clamp(16px, 2.5vw, 20px);
   background: var(--card);
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .filters-left {
   display: flex;
-  gap: 12px;
+  gap: clamp(8px, 1.5vw, 12px);
   flex: 1;
   flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
 }
 
 .search-box {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
+  gap: clamp(8px, 1.5vw, 10px);
+  padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 16px);
   background: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  min-width: clamp(260px, 45vw, 420px);
+  min-width: clamp(200px, 40vw, 420px);
   flex: 1 1 auto;
   box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.05);
+  box-sizing: border-box;
+}
+
+.search-box svg {
+  width: clamp(16px, 2.5vw, 20px);
+  height: clamp(16px, 2.5vw, 20px);
+  flex-shrink: 0;
+  color: var(--muted-foreground);
 }
 
 .search-box input {
@@ -114,21 +139,23 @@
   background: none;
   outline: none;
   flex: 1;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   color: var(--foreground);
+  min-width: 0;
 }
 
 .filter-select {
-  padding: 10px 16px;
+  padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 16px);
   background: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   color: var(--foreground);
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
-  min-width: 180px;
+  min-width: clamp(140px, 25vw, 180px);
+  box-sizing: border-box;
 }
 
 .filter-select:hover {
@@ -137,10 +164,12 @@
 
 /* Content */
 .courses-content {
-  min-height: 400px;
+  min-height: clamp(300px, 40vw, 400px);
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: clamp(20px, 3vw, 32px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Courses Grid */
@@ -162,8 +191,8 @@
 .course-card {
   position: relative;
   display: flex;
-  gap: 20px;
-  padding: 20px 28px;
+  gap: clamp(16px, 2.5vw, 20px);
+  padding: clamp(16px, 2.5vw, 20px) clamp(20px, 3.5vw, 28px);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
@@ -171,6 +200,8 @@
   cursor: pointer;
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .course-card::before {
@@ -179,7 +210,7 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 6px;
+  width: clamp(4px, 0.75vw, 6px);
   background: linear-gradient(200deg, rgba(34, 197, 94, 0.85), rgba(59, 130, 246, 0.9));
 }
 
@@ -192,8 +223,8 @@
 .course-icon {
   position: relative;
   z-index: 1;
-  width: 56px;
-  height: 56px;
+  width: clamp(44px, 5.5vw, 56px);
+  height: clamp(44px, 5.5vw, 56px);
   border-radius: 999px;
   background: linear-gradient(135deg, var(--primary), var(--accent));
   display: flex;
@@ -204,28 +235,36 @@
   box-shadow: 0 12px 24px -16px rgba(59, 130, 246, 0.7);
 }
 
+.course-icon svg {
+  width: clamp(20px, 3.5vw, 28px);
+  height: clamp(20px, 3.5vw, 28px);
+}
+
 .course-card-content {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(10px, 1.5vw, 12px);
   flex: 1;
+  min-width: 0;
 }
 
 .course-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
+  gap: clamp(12px, 2vw, 16px);
+  flex-wrap: wrap;
 }
 
 .course-title {
   margin: 0;
-  font-size: 20px;
+  font-size: clamp(16px, 2.5vw, 20px);
   font-weight: 700;
   color: var(--foreground);
   line-height: 1.35;
+  word-break: break-word;
 }
 
 .course-card:hover .course-title {
@@ -233,50 +272,55 @@
 }
 
 .course-subtitle {
-  margin: 6px 0 0;
-  font-size: 14px;
+  margin: clamp(4px, 1vw, 6px) 0 0;
+  font-size: clamp(12px, 2vw, 14px);
   color: var(--muted-foreground);
   font-weight: 500;
+  word-break: break-word;
 }
 
 .course-time {
   background: var(--muted);
   color: var(--muted-foreground);
-  font-size: 12px;
+  font-size: clamp(10px, 1.5vw, 12px);
   font-weight: 600;
-  padding: 6px 12px;
+  padding: clamp(4px, 1vw, 6px) clamp(10px, 1.5vw, 12px);
   border-radius: 999px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .course-description {
   margin: 0;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   color: var(--muted-foreground);
   line-height: 1.6;
+  word-break: break-word;
 }
 
 .course-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: clamp(6px, 1vw, 8px);
 }
 
 .course-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: clamp(4px, 1vw, 6px);
+  padding: clamp(4px, 1vw, 6px) clamp(10px, 1.5vw, 12px);
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.06);
   color: var(--muted-foreground);
-  font-size: 12px;
+  font-size: clamp(10px, 1.5vw, 12px);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .course-tag svg {
-  width: 14px;
-  height: 14px;
+  width: clamp(12px, 1.75vw, 14px);
+  height: clamp(12px, 1.75vw, 14px);
+  flex-shrink: 0;
 }
 
 .course-tag.neutral {
@@ -316,29 +360,39 @@
 
 .course-footer {
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: clamp(12px, 1.75vw, 14px);
   border-top: 1px dashed rgba(148, 163, 184, 0.35);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: clamp(12px, 2vw, 16px);
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .course-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: clamp(12px, 2vw, 16px);
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: clamp(4px, 1vw, 6px);
   color: var(--muted-foreground);
-  font-size: 13px;
+  font-size: clamp(11px, 1.75vw, 13px);
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.meta-item svg {
+  width: clamp(14px, 2vw, 16px);
+  height: clamp(14px, 2vw, 16px);
+  flex-shrink: 0;
 }
 
 .meta-item.rating {
@@ -348,17 +402,24 @@
 .btn-enroll {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
+  gap: clamp(6px, 1vw, 8px);
+  padding: clamp(8px, 1.25vw, 9px) clamp(14px, 2.25vw, 18px);
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
   border: none;
   border-radius: var(--radius-lg);
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-enroll svg {
+  width: clamp(14px, 2vw, 16px);
+  height: clamp(14px, 2vw, 16px);
+  flex-shrink: 0;
 }
 
 .btn-enroll:hover {
@@ -377,14 +438,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-  gap: 16px;
+  padding: clamp(40px, 8vw, 80px) clamp(16px, 2.5vw, 20px);
+  gap: clamp(12px, 2vw, 16px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.loading-state p {
+  font-size: clamp(14px, 2.5vw, 16px);
+  color: var(--muted-foreground);
+  word-break: break-word;
 }
 
 .spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border);
+  width: clamp(36px, 5vw, 48px);
+  height: clamp(36px, 5vw, 48px);
+  border: clamp(3px, 0.5vw, 4px) solid var(--border);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -400,24 +469,30 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-  gap: 16px;
+  padding: clamp(40px, 8vw, 80px) clamp(16px, 2.5vw, 20px);
+  gap: clamp(12px, 2vw, 16px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .error-state p {
   color: var(--destructive);
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
+  word-break: break-word;
+  text-align: center;
 }
 
 .btn-retry {
-  padding: 10px 24px;
+  padding: clamp(8px, 1.5vw, 10px) clamp(20px, 3vw, 24px);
   background: var(--primary);
   color: white;
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
+  font-size: clamp(12px, 2vw, 14px);
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-retry:hover {
@@ -431,15 +506,32 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-  gap: 16px;
+  padding: clamp(40px, 8vw, 80px) clamp(16px, 2.5vw, 20px);
+  gap: clamp(12px, 2vw, 16px);
+  color: var(--muted-foreground);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.empty-state svg {
+  width: clamp(48px, 6vw, 64px);
+  height: clamp(48px, 6vw, 64px);
   color: var(--muted-foreground);
 }
 
 .empty-state h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: clamp(18px, 2.5vw, 20px);
   color: var(--foreground);
+  word-break: break-word;
+  text-align: center;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: clamp(12px, 2vw, 14px);
+  word-break: break-word;
+  text-align: center;
 }
 
 /* Pagination */
@@ -447,19 +539,24 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  padding: 24px;
+  gap: clamp(8px, 1.5vw, 12px);
+  padding: clamp(16px, 2.5vw, 24px);
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .btn-page {
-  padding: 8px 16px;
+  padding: clamp(6px, 1vw, 8px) clamp(12px, 2vw, 16px);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--foreground);
   font-weight: 600;
+  font-size: clamp(12px, 2vw, 14px);
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-page:hover:not(:disabled) {
@@ -474,19 +571,23 @@
 
 .page-numbers {
   display: flex;
-  gap: 4px;
+  gap: clamp(2px, 0.5vw, 4px);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .btn-page-number {
-  min-width: 40px;
-  padding: 8px;
+  min-width: clamp(32px, 4vw, 40px);
+  padding: clamp(6px, 1vw, 8px);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--foreground);
   font-weight: 600;
+  font-size: clamp(12px, 2vw, 14px);
   cursor: pointer;
   transition: all 0.2s ease;
+  text-align: center;
 }
 
 .btn-page-number:hover {
@@ -515,48 +616,71 @@
 /* Responsive */
 @media (max-width: 1024px) {
   .user-courses-page {
-    padding: 24px;
+    padding: clamp(16px, 2.5vw, 24px) clamp(12px, 2vw, 16px) clamp(24px, 4vw, 32px);
   }
 
   .course-card {
-    padding: 18px 24px;
+    padding: clamp(14px, 2vw, 18px) clamp(16px, 2.5vw, 24px);
   }
 }
 
 @media (max-width: 768px) {
   .user-courses-page {
-    padding: 16px;
+    padding: clamp(12px, 2vw, 16px);
+  }
+
+  .courses-header {
+    padding: clamp(12px, 2vw, 16px);
   }
 
   .header-content {
     flex-direction: column;
     align-items: flex-start;
+    gap: clamp(12px, 2vw, 16px);
+  }
+
+  .header-left {
+    width: 100%;
+  }
+
+  .header-stats {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .courses-filters {
     flex-direction: column;
     align-items: stretch;
+    padding: clamp(12px, 2vw, 16px);
   }
 
   .filters-left {
     flex-direction: column;
+    width: 100%;
   }
 
   .search-box {
     min-width: 100%;
+    width: 100%;
+  }
+
+  .filter-select {
+    min-width: 100%;
+    width: 100%;
   }
 
   .course-card {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
-    padding: 18px 20px;
+    gap: clamp(12px, 2vw, 16px);
+    padding: clamp(14px, 2vw, 18px) clamp(16px, 2.5vw, 20px);
   }
 
   .course-card-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: clamp(6px, 1vw, 8px);
+    width: 100%;
   }
 
   .course-time {
@@ -565,13 +689,64 @@
 
   .course-footer {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: stretch;
+    gap: clamp(10px, 1.5vw, 12px);
+    width: 100%;
+  }
+
+  .course-meta {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .btn-enroll {
     width: 100%;
     justify-content: center;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: clamp(8px, 1.5vw, 12px);
+  }
+
+  .page-numbers {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-courses-page {
+    padding: clamp(12px, 2.5vw, 16px);
+    gap: clamp(12px, 2vw, 16px);
+  }
+
+  .courses-header {
+    padding: clamp(12px, 2vw, 16px);
+  }
+
+  .header-icon {
+    width: clamp(40px, 5vw, 48px);
+    height: clamp(40px, 5vw, 48px);
+  }
+
+  .courses-filters {
+    padding: clamp(12px, 2vw, 16px);
+  }
+
+  .course-card {
+    padding: clamp(12px, 2vw, 16px);
+  }
+
+  .course-icon {
+    width: clamp(40px, 5vw, 48px);
+    height: clamp(40px, 5vw, 48px);
+  }
+
+  .course-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(8px, 1.5vw, 12px);
   }
 }
 

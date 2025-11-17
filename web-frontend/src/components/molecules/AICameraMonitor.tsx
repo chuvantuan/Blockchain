@@ -10,7 +10,10 @@ interface AICameraMonitorProps {
   sessionId?: string;
   onViolationDetected?: (detection: CheatingDetection) => void;
   onMetricsUpdate?: (metrics: any) => void;
+  onAdminWarning?: (data: { message: string; sentBy?: string | null; timestamp: string }) => void;
+  onExamTerminated?: (data: { reason?: string; terminatedBy?: string | null }) => void;
   className?: string;
+  shouldStop?: boolean; // Prop để báo cho component biết cần dừng camera
 }
 
 export const AICameraMonitor: React.FC<AICameraMonitorProps> = ({
@@ -19,7 +22,10 @@ export const AICameraMonitor: React.FC<AICameraMonitorProps> = ({
   sessionId,
   onViolationDetected,
   onMetricsUpdate,
-  className = ''
+  onAdminWarning,
+  onExamTerminated,
+  className = '',
+  shouldStop = false
 }) => {
   const {
     isActive,
@@ -33,7 +39,7 @@ export const AICameraMonitor: React.FC<AICameraMonitorProps> = ({
     setDetectionSensitivity,
     enableDetectionType,
     frameStorage
-  } = useAICameraMonitor({ examId, studentId, sessionId });
+  } = useAICameraMonitor({ examId, studentId, sessionId, onAdminWarning, onExamTerminated });
 
   const [showSettings, setShowSettings] = useState(false);
   const [detectionTypes, setDetectionTypes] = useState({
@@ -80,6 +86,14 @@ export const AICameraMonitor: React.FC<AICameraMonitorProps> = ({
       onMetricsUpdate?.(metrics);
     }
   }, [metrics, onMetricsUpdate]);
+
+  // Auto-stop camera when shouldStop prop becomes true (e.g., when exam is submitted)
+  useEffect(() => {
+    if (shouldStop && isActive) {
+      console.log('[AICameraMonitor] Exam submitted, stopping camera monitoring...');
+      stopMonitoring();
+    }
+  }, [shouldStop, isActive, stopMonitoring]);
 
   const handleStartMonitoring = async () => {
     try {

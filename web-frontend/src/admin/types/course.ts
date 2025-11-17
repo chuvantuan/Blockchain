@@ -4,7 +4,7 @@ export interface CourseForm {
 	id?: string
 	title: string
 	description: string
-	instructorId: string
+	organizationId: string
 	thumbnailUrl: string
 	visibility: CourseVisibility
 }
@@ -12,7 +12,7 @@ export interface CourseForm {
 export interface CourseFilters {
 	search: string
 	visibility: CourseVisibility | 'all'
-	instructorId: string | 'all'
+	organizationId: string | 'all'
 	sortBy: 'title' | 'createdAt' | 'updatedAt'
 	sortOrder: 'asc' | 'desc'
 }

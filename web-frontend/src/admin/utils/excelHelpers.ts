@@ -11,7 +11,6 @@ export function exportUsersToExcel(users: User[], filename = 'danh-sach-nguoi-du
 		'Vai trò': getRoleLabel(user.role),
 		'Trạng thái': getStatusLabel(user.status),
 		'Số điện thoại': user.phone || '',
-		'Phòng ban': user.department || '',
 		'Ngày tạo': formatDate(user.createdAt),
 		'Đăng nhập lần cuối': user.lastLogin ? formatDate(user.lastLogin) : 'Chưa đăng nhập'
 	}))
@@ -29,7 +28,6 @@ export function exportUsersToExcel(users: User[], filename = 'danh-sach-nguoi-du
 		{ wch: 15 },  // Vai trò
 		{ wch: 15 },  // Trạng thái
 		{ wch: 15 },  // Số điện thoại
-		{ wch: 25 },  // Phòng ban
 		{ wch: 20 },  // Ngày tạo
 		{ wch: 20 }   // Đăng nhập lần cuối
 	]
@@ -55,7 +53,6 @@ export function importUsersFromExcel(file: File): Promise<Partial<User>[]> {
 					name: row['Họ và tên'] || row['Name'] || '',
 					email: row['Email'] || '',
 					phone: row['Số điện thoại'] || row['Phone'] || '',
-					department: row['Phòng ban'] || row['Department'] || '',
 					role: parseRole(row['Vai trò'] || row['Role']) || 'user',
 					status: parseStatus(row['Trạng thái'] || row['Status']) || 'active'
 				}))
@@ -81,7 +78,6 @@ export function downloadExcelTemplate() {
 			'Họ và tên': 'Nguyễn Văn A',
 			'Email': 'nguyen.van.a@example.com',
 			'Số điện thoại': '0901234567',
-			'Phòng ban': 'Khoa Công nghệ thông tin',
 			'Vai trò': 'Học viên',
 			'Trạng thái': 'Hoạt động'
 		},
@@ -89,7 +85,6 @@ export function downloadExcelTemplate() {
 			'Họ và tên': 'Trần Thị B',
 			'Email': 'tran.thi.b@example.com',
 			'Số điện thoại': '0912345678',
-			'Phòng ban': 'Khoa Kinh tế',
 			'Vai trò': 'Giảng viên',
 			'Trạng thái': 'Hoạt động'
 		}
@@ -104,7 +99,6 @@ export function downloadExcelTemplate() {
 		{ wch: 25 },  // Họ và tên
 		{ wch: 30 },  // Email
 		{ wch: 15 },  // Số điện thoại
-		{ wch: 25 },  // Phòng ban
 		{ wch: 15 },  // Vai trò
 		{ wch: 15 }   // Trạng thái
 	]

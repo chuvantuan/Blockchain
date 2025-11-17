@@ -1,37 +1,47 @@
 .page {
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
-	padding: 32px;
-	max-width: 1200px;
+	gap: clamp(16px, 2.5vw, 24px);
+	padding: clamp(16px, 3vw, 32px);
+	max-width: min(1200px, 100%);
 	margin: 0 auto;
+	width: 100%;
+	box-sizing: border-box;
+	overflow-x: hidden;
 }
 
 .header {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: clamp(6px, 1vw, 8px);
+	width: 100%;
 }
 
 .headerTitle {
 	margin: 0;
-	font-size: 32px;
+	font-size: clamp(24px, 4vw, 32px);
 	font-weight: 700;
+	word-break: break-word;
 }
 
 .headerSubtitle {
 	margin: 0;
 	color: var(--muted-foreground);
-	max-width: 720px;
+	max-width: min(720px, 100%);
+	font-size: clamp(14px, 2.5vw, 16px);
+	word-break: break-word;
+	line-height: 1.5;
 }
 
 .alert {
 	border-radius: 12px;
-	padding: 16px 20px;
+	padding: clamp(12px, 2vw, 16px) clamp(16px, 2.5vw, 20px);
 	display: flex;
 	align-items: flex-start;
-	gap: 12px;
+	gap: clamp(10px, 1.5vw, 12px);
 	border: 1px solid transparent;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .alertSuccess {
@@ -53,170 +63,141 @@
 }
 
 .alertIcon {
-	margin-top: 2px;
+	margin-top: clamp(2px, 0.3vw, 2px);
+	flex-shrink: 0;
+	width: clamp(18px, 2.5vw, 20px);
+	height: clamp(18px, 2.5vw, 20px);
 }
 
 .alertMessage {
 	font-weight: 600;
+	font-size: clamp(13px, 2vw, 15px);
+	word-break: break-word;
+	flex: 1;
+	min-width: 0;
 }
 
 .alertDetails {
-	font-size: 13px;
+	font-size: clamp(11px, 1.8vw, 13px);
 	opacity: 0.8;
+	word-break: break-word;
+	margin-top: clamp(4px, 0.8vw, 6px);
 }
 
 .formsGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-	gap: 24px;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+	gap: clamp(16px, 2.5vw, 24px);
+	width: 100%;
 }
 
 .contentStack {
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
+	gap: clamp(16px, 2.5vw, 24px);
+	width: 100%;
 }
 
 .card {
 	background: var(--card);
 	border: 1px solid var(--border);
-	border-radius: 16px;
-	padding: 24px;
+	border-radius: clamp(12px, 2vw, 16px);
+	padding: clamp(16px, 2.5vw, 24px);
 	box-shadow: var(--shadow);
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: clamp(12px, 2vw, 16px);
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.cardWarning {
+	border: 2px solid #f59e0b;
+	background: #fffbeb;
 }
 
 .sectionTitle {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	font-size: 18px;
+	gap: clamp(10px, 1.5vw, 12px);
+	font-size: clamp(16px, 2.5vw, 18px);
 	font-weight: 600;
 	color: var(--foreground);
+	flex-wrap: wrap;
+	word-break: break-word;
+}
+
+.sectionTitle svg {
+	width: clamp(18px, 2.5vw, 20px);
+	height: clamp(18px, 2.5vw, 20px);
+	flex-shrink: 0;
+}
+
+.sectionTitleWarning {
+	color: #f59e0b;
 }
 
 .form {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: clamp(12px, 2vw, 16px);
+	width: 100%;
 }
 
 .formGrid {
 	display: grid;
-	gap: 16px;
-	grid-template-columns: 1fr 1fr;
+	gap: clamp(12px, 2vw, 16px);
+	grid-template-columns: 1fr;
 	align-items: end;
+	width: 100%;
 }
 
 .formLabelFull {
-	grid-column: span 2;
+	grid-column: span 1;
 }
 
 .formLabel {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	font-size: 14px;
+	gap: clamp(6px, 1vw, 8px);
+	font-size: clamp(13px, 2vw, 14px);
 	font-weight: 500;
 	color: var(--muted-foreground);
+	width: 100%;
 }
 
 .input {
-	padding: 12px 14px;
+	padding: clamp(10px, 1.5vw, 12px) clamp(12px, 1.8vw, 14px);
 	border-radius: 10px;
 	border: 1px solid var(--border);
 	background: var(--input);
 	color: var(--foreground);
-	font-size: 14px;
+	font-size: clamp(13px, 2vw, 14px);
 	transition: all var(--transition-normal);
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .textarea {
-	min-height: 80px;
+	min-height: clamp(70px, 10vw, 80px);
 	resize: vertical;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .textareaOwners {
-	min-height: 120px;
+	min-height: clamp(100px, 15vw, 120px);
 	font-family: var(--font-mono);
-}
-
-.ownerHelper {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	background: var(--muted);
-	border-radius: 12px;
-	padding: 12px 14px;
-}
-
-.ownerHelperText {
-	margin: 0;
-	font-size: 13px;
-	color: var(--muted-foreground);
-}
-
-.ownerPreviewLoading {
-	font-size: 13px;
-	color: var(--muted-foreground);
-	font-style: italic;
-}
-
-.ownerPreviewList {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.ownerPreviewItem {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 10px;
-	border-radius: 10px;
-	background: var(--background);
-	border: 1px solid transparent;
-}
-
-.ownerPreviewItemSuccess {
-	border-color: rgba(34, 197, 94, 0.35);
-}
-
-.ownerPreviewItemError {
-	border-color: rgba(239, 68, 68, 0.35);
-}
-
-.ownerPreviewId {
-	font-weight: 600;
-	font-size: 13px;
-	color: var(--foreground);
-}
-
-.ownerPreviewStatus {
-	font-size: 13px;
-	color: var(--muted-foreground);
-}
-
-.ownerPreviewEmpty {
-	font-size: 13px;
-	color: var(--muted-foreground);
-}
-
-.ownerPreviewWarning {
-	font-size: 13px;
-	color: #b45309;
-	background: rgba(251, 191, 36, 0.18);
-	border-radius: 10px;
-	padding: 10px 12px;
 }
 
 .inputMono {
 	font-family: var(--font-mono);
+	font-size: clamp(10px, 1.5vw, 13px);
+	word-break: break-all;
+}
+
+.inputMonoSmall {
+	font-size: clamp(9px, 1.3vw, 11px);
 }
 
 .formActions {
@@ -225,101 +206,38 @@
 	gap: 12px;
 }
 
-.ownerCredentialLoading {
-	font-size: 13px;
-	color: var(--muted-foreground);
-}
-
-.ownerCredentialError {
-	font-size: 13px;
-	color: #b91c1c;
-}
-
-.ownerCredentialInfo {
-	font-size: 13px;
-	color: var(--muted-foreground);
-}
-
-.ownerCredentialBody {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.ownerCredentialRow {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.ownerCredentialLabel {
-	font-size: 12px;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--muted-foreground);
-}
-
-.ownerCredentialValue {
-	font-family: var(--font-mono);
-}
-
-.ownerCredentialKey {
-	display: flex;
-	flex: 1;
-	gap: 8px;
-}
-
-.ownerCredentialActions {
-	display: flex;
-	gap: 6px;
-}
-
-.ghostButton {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 32px;
-	height: 32px;
-	border-radius: 8px;
-	border: 1px solid var(--border);
-	background: var(--background);
-	color: var(--muted-foreground);
-	cursor: pointer;
-	transition: all var(--transition-normal);
-}
-
-.ghostButton:hover {
-	color: var(--primary);
-	border-color: var(--primary);
-}
-
-.ownerCredentialHint {
-	font-size: 12px;
-	color: var(--muted-foreground);
-}
-
 .loadForm {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 12px;
+	gap: clamp(10px, 1.5vw, 12px);
 	align-items: center;
+	width: 100%;
 }
 
 .loadFormInput {
-	flex: 1 1 320px;
+	flex: 1 1 min(100%, 320px);
+	min-width: 0;
 }
 
 .button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 8px;
+	gap: clamp(6px, 1vw, 8px);
 	border-radius: 999px;
-	padding: 12px 18px;
+	padding: clamp(10px, 1.5vw, 12px) clamp(16px, 2.3vw, 18px);
 	font-weight: 600;
+	font-size: clamp(13px, 2vw, 14px);
 	cursor: pointer;
 	border: none;
 	transition: all var(--transition-normal);
+	white-space: nowrap;
+}
+
+.button svg {
+	width: clamp(16px, 2.3vw, 18px);
+	height: clamp(16px, 2.3vw, 18px);
+	flex-shrink: 0;
 }
 
 .buttonPrimary {
@@ -342,196 +260,112 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
-	gap: 16px;
+	gap: clamp(12px, 2vw, 16px);
+	flex-wrap: wrap;
+	width: 100%;
 }
 
 .summaryInfo {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: clamp(6px, 1vw, 8px);
+	flex: 1;
+	min-width: 0;
 }
 
 .summaryMeta {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: clamp(10px, 1.5vw, 12px);
+	flex-wrap: wrap;
 }
 
 .summaryMetaText {
 	display: flex;
-	gap: 12px;
+	gap: clamp(10px, 1.5vw, 12px);
 	flex-wrap: wrap;
 	color: var(--muted-foreground);
-	font-size: 13px;
+	font-size: clamp(12px, 1.8vw, 13px);
+	word-break: break-word;
 }
 
 .summaryDescription {
 	color: var(--muted-foreground);
+	font-size: clamp(13px, 2vw, 14px);
+	word-break: break-word;
 }
 
 .summaryTitle {
 	margin: 0;
-	font-size: 24px;
+	font-size: clamp(20px, 3vw, 24px);
 	font-weight: 700;
+	word-break: break-word;
 }
 
 .summaryGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-	gap: 16px;
-}
-
-.summaryUserSection {
-	background: var(--muted);
-	border-radius: 12px;
-	padding: 18px;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.summaryUserHeader {
-	display: flex;
-	align-items: flex-start;
-	gap: 12px;
-}
-
-.summaryUserIcon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 38px;
-	height: 38px;
-	border-radius: 999px;
-	background: var(--background);
-	color: var(--primary);
-	box-shadow: var(--shadow-xs);
-}
-
-.summaryUserLabel {
-	font-size: 12px;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--muted-foreground);
-	margin-bottom: 2px;
-}
-
-.summaryUserName {
-	font-size: 16px;
-	font-weight: 600;
-	color: var(--foreground);
-}
-
-.summaryUserMeta {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px;
-	color: var(--muted-foreground);
-	font-size: 13px;
-}
-
-.summaryUserLoading {
-	font-size: 13px;
-	color: var(--muted-foreground);
-	font-style: italic;
-}
-
-.summaryUserError {
-	font-size: 13px;
-	color: #b91c1c;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+	gap: clamp(12px, 2vw, 16px);
+	width: 100%;
 }
 
 .summaryStat {
 	background: var(--muted);
 	border-radius: 12px;
-	padding: 16px;
+	padding: clamp(12px, 2vw, 16px);
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: clamp(3px, 0.5vw, 4px);
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .summaryStatLabel {
-	font-size: 13px;
+	font-size: clamp(12px, 1.8vw, 13px);
 	color: var(--muted-foreground);
+	word-break: break-word;
 }
 
 .summaryStatValue {
-	font-size: 20px;
+	font-size: clamp(18px, 2.5vw, 20px);
 	font-weight: 600;
+	word-break: break-word;
 }
 
 .summaryOwnerTitle {
-	margin: 0 0 8px;
-	font-size: 16px;
+	margin: 0 0 clamp(6px, 1vw, 8px);
+	font-size: clamp(14px, 2vw, 16px);
 	font-weight: 600;
+	word-break: break-word;
 }
 
 .ownerList {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
-}
-
-.ownerCard {
-	background: var(--background);
-	border: 1px solid var(--border);
-	border-radius: 12px;
-	padding: 12px 14px;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	min-width: 220px;
-}
-
-.ownerCardHeader {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 8px;
-}
-
-.ownerCardName {
-	font-weight: 600;
-	color: var(--foreground);
-}
-
-.ownerCardId {
-	font-size: 12px;
-	color: var(--muted-foreground);
-}
-
-.ownerCardMeta {
-	font-size: 13px;
-	color: var(--muted-foreground);
-}
-
-.ownerCardKey {
-	font-size: 12px;
-	color: var(--muted-foreground);
-	font-family: var(--font-mono);
+	gap: clamp(6px, 1vw, 8px);
+	width: 100%;
 }
 
 .ownerBadge {
 	background: var(--muted);
 	color: var(--muted-foreground);
-	padding: 8px 12px;
+	padding: clamp(6px, 1vw, 8px) clamp(10px, 1.5vw, 12px);
 	border-radius: 999px;
 	font-family: var(--font-mono);
-	font-size: 13px;
-}
-
-.ownerEmpty {
-	font-size: 13px;
-	color: var(--muted-foreground);
+	font-size: clamp(11px, 1.8vw, 13px);
+	word-break: break-all;
 }
 
 .warning {
-	margin-top: 16px;
-	padding: 12px 16px;
+	margin-top: clamp(12px, 2vw, 16px);
+	padding: clamp(10px, 1.5vw, 12px) clamp(14px, 2vw, 16px);
 	border-radius: 12px;
 	background: rgba(234, 179, 8, 0.12);
 	color: #92400e;
-	font-size: 13px;
+	font-size: clamp(12px, 1.8vw, 13px);
+	word-break: break-word;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .warning strong {
@@ -542,115 +376,241 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 8px;
+	margin-bottom: clamp(6px, 1vw, 8px);
+	flex-wrap: wrap;
+	gap: clamp(10px, 1.5vw, 12px);
+	width: 100%;
 }
 
 .loadingText,
 .emptyState {
 	color: var(--muted-foreground);
 	font-style: italic;
+	font-size: clamp(13px, 2vw, 14px);
+	word-break: break-word;
+	width: 100%;
 }
 
 .transactionList {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: clamp(12px, 2vw, 16px);
+	width: 100%;
 }
 
 .transactionItem {
 	border-top: 1px solid var(--border);
-	padding-top: 16px;
+	padding-top: clamp(12px, 2vw, 16px);
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: clamp(10px, 1.5vw, 12px);
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.transactionItemWarning {
+	border: 1px solid #f59e0b;
+	border-radius: 12px;
+	padding: clamp(12px, 2vw, 16px);
+	border-top: 1px solid #f59e0b;
 }
 
 .transactionHeader {
 	display: flex;
 	justify-content: space-between;
-	gap: 12px;
+	gap: clamp(10px, 1.5vw, 12px);
+	flex-wrap: wrap;
+	width: 100%;
 }
 
 .transactionMeta {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: clamp(3px, 0.5vw, 4px);
+	flex: 1;
+	min-width: 0;
+}
+
+.transactionMeta strong {
+	font-size: clamp(14px, 2vw, 16px);
+	word-break: break-word;
 }
 
 .transactionMeta span {
 	color: var(--muted-foreground);
-	font-size: 13px;
+	font-size: clamp(11px, 1.8vw, 13px);
+	word-break: break-all;
 }
 
 .transactionStatus {
 	background: var(--muted);
 	color: var(--muted-foreground);
-	padding: 6px 12px;
+	padding: clamp(5px, 0.8vw, 6px) clamp(10px, 1.5vw, 12px);
 	border-radius: 999px;
-	font-size: 13px;
+	font-size: clamp(11px, 1.8vw, 13px);
 	text-transform: capitalize;
 	align-self: flex-start;
+	white-space: nowrap;
 }
 
 .transactionGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 12px;
-	font-size: 14px;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+	gap: clamp(10px, 1.5vw, 12px);
+	font-size: clamp(13px, 2vw, 14px);
+	width: 100%;
 }
 
 .transactionLabel {
 	color: var(--muted-foreground);
-	font-size: 13px;
+	font-size: clamp(11px, 1.8vw, 13px);
+	margin-bottom: clamp(4px, 0.6vw, 6px);
+	word-break: break-word;
 }
 
 .transactionData {
 	background: var(--muted);
-	padding: 12px;
+	padding: clamp(10px, 1.5vw, 12px);
 	border-radius: 12px;
 	overflow: auto;
-	font-size: 13px;
+	font-size: clamp(11px, 1.8vw, 13px);
+	word-break: break-all;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .transactionActions {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: clamp(6px, 1vw, 8px);
 	background: var(--muted);
-	padding: 16px;
+	padding: clamp(12px, 2vw, 16px);
 	border-radius: 12px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .transactionActionsButtons {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 12px;
-}
-
-.buttonGhost {
-	background: transparent;
-	color: var(--primary);
-	border: 1px solid var(--primary);
-}
-
-.buttonGhost:hover {
-	background: var(--primary);
-	color: var(--primary-foreground);
+	gap: clamp(10px, 1.5vw, 12px);
+	width: 100%;
 }
 
 .executedList {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: clamp(10px, 1.5vw, 12px);
+	width: 100%;
 }
 
 .executedItem {
 	border: 1px solid var(--border);
 	border-radius: 12px;
-	padding: 16px;
+	padding: clamp(12px, 2vw, 16px);
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 12px;
-	font-size: 14px;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+	gap: clamp(10px, 1.5vw, 12px);
+	font-size: clamp(13px, 2vw, 14px);
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.ownedWalletsList {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(10px, 1.5vw, 12px);
+	width: 100%;
+}
+
+.ownedWalletItem {
+	background: var(--muted);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: clamp(12px, 2vw, 16px);
+	text-align: left;
+	cursor: pointer;
+	transition: all var(--transition-normal);
+	display: flex;
+	flex-direction: column;
+	gap: clamp(6px, 1vw, 8px);
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.ownedWalletItem:hover {
+	background: var(--accent);
+	border-color: var(--primary);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ownedWalletItemActive {
+	background: var(--accent);
+	border-color: var(--primary);
+	border-width: 2px;
+}
+
+.ownedWalletHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: clamp(10px, 1.5vw, 12px);
+	flex-wrap: wrap;
+	width: 100%;
+}
+
+.ownedWalletHeader strong {
+	font-size: clamp(14px, 2vw, 16px);
+	word-break: break-word;
+	flex: 1;
+	min-width: 0;
+}
+
+.ownedWalletBadge {
+	background: var(--background);
+	color: var(--muted-foreground);
+	padding: clamp(3px, 0.6vw, 4px) clamp(8px, 1.3vw, 10px);
+	border-radius: 999px;
+	font-size: clamp(11px, 1.5vw, 12px);
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.ownedWalletMeta {
+	display: flex;
+	align-items: center;
+	gap: clamp(6px, 1vw, 8px);
+	width: 100%;
+	flex-wrap: wrap;
+}
+
+.ownedWalletDescription {
+	color: var(--muted-foreground);
+	font-size: clamp(12px, 1.8vw, 13px);
+	margin-top: clamp(3px, 0.5vw, 4px);
+	word-break: break-word;
+}
+
+/* Responsive Breakpoints */
+@media (min-width: 768px) {
+	.formGrid {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.formLabelFull {
+		grid-column: span 2;
+	}
+}
+
+@media (max-width: 767px) {
+	.button {
+		width: 100%;
+	}
+
+	.transactionActionsButtons .button {
+		flex: 1;
+		min-width: 0;
+	}
 }
 

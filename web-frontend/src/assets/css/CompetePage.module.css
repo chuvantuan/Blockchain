@@ -2,9 +2,11 @@
   background: var(--gradient-background);
   min-height: 100vh;
   position: relative;
-  padding-top: 80px;
-  padding-bottom: 60px;
+  padding-top: clamp(50px, 8vw, 80px);
+  padding-bottom: clamp(40px, 6vw, 60px);
   animation: fadeIn 0.6s ease-out;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 @keyframes fadeIn {
@@ -53,11 +55,13 @@
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 24px;
+  padding: clamp(12px, 3vw, 24px);
   position: relative;
   z-index: 2;
   margin-top: 0;
   animation: slideInUp 0.8s ease-out;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @keyframes slideInUp {
@@ -74,39 +78,4 @@
 
 /* Theme will be handled by CSS variables */
 
-/* Responsive design */
-@media (max-width: 1024px) {
-  .container {
-    padding: 20px;
-    margin-top: 0; /* Remove margin-top since we have padding-top on page */
-  }
-  
-  .page {
-    padding-top: 70px; /* Adjust for tablets */
-    padding-bottom: 80px; /* Reduced padding on tablets */
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding: 16px;
-    margin-top: 0; /* Remove margin-top since we have padding-top on page */
-  }
-  
-  .page {
-    padding-top: 60px; /* Adjust for mobile */
-    padding-bottom: 100px; /* Reduced padding on mobile */
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 12px;
-    margin-top: 0; /* Remove margin-top since we have padding-top on page */
-  }
-  
-  .page {
-    padding-top: 50px; /* Adjust for small mobile */
-    padding-bottom: 120px; /* Reduced padding on small mobile */
-  }
-}
+/* Responsive design - Most styles now use clamp() so minimal media queries needed */

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle, FileText, Video } from 'lucide-react';
+import styles from '../../assets/css/ExamProgressIndicator.module.css';
 
 interface ExamProgressIndicatorProps {
   currentStep: 'loading' | 'instructions' | 'camera-check' | 'ready';
@@ -13,15 +14,8 @@ export const ExamProgressIndicator: React.FC<ExamProgressIndicatorProps> = ({ cu
   ];
 
   return (
-    <div style={{
-      background: 'var(--card)',
-      padding: 'var(--space-4)',
-      borderRadius: 'var(--radius-lg)',
-      border: '1px solid var(--border)',
-      boxShadow: 'var(--shadow-sm)',
-      marginBottom: 'var(--space-6)'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className={styles.container}>
+      <div className={styles.stepsContainer}>
         {steps.map((step, index) => {
           const Icon = step.icon;
           const isActive = currentStep === step.key;
@@ -29,53 +23,21 @@ export const ExamProgressIndicator: React.FC<ExamProgressIndicatorProps> = ({ cu
           
           return (
             <React.Fragment key={step.key}>
-              <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  background: isActive ? 'var(--gradient-primary)' : isCompleted ? 'var(--gradient-accent)' : 'var(--muted)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 'var(--space-3)',
-                  transition: 'all var(--transition-normal)',
-                  boxShadow: isActive ? 'var(--shadow-lg)' : 'var(--shadow-sm)'
-                }}>
-                  <Icon style={{
-                    width: '24px',
-                    height: '24px',
-                    color: isActive || isCompleted ? 'white' : 'var(--muted-foreground)'
-                  }} />
+              <div className={styles.step}>
+                <div className={`${styles.stepIcon} ${isActive ? styles.active : isCompleted ? styles.completed : styles.pending}`}>
+                  <Icon />
                 </div>
-                <div>
-                  <h3 style={{
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    color: isActive ? 'var(--foreground)' : isCompleted ? 'var(--foreground)' : 'var(--muted-foreground)',
-                    margin: 0,
-                    marginBottom: 'var(--space-1)'
-                  }}>
+                <div className={styles.stepContent}>
+                  <h3 className={`${styles.stepTitle} ${isActive ? styles.active : isCompleted ? styles.completed : styles.pending}`}>
                     {step.label}
                   </h3>
-                  <p style={{
-                    fontSize: '12px',
-                    color: 'var(--muted-foreground)',
-                    margin: 0
-                  }}>
+                  <p className={styles.stepSubtext}>
                     {isActive ? 'Đang thực hiện...' : isCompleted ? 'Hoàn thành' : 'Chờ thực hiện'}
                   </p>
                 </div>
               </div>
               {index < steps.length - 1 && (
-                <div style={{
-                  width: '60px',
-                  height: '2px',
-                  background: isCompleted ? 'var(--gradient-accent)' : 'var(--muted)',
-                  margin: '0 var(--space-4)',
-                  borderRadius: '1px',
-                  transition: 'all var(--transition-normal)'
-                }} />
+                <div className={`${styles.connector} ${isCompleted ? styles.completed : styles.pending}`} />
               )}
             </React.Fragment>
           );

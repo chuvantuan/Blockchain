@@ -7,6 +7,7 @@ import ExamsPage from '../pages/ExamsPage'
 import ProctoringPage from '../pages/ProctoringPage'
 import SecurityPage from '../pages/SecurityPage'
 import RewardPage from '../pages/RewardPage'
+import TokenManagementPage from '../pages/TokenManagementPage'
 import CoursesPage from '../pages/CoursesPage'
 import OrganizationsPage from '../pages/OrganizationsPage'
 import AdminPage from '../pages/AdminPage'
@@ -14,7 +15,6 @@ import { AnalyticsPage } from '../pages/AnalyticsPage'
 import { CopyrightPage } from '../pages/CopyrightPage'
 import CertifyPage from '../pages/CertifyPage'
 import MultisigPage from '../pages/MultisigPage'
-import SecurityDemoPage from '../../pages/SecurityDemoPage'
 
 export default function AdminRoutes(): JSX.Element {
 	return (
@@ -26,8 +26,8 @@ export default function AdminRoutes(): JSX.Element {
 				<Route path="exams" element={<ExamsPage />} />
 				<Route path="proctoring" element={<ProctoringPage />} />
 				<Route path="security" element={<SecurityPage />} />
-				<Route path="security-demo" element={<SecurityDemoPage />} />
 				<Route path="reward" element={<RewardPage />} />
+				<Route path="tokens" element={<TokenManagementPage />} />
 				<Route path="multisig" element={<MultisigPage />} />
 				<Route path="courses" element={<CoursesPage />} />
 				<Route path="organizations" element={<OrganizationsPage />} />

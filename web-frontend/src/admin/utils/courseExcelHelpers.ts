@@ -30,7 +30,7 @@ export const exportCoursesToExcel = (courses: ApiCourse[], filename = 'courses.x
 		ID: course.id,
 		'Tên khóa học': course.title,
 		'Mô tả': course.description,
-		'ID Giảng viên': course.instructorId,
+		'Organization ID': (course as any).organizationId || '',
 		'Slug': course.slug,
 		'Ảnh đại diện': course.thumbnailUrl || '',
 		'Trạng thái': VISIBILITY_LABELS[course.visibility] ?? course.visibility,
@@ -74,16 +74,16 @@ export const importCoursesFromExcel = (file: File): Promise<CourseForm[]> => {
 				const courses = jsonData.map((row, index): CourseForm => {
 					const title = String(row['Tên khóa học'] || '').trim()
 					const description = String(row['Mô tả'] || '').trim()
-					const instructorId = String(row['ID Giảng viên'] || '').trim()
-					if (!title || !description || !instructorId) {
-						throw new Error(`Dòng ${index + 2}: Thiếu thông tin bắt buộc (Tên khóa học, Mô tả, ID Giảng viên)`)
+					const organizationId = String(row['Organization ID'] || '').trim()
+					if (!title || !description || !organizationId) {
+						throw new Error(`Dòng ${index + 2}: Thiếu thông tin bắt buộc (Tên khóa học, Mô tả, Organization ID)`)
 					}
 
 					return {
 						id: typeof row['ID'] === 'string' ? row['ID'] : undefined,
 						title,
 						description,
-						instructorId,
+						organizationId,
 						thumbnailUrl: String(row['Ảnh đại diện'] || '').trim(),
 						visibility: parseVisibility(String(row['Trạng thái'] || ''))
 					}
@@ -106,7 +106,7 @@ export const generateExcelTemplate = () => {
 		ID: '2f2a4c8b-7e2a-4d2d-a83c-1e6bdfa1ab21',
 		'Tên khóa học': 'Nhập môn Spring Boot',
 		'Mô tả': 'Khóa học giúp bạn làm quen với Spring Boot và cách xây dựng REST API cơ bản.',
-		'ID Giảng viên': 1001,
+		'Organization ID': 'org_001',
 		'Slug': 'nhap-mon-spring-boot',
 		'Ảnh đại diện': 'https://example.com/spring-boot.png',
 		'Trạng thái': 'Bản nháp',

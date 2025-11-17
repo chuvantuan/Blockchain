@@ -265,7 +265,7 @@ export const ExamViolationAlert: React.FC<ExamViolationAlertProps> = ({
           <div className={styles.autoStopWarning}>
             {alertState.timeRemaining <= 5 ? (
               <span className={styles.criticalWarning}>
-                ⚠️ Bài thi sẽ tự động dừng sau {alertState.timeRemaining} giây!
+                Bài thi sẽ tự động dừng sau {alertState.timeRemaining} giây!
               </span>
             ) : (
               <span className={styles.normalWarning}>

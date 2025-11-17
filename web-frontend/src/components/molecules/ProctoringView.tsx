@@ -39,10 +39,38 @@ export const ProctoringView: React.FC<ProctoringViewProps> = ({
     }
 
     if (stream) {
+      // Attach stream trực tiếp vào video element
+      if (video.srcObject !== stream) {
+        video.srcObject = stream;
+      }
+      
+      // Đảm bảo video được play
+      const playVideo = async () => {
+        try {
+          if (video.paused) {
+            await video.play();
+          }
+        } catch (err) {
+          // Silent error handling
+        }
+      };
+
+      // Wait for metadata before playing
+      if (video.readyState >= 2) {
+        playVideo();
+      } else {
+        const handleLoadedMetadata = () => {
+          playVideo();
+          video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        };
+        video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      }
+
+      // Cũng attach qua cameraManager để đảm bảo tương thích
       cameraManager.attachToElement(video);
 
-      if (!streamReadyCalledRef.current && cameraManager.currentStream) {
-        onStreamReady?.(cameraManager.currentStream);
+      if (!streamReadyCalledRef.current) {
+        onStreamReady?.(stream);
         streamReadyCalledRef.current = true;
       }
     } else {
@@ -225,7 +253,7 @@ export const ProctoringView: React.FC<ProctoringViewProps> = ({
               </button>
             </div>
           </div>
-        ) : !isCameraOn ? (
+        ) : !stream ? (
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -267,7 +295,9 @@ export const ProctoringView: React.FC<ProctoringViewProps> = ({
             }}
             onLoadedMetadata={(e) => {
               const video = e.currentTarget;
-              video.play().catch(err => console.error('Play error:', err));
+              video.play().catch(() => {
+                // Silent error handling
+              });
             }}
           />
         )}

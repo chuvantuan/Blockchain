@@ -1,7 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { io, type Socket } from 'socket.io-client';
 import { proctoringService } from '../services/proctoringService';
 import { cameraManager } from '../services/cameraManager';
 import { useFrameStorage } from './useFrameStorage';
+
+const ICE_SERVERS: RTCIceServer[] = [
+  { urls: 'stun:stun.l.google.com:19302' },
+];
+
+const isBrowser = typeof window !== 'undefined';
+
+// Use API Gateway WebSocket endpoint for proctoring (Socket.IO path)
+const DEFAULT_PROCTORING_WS_URL =
+  (isBrowser && (window as any)?.__PROCTORING_WS_URL) ??
+  ((import.meta as any)?.env?.VITE_PROCTORING_WS_URL as string | undefined) ??
+  `${import.meta.env.VITE_API_BASE_URL?.replace('http://', 'ws://').replace('https://', 'wss://') || 'ws://localhost:8080'}/socket.io`;
 
 export interface CheatingDetection {
   type: 'FACE_NOT_DETECTED' | 'MULTIPLE_FACES' | 'MOBILE_PHONE_DETECTED' | 'CAMERA_TAMPERED' | 'LOOKING_AWAY' | 'tab_switch';
@@ -55,6 +68,8 @@ interface UseAICameraMonitorProps {
   examId?: string;
   studentId?: string;
   sessionId?: string;
+  onAdminWarning?: (data: { message: string; sentBy?: string | null; timestamp: string }) => void;
+  onExamTerminated?: (data: { reason?: string; terminatedBy?: string | null }) => void;
 }
 
 interface CameraState {
@@ -78,7 +93,7 @@ const initialState: CameraState = {
 };
 
 export const useAICameraMonitor = (props?: UseAICameraMonitorProps): AICameraMonitorReturn => {
-  const { examId = 'default', studentId = '1', sessionId } = props || {};
+  const { examId = 'default', studentId = '1', sessionId, onAdminWarning, onExamTerminated } = props || {};
   const [state, setState] = useState<CameraState>(initialState);
   
   // Frame Storage Hook
@@ -102,6 +117,317 @@ export const useAICameraMonitor = (props?: UseAICameraMonitorProps): AICameraMon
   const lastDetectionTimeRef = useRef<number>(0);
   const cameraUsageRef = useRef(false);
   const visibilityListenerRef = useRef<(() => void) | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+
+  const teardownPeerConnection = useCallback((proctorSocketId: string) => {
+    const peer = peerConnectionsRef.current.get(proctorSocketId);
+    if (!peer) {
+      return;
+    }
+
+    try {
+      peer.onicecandidate = null;
+      peer.ontrack = null;
+      peer.onconnectionstatechange = null;
+      peer.close();
+    } catch (error) {
+      console.warn('[AICameraMonitor] Không thể đóng peer connection', error);
+    }
+
+    peerConnectionsRef.current.delete(proctorSocketId);
+  }, []);
+
+  const teardownAllPeers = useCallback(() => {
+    peerConnectionsRef.current.forEach((_peer, proctorSocketId) => {
+      teardownPeerConnection(proctorSocketId);
+    });
+    peerConnectionsRef.current.clear();
+  }, [teardownPeerConnection]);
+
+  const respondToProctorOfferRequest = useCallback(
+    async (proctorSocketId: string) => {
+      if (!isBrowser) {
+        return;
+      }
+
+      const socket = socketRef.current;
+      if (!socket || !socket.connected) {
+        console.warn('[AICameraMonitor] Socket chưa sẵn sàng để gửi stream');
+        return;
+      }
+
+      const existingPeer = peerConnectionsRef.current.get(proctorSocketId);
+      if (existingPeer) {
+        teardownPeerConnection(proctorSocketId);
+      }
+
+      let stream = cameraManager.currentStream;
+      if (!stream) {
+        try {
+          stream = await cameraManager.start();
+        } catch (error) {
+          console.error('[AICameraMonitor] Không thể khởi tạo camera để stream cho giám thị', error);
+          return;
+        }
+      }
+
+      if (!stream) {
+        console.warn('[AICameraMonitor] Không có camera stream để gửi cho giám thị');
+        return;
+      }
+
+      const peerConnection = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      peerConnectionsRef.current.set(proctorSocketId, peerConnection);
+
+      stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream!);
+      });
+
+      peerConnection.onicecandidate = event => {
+        if (event.candidate) {
+          socket.emit('webrtc_ice_candidate', {
+            candidate: event.candidate,
+            targetSocketId: proctorSocketId,
+          });
+        }
+      };
+
+      peerConnection.onconnectionstatechange = () => {
+        const state = peerConnection.connectionState;
+        if (state === 'failed' || state === 'disconnected' || state === 'closed') {
+          teardownPeerConnection(proctorSocketId);
+        }
+      };
+
+      try {
+        const offer = await peerConnection.createOffer({
+          offerToReceiveAudio: false,
+          offerToReceiveVideo: false,
+        });
+        await peerConnection.setLocalDescription(offer);
+
+        socket.emit('webrtc_offer', {
+          offer,
+          targetSocketId: proctorSocketId,
+        });
+      } catch (error) {
+        console.error('[AICameraMonitor] Lỗi khi tạo WebRTC offer cho giám thị', error);
+        teardownPeerConnection(proctorSocketId);
+      }
+    },
+    [teardownPeerConnection],
+  );
+
+  useEffect(() => {
+    if (!isBrowser) {
+      return;
+    }
+
+    if (!examId || !studentId) {
+      return;
+    }
+
+    const serverUrl = DEFAULT_PROCTORING_WS_URL;
+    const normalizedExamId = String(examId);
+    const normalizedStudentId = String(studentId);
+
+    const socket = io(serverUrl, {
+      query: {
+        examId: normalizedExamId,
+        userId: normalizedStudentId,
+        userType: 'student',
+      },
+      transports: ['websocket'],
+    });
+
+    socketRef.current = socket;
+
+    const handleOfferRequest = (payload: { proctorSocketId?: string; studentIdToView?: string }) => {
+      const { proctorSocketId, studentIdToView } = payload || {};
+      if (!proctorSocketId) {
+        return;
+      }
+      if (studentIdToView && String(studentIdToView) !== normalizedStudentId) {
+        return;
+      }
+      respondToProctorOfferRequest(proctorSocketId);
+    };
+
+    const handleAnswerReceived = async (payload: { answer: RTCSessionDescriptionInit; senderSocketId: string }) => {
+      const { answer, senderSocketId } = payload;
+      const peer = peerConnectionsRef.current.get(senderSocketId);
+      if (!peer || !answer) {
+        return;
+      }
+
+      try {
+        if (!peer.remoteDescription || peer.remoteDescription.type !== answer.type) {
+          await peer.setRemoteDescription(answer);
+        }
+      } catch (error) {
+        console.error('[AICameraMonitor] Không thể thiết lập remote description', error);
+        teardownPeerConnection(senderSocketId);
+      }
+    };
+
+    const handleIceCandidateReceived = async (payload: { candidate: RTCIceCandidateInit | null; senderSocketId: string }) => {
+      const { candidate, senderSocketId } = payload;
+      const peer = peerConnectionsRef.current.get(senderSocketId);
+      if (!peer) {
+        return;
+      }
+
+      try {
+        if (candidate) {
+          await peer.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        // Note: addIceCandidate(null) is deprecated, just skip if no candidate
+      } catch (error) {
+        console.error('[AICameraMonitor] Không thể thêm ICE candidate', error);
+      }
+    };
+
+    const handleSocketDisconnect = () => {
+      teardownAllPeers();
+    };
+
+    const handleAdminWarning = (data: { sessionId?: string; userId?: string; examId?: string; message?: string; sentBy?: string | null; timestamp?: string }) => {
+      console.log('[AICameraMonitor] Nhận admin_warning event:', {
+        data,
+        currentSessionId: sessionId,
+        currentStudentId: normalizedStudentId,
+        currentExamId: normalizedExamId
+      });
+      
+      // Kiểm tra xem có match không: sessionId khớp HOẶC (userId khớp VÀ examId khớp)
+      let shouldProcess = false;
+      let matchReason = '';
+      
+      // Nếu sessionId khớp
+      if (sessionId && data.sessionId && data.sessionId === sessionId) {
+        shouldProcess = true;
+        matchReason = 'sessionId khớp';
+      }
+      // HOẶC nếu userId khớp (và examId khớp nếu có)
+      else if (data.userId && String(data.userId) === normalizedStudentId) {
+        // Nếu có examId, kiểm tra examId cũng phải khớp
+        if (data.examId) {
+          if (String(data.examId) === normalizedExamId) {
+            shouldProcess = true;
+            matchReason = 'userId và examId khớp';
+          } else {
+            console.log('[AICameraMonitor] Bỏ qua warning: userId khớp nhưng examId không khớp', {
+              receivedExamId: String(data.examId),
+              expectedExamId: normalizedExamId,
+              userId: String(data.userId)
+            });
+            return;
+          }
+        } else {
+          // Nếu không có examId, chỉ cần userId khớp
+          shouldProcess = true;
+          matchReason = 'userId khớp';
+        }
+      }
+      
+      if (!shouldProcess) {
+        console.log('[AICameraMonitor] Bỏ qua warning: không có điều kiện nào khớp', {
+          sessionIdMatch: sessionId && data.sessionId ? data.sessionId === sessionId : 'N/A',
+          userIdMatch: data.userId ? String(data.userId) === normalizedStudentId : 'N/A',
+          examIdMatch: data.examId ? String(data.examId) === normalizedExamId : 'N/A'
+        });
+        return;
+      }
+      
+      console.log('[AICameraMonitor] ✅ Xử lý cảnh báo từ admin:', { data, matchReason });
+      if (onAdminWarning) {
+        onAdminWarning({
+          message: data.message || 'Bạn đã nhận được cảnh báo từ giám thị',
+          sentBy: data.sentBy ?? null,
+          timestamp: data.timestamp || new Date().toISOString()
+        });
+      }
+    };
+
+    const handleExamTerminated = (data: { sessionId?: string; examId?: string; userId?: string; reason?: string; terminatedBy?: string | null }) => {
+      console.log('[AICameraMonitor] Nhận proctoring_session_terminated event:', {
+        data,
+        currentSessionId: sessionId,
+        currentStudentId: normalizedStudentId,
+        currentExamId: normalizedExamId
+      });
+      
+      // Kiểm tra xem có match không: sessionId khớp HOẶC (userId khớp VÀ examId khớp)
+      let shouldProcess = false;
+      let matchReason = '';
+      
+      // Nếu sessionId khớp
+      if (sessionId && data.sessionId && data.sessionId === sessionId) {
+        shouldProcess = true;
+        matchReason = 'sessionId khớp';
+      }
+      // HOẶC nếu userId khớp (và examId khớp nếu có)
+      else if (data.userId && String(data.userId) === normalizedStudentId) {
+        // Nếu có examId, kiểm tra examId cũng phải khớp
+        if (data.examId) {
+          if (String(data.examId) === normalizedExamId) {
+            shouldProcess = true;
+            matchReason = 'userId và examId khớp';
+          } else {
+            console.log('[AICameraMonitor] Bỏ qua terminate: userId khớp nhưng examId không khớp', {
+              receivedExamId: String(data.examId),
+              expectedExamId: normalizedExamId,
+              userId: String(data.userId)
+            });
+            return;
+          }
+        } else {
+          // Nếu không có examId, chỉ cần userId khớp
+          shouldProcess = true;
+          matchReason = 'userId khớp';
+        }
+      }
+      
+      if (!shouldProcess) {
+        console.log('[AICameraMonitor] Bỏ qua terminate: không có điều kiện nào khớp', {
+          sessionIdMatch: sessionId && data.sessionId ? data.sessionId === sessionId : 'N/A',
+          userIdMatch: data.userId ? String(data.userId) === normalizedStudentId : 'N/A',
+          examIdMatch: data.examId ? String(data.examId) === normalizedExamId : 'N/A'
+        });
+        return;
+      }
+      
+      console.log('[AICameraMonitor] ✅ Xử lý sự kiện dừng phiên thi:', { data, matchReason });
+      if (onExamTerminated) {
+        onExamTerminated({
+          reason: data.reason || 'Phiên thi đã bị dừng bởi giám thị',
+          terminatedBy: data.terminatedBy ?? null
+        });
+      }
+    };
+
+    socket.on('webrtc_offer_request', handleOfferRequest);
+    socket.on('webrtc_answer_received', handleAnswerReceived);
+    socket.on('webrtc_ice_candidate_received', handleIceCandidateReceived);
+    socket.on('admin_warning', handleAdminWarning);
+    socket.on('proctoring_session_terminated', handleExamTerminated);
+    socket.on('disconnect', handleSocketDisconnect);
+
+    return () => {
+      socket.off('webrtc_offer_request', handleOfferRequest);
+      socket.off('webrtc_answer_received', handleAnswerReceived);
+      socket.off('webrtc_ice_candidate_received', handleIceCandidateReceived);
+      socket.off('admin_warning', handleAdminWarning);
+      socket.off('proctoring_session_terminated', handleExamTerminated);
+      socket.off('disconnect', handleSocketDisconnect);
+      socket.disconnect();
+      teardownAllPeers();
+      if (socketRef.current === socket) {
+        socketRef.current = null;
+      }
+    };
+  }, [examId, studentId, sessionId, onAdminWarning, onExamTerminated, respondToProctorOfferRequest, teardownAllPeers, teardownPeerConnection]);
 
   // Tab switch detection (vẫn giữ vì dùng Browser API, không cần backend)
   const detectTabSwitch = useCallback((): CheatingDetection | null => {
@@ -279,29 +605,40 @@ export const useAICameraMonitor = (props?: UseAICameraMonitorProps): AICameraMon
   }, [analyzeFrame, state.enabledDetections, updateState]);
 
   const stopMonitoring = useCallback(() => {
+    // Set isActiveRef to false FIRST to prevent any new frames from being sent
+    isActiveRef.current = false;
+
+    // Clear the analysis interval to stop sending frames
     if (analysisIntervalRef.current) {
       clearInterval(analysisIntervalRef.current);
       analysisIntervalRef.current = null;
     }
 
+    // Remove visibility change listener
     if (visibilityListenerRef.current) {
       document.removeEventListener('visibilitychange', visibilityListenerRef.current);
       visibilityListenerRef.current = null;
     }
 
+    // Stop camera usage
     if (cameraUsageRef.current) {
       cameraManager.decrementUsage();
       cameraUsageRef.current = false;
     }
 
+    // Teardown all peer connections (WebRTC streams)
+    teardownAllPeers();
+
+    // Update state
     updateState({ 
       isActive: false, 
       isAnalyzing: false, 
       detections: [], 
       metrics: null,
     });
-    isActiveRef.current = false;
-  }, [updateState]);
+
+    console.log('[useAICameraMonitor] Camera monitoring stopped. Camera and frame sending disabled.');
+  }, [teardownAllPeers, updateState]);
 
   const handleSetDetectionSensitivity = useCallback((level: 'low' | 'medium' | 'high') => {
     updateState({ detectionSensitivity: level });

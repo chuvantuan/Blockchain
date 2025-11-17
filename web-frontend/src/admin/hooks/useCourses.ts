@@ -26,16 +26,11 @@ const normalizeVisibility = (value: CourseVisibility | string): CourseVisibility
 }
 
 const buildCreatePayload = (form: CourseForm) => {
-	const instructorNumber = Number(form.instructorId)
-	if (Number.isNaN(instructorNumber)) {
-		throw new Error('ID giảng viên phải là số hợp lệ')
-	}
-
 	return {
 		id: form.id ?? crypto.randomUUID(),
 		title: form.title.trim(),
 		description: form.description.trim(),
-		instructorId: instructorNumber,
+		organizationId: form.organizationId.trim(),
 		thumbnailUrl: form.thumbnailUrl.trim() || undefined,
 		visibility: normalizeVisibility(form.visibility)
 	}
@@ -55,7 +50,7 @@ export default function useCourses() {
 	const [filters, setFilters] = useState<CourseFilters>({
 		search: '',
 		visibility: 'all',
-		instructorId: 'all',
+		organizationId: 'all',
 		sortBy: 'title',
 		sortOrder: 'asc'
 	})
@@ -138,8 +133,8 @@ export default function useCourses() {
 			result = result.filter(course => course.visibility === filters.visibility)
 		}
 
-		if (filters.instructorId !== 'all') {
-			result = result.filter(course => String(course.instructorId) === filters.instructorId)
+		if (filters.organizationId !== 'all') {
+			result = result.filter(course => String((course as any).organizationId || '') === filters.organizationId)
 		}
 
 		result.sort((a, b) => {
@@ -178,17 +173,30 @@ export default function useCourses() {
 		setFilters({
 			search: '',
 			visibility: 'all',
-			instructorId: 'all',
+			organizationId: 'all',
 			sortBy: 'title',
 			sortOrder: 'asc'
 		})
 	}, [])
 
-	const addCourse = useCallback(async (courseForm: CourseForm) => {
+	const addCourse = useCallback(async (courseForm: CourseForm, thumbnailFile?: File | null) => {
 		setLoading(true)
 		try {
 			const payload = buildCreatePayload(courseForm)
-			await courseApi.createCourse(payload)
+			const created = await courseApi.createCourse(payload)
+			const createdId = (created.data as any)?.id
+			// If user selected a thumbnail file, upload then update course with returned URL
+			if (createdId && thumbnailFile && typeof (courseApi as any).uploadCourseImage === 'function') {
+				try {
+					const uploadRes = await (courseApi as any).uploadCourseImage(createdId, thumbnailFile)
+					const url = uploadRes?.data?.url || uploadRes?.data?.imageUrl || uploadRes?.data
+					if (url) {
+						await courseApi.updateCourse(createdId, { thumbnailUrl: url })
+					}
+				} catch (e) {
+					console.warn('Upload thumbnail failed, course created without thumbnail', e)
+				}
+			}
 			await loadCourses()
 		} catch (error) {
 			console.error('Error adding course:', error)
@@ -232,7 +240,13 @@ export default function useCourses() {
 			if (!course) return
 
 			const nextVisibility: CourseVisibility = course.visibility === 'published' ? 'draft' : 'published'
-			await courseApi.updateCourse(courseId, { visibility: nextVisibility })
+			if (nextVisibility === 'published') {
+				// Dùng endpoint publish chuyên biệt của backend
+				await courseApi.publishCourse(courseId)
+			} else {
+				// Quay về draft: update visibility
+				await courseApi.updateCourse(courseId, { visibility: nextVisibility })
+			}
 			await loadCourses()
 		} catch (error) {
 			console.error('Error toggling course status:', error)
@@ -252,11 +266,11 @@ export default function useCourses() {
 		setEditingCourse(null)
 	}, [])
 
-	const saveCourse = useCallback((courseForm: CourseForm) => {
+	const saveCourse = useCallback((courseForm: CourseForm, thumbnailFile?: File | null) => {
 		if (editingCourse) {
 			updateCourse(editingCourse.id, courseForm)
 		} else {
-			addCourse(courseForm)
+			addCourse(courseForm, thumbnailFile)
 		}
 		closeCourseEditor()
 	}, [editingCourse, addCourse, updateCourse, closeCourseEditor])

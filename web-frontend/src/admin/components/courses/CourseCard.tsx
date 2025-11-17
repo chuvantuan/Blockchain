@@ -122,7 +122,7 @@ export default function CourseCard({ course, onClick, onEdit, onDelete, onToggle
 				<div className="course-meta-simple">
 					<div className="meta-item">
 						<User size={14} />
-						<span>Giảng viên #{course.instructorId}</span>
+						<span>Org {(course as any).organizationId || '—'}</span>
 					</div>
 					{course.slug && (
 						<div className="meta-item">

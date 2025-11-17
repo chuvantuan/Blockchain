@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { copyrightService, DocumentMetadata, DocumentCopyright, CopyrightStats } from '../../services/blockchain/copyrightService';
-import { mockAdminDocuments, mockAdminStats, mockAdminDashboard } from '../data/mockCopyright';
+import copyrightApi from '../services/copyrightApi';
 
 // Admin-specific types
 export interface AdminDocument extends DocumentCopyright {
@@ -105,41 +105,76 @@ export interface AdminResult<T = any> {
 
 
 export function useCopyright() {
-  const [documents, setDocuments] = useState<AdminDocument[]>(mockAdminDocuments);
-  const [stats, setStats] = useState<AdminStats>(mockAdminStats);
-  const [dashboard, setDashboard] = useState<AdminDashboard>(mockAdminDashboard);
+  const [documents, setDocuments] = useState<AdminDocument[]>([]);
+  const [stats, setStats] = useState<AdminStats>({
+    totalDocuments: 0,
+    totalVerified: 0,
+    totalOwners: 0,
+    contractBalance: '0',
+    disputedDocuments: 0,
+    rejectedDocuments: 0,
+    pendingVerifications: 0,
+    averageVerificationTime: 0,
+    blockchainTransactions: 0
+  });
+  const [dashboard, setDashboard] = useState<AdminDashboard>({
+    recentDocuments: [],
+    pendingVerifications: [],
+    disputedDocuments: [],
+    blockchainStatus: {
+      isConnected: false,
+      lastBlock: 0,
+      averageGasPrice: '0',
+      networkCongestion: 'Low',
+      estimatedConfirmationTime: '0'
+    }
+  });
   const [blockchainInfo, setBlockchainInfo] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<AdminFilters>({});
   const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(false);
 
-  // Initialize blockchain connection
+  // Initialize - Load data from API
   useEffect(() => {
-    const initializeBlockchain = async () => {
+    const initialize = async () => {
       try {
         setLoading(true);
-        const isConnected = await copyrightService.connectWallet();
-        if (isConnected) {
-          const stats = await copyrightService.getStatistics();
-          if (stats) {
-            setStats(prev => ({
-              ...prev,
-              totalDocuments: stats?.totalDocuments || prev.totalDocuments,
-              totalVerified: stats?.totalVerified || prev.totalVerified,
-              totalOwners: stats?.totalOwners || prev.totalOwners,
-              contractBalance: stats?.contractBalance || prev.contractBalance
-            }));
+        
+        // Load documents from API
+        const docs = await copyrightApi.getAll();
+        setDocuments(docs);
+        
+        // Load stats from API
+        const apiStats = await copyrightApi.getStats();
+        setStats(prev => ({
+          ...prev,
+          ...apiStats
+        }));
+        
+        // Try to connect blockchain (optional)
+        try {
+          const isConnected = await copyrightService.connectWallet();
+          if (isConnected) {
+            const blockchainStats = await copyrightService.getStatistics();
+            if (blockchainStats) {
+              setStats(prev => ({
+                ...prev,
+                contractBalance: blockchainStats.contractBalance || prev.contractBalance
+              }));
+            }
           }
+        } catch (blockchainErr) {
+          console.warn('Blockchain connection failed (optional):', blockchainErr);
         }
       } catch (err: any) {
-        setError(err.message || 'Failed to initialize blockchain connection');
+        setError(err.message || 'Failed to initialize');
       } finally {
         setLoading(false);
       }
     };
 
-    initializeBlockchain();
+    initialize();
   }, []);
 
   // Real-time updates
@@ -162,81 +197,59 @@ export function useCopyright() {
     setError(null);
 
     try {
-      let result;
-      
-      if (form.file) {
-        const metadata: DocumentMetadata = {
-          title: form.title,
-          description: form.description,
-          category: form.category as any,
-          fileExtension: form.fileExtension,
-          fileSize: form.fileSize,
-          tags: form.tags,
-          authorName: form.authorName,
-          institution: form.institution,
-          keywords: form.keywords,
-          abstract: form.abstract
-        };
-        
-        result = await copyrightService.registerDocument(form.file, metadata);
-      } else if (form.content) {
-        const metadata: DocumentMetadata = {
-          title: form.title,
-          description: form.description,
-          category: form.category as any,
-          fileExtension: form.fileExtension,
-          fileSize: form.fileSize,
-          tags: form.tags,
-          authorName: form.authorName,
-          institution: form.institution,
-          keywords: form.keywords,
-          abstract: form.abstract
-        };
-        
-        result = await copyrightService.registerTextDocument(form.content, metadata);
-      } else {
-        throw new Error('No file or content provided');
-      }
-
-      if (result.success && result.documentHash) {
-        // Add to local documents list
-        const newDocument: AdminDocument = {
-          id: Date.now().toString(),
-          documentHash: result.documentHash,
-          owner: await copyrightService.getCurrentAddress() || '',
-          title: form.title,
-          description: form.description,
+      // Register via API
+      const apiResult = await copyrightApi.register({
+        title: form.title,
+        author: form.authorName || 'Unknown',
+        description: form.description,
+        fileHash: '', // Will be calculated by backend
+        metadata: {
           category: form.category,
           fileExtension: form.fileExtension,
           fileSize: form.fileSize,
-          timestamp: Math.floor(Date.now() / 1000),
-          isVerified: false,
-          isActive: true,
-          ipfsHash: '',
           tags: form.tags,
-          author: form.authorName || 'Unknown',
           institution: form.institution,
-          status: 'pending',
-          registrationDate: new Date().toISOString().split('T')[0],
-          verificationHistory: []
-        };
+          keywords: form.keywords,
+          abstract: form.abstract
+        }
+      });
 
-        setDocuments(prev => [newDocument, ...prev]);
+      if (apiResult.success) {
+        // Optionally register on blockchain
+        try {
+          if (form.file) {
+            const metadata: DocumentMetadata = {
+              title: form.title,
+              description: form.description,
+              category: form.category as any,
+              fileExtension: form.fileExtension,
+              fileSize: form.fileSize,
+              tags: form.tags,
+              authorName: form.authorName,
+              institution: form.institution,
+              keywords: form.keywords,
+              abstract: form.abstract
+            };
+            
+            await copyrightService.registerDocument(form.file, metadata);
+          }
+        } catch (blockchainErr) {
+          console.warn('Blockchain registration failed (optional):', blockchainErr);
+        }
+
+        // Refresh documents list
+        const docs = await copyrightApi.getAll();
+        setDocuments(docs);
+        
+        // Update stats
         setStats(prev => ({
           ...prev,
           totalDocuments: prev.totalDocuments + 1
         }));
 
-        return {
-          success: true,
-          data: newDocument,
-          message: 'Document registered successfully'
-        };
+        return apiResult;
       } else {
-        return {
-          success: false,
-          error: result.error || 'Registration failed'
-        };
+        return apiResult;
       }
     } catch (err: any) {
       setError(err.message || 'Registration failed');
@@ -254,60 +267,24 @@ export function useCopyright() {
     setError(null);
 
     try {
-      const document = documents.find(doc => doc.id === documentId);
-      if (!document) {
-        return {
-          success: false,
-          error: 'Document not found'
-        };
-      }
-
-      const result = await copyrightService.verifyDocument(document.documentHash);
+      // Verify via API
+      const result = await copyrightApi.verify(documentId);
       
       if (result.success) {
-        // Get current address
-        const currentAddress = await copyrightService.getCurrentAddress() || '';
-
-        // Update document status
-        setDocuments(prev => prev.map(doc => 
-          doc.id === documentId 
-            ? { 
-                ...doc, 
-                isVerified: true, 
-                status: 'verified' as const,
-                verificationDate: new Date().toISOString().split('T')[0],
-                verificationHistory: [
-                  ...doc.verificationHistory || [],
-                  {
-                    id: Date.now().toString(),
-                    documentId,
-                    verifierAddress: currentAddress,
-                    status: 'approved',
-                    comments: 'Verified by admin',
-                    timestamp: new Date().toISOString()
-                  }
-                ]
-              }
-            : doc
-        ));
-
+        // Refresh documents list
+        const docs = await copyrightApi.getAll();
+        setDocuments(docs);
+        
+        // Update stats
         setStats(prev => ({
           ...prev,
           totalVerified: prev.totalVerified + 1,
           pendingVerifications: Math.max(0, prev.pendingVerifications - 1)
         }));
 
-        return {
-          success: true,
-          verified: true,
-          message: 'Document verified successfully'
-        };
+        return result;
       } else {
-        return {
-          success: false,
-          verified: false,
-          error: result.error || 'Verification failed'
-        };
+        return result;
       }
     } catch (err: any) {
       setError(err.message || 'Verification failed');
@@ -319,39 +296,30 @@ export function useCopyright() {
     } finally {
       setLoading(false);
     }
-  }, [documents]);
+  }, []);
 
   const deleteDocument = useCallback(async (documentId: string): Promise<AdminResult> => {
     setLoading(true);
     setError(null);
 
     try {
-      const document = documents.find(doc => doc.id === documentId);
-      if (!document) {
-        return {
-          success: false,
-          error: 'Document not found'
-        };
-      }
-
-      const result = await copyrightService.deactivateDocument(document.documentHash);
+      // Delete via API
+      const result = await copyrightApi.delete(documentId);
       
-      if (result) {
-        setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      if (result.success) {
+        // Refresh documents list
+        const docs = await copyrightApi.getAll();
+        setDocuments(docs);
+        
+        // Update stats
         setStats(prev => ({
           ...prev,
           totalDocuments: Math.max(0, prev.totalDocuments - 1)
         }));
 
-        return {
-          success: true,
-          message: 'Document deleted successfully'
-        };
+        return result;
       } else {
-        return {
-          success: false,
-          error: 'Failed to delete document'
-        };
+        return result;
       }
     } catch (err: any) {
       setError(err.message || 'Delete failed');
@@ -362,81 +330,39 @@ export function useCopyright() {
     } finally {
       setLoading(false);
     }
-  }, [documents]);
+  }, []);
 
   const updateDocument = useCallback(async (documentId: string, form: DocumentForm): Promise<AdminResult> => {
     setLoading(true);
     setError(null);
 
     try {
-      const document = documents.find(doc => doc.id === documentId);
-      if (!document) {
-        return {
-          success: false,
-          error: 'Document not found'
-        };
-      }
-
-      // Update title
-      if (form.title !== document.title) {
-        const titleResult = await copyrightService.updateDocument(
-          document.documentHash,
-          'title',
-          form.title
-        );
-        if (!titleResult) {
-          return {
-            success: false,
-            error: 'Failed to update title'
-          };
+      // Update via API
+      const result = await copyrightApi.update(documentId, {
+        title: form.title,
+        author: form.authorName || 'Unknown',
+        description: form.description,
+        fileHash: '', // Keep existing
+        metadata: {
+          category: form.category,
+          fileExtension: form.fileExtension,
+          fileSize: form.fileSize,
+          tags: form.tags,
+          institution: form.institution,
+          keywords: form.keywords,
+          abstract: form.abstract
         }
+      });
+
+      if (result.success) {
+        // Refresh documents list
+        const docs = await copyrightApi.getAll();
+        setDocuments(docs);
+
+        return result;
+      } else {
+        return result;
       }
-
-      // Update description
-      if (form.description !== document.description) {
-        const descResult = await copyrightService.updateDocument(
-          document.documentHash,
-          'description',
-          form.description
-        );
-        if (!descResult) {
-          return {
-            success: false,
-            error: 'Failed to update description'
-          };
-        }
-      }
-
-      // Update tags
-      const tagsResult = await copyrightService.updateDocumentTags(
-        document.documentHash,
-        form.tags
-      );
-      if (!tagsResult) {
-        return {
-          success: false,
-          error: 'Failed to update tags'
-        };
-      }
-
-      // Update local state
-      setDocuments(prev => prev.map(doc => 
-        doc.id === documentId 
-          ? { 
-              ...doc, 
-              title: form.title,
-              description: form.description,
-              tags: form.tags,
-              author: form.authorName || doc.author,
-              institution: form.institution || doc.institution
-            }
-          : doc
-      ));
-
-      return {
-        success: true,
-        message: 'Document updated successfully'
-      };
     } catch (err: any) {
       setError(err.message || 'Update failed');
       return {
@@ -446,48 +372,16 @@ export function useCopyright() {
     } finally {
       setLoading(false);
     }
-  }, [documents]);
+  }, []);
 
   const exportDocuments = useCallback(async (options: ExportOptions): Promise<AdminResult> => {
     setLoading(true);
     setError(null);
 
     try {
-      // Simulate export process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const exportData = {
-        documents: documents.filter(doc => {
-          if (options.dateRange) {
-            const docDate = new Date(doc.registrationDate);
-            const fromDate = new Date(options.dateRange.from);
-            const toDate = new Date(options.dateRange.to);
-            if (docDate < fromDate || docDate > toDate) return false;
-          }
-          return true;
-        }),
-        stats,
-        exportOptions: options,
-        exportedAt: new Date().toISOString()
-      };
-
-      // Create and download file
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { 
-        type: 'application/json' 
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `copyright-documents-export-${Date.now()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      return {
-        success: true,
-        message: 'Documents exported successfully'
-      };
+      // Export via API
+      const result = await copyrightApi.export(options);
+      return result;
     } catch (err: any) {
       setError(err.message || 'Export failed');
       return {
@@ -497,7 +391,7 @@ export function useCopyright() {
     } finally {
       setLoading(false);
     }
-  }, [documents, stats]);
+  }, []);
 
   const updateFilters = useCallback((newFilters: Partial<AdminFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -512,31 +406,30 @@ export function useCopyright() {
     setError(null);
 
     try {
-      // Refresh blockchain data
-      const blockchainStats = await copyrightService.getStatistics();
-      if (blockchainStats) {
-        setStats(prev => ({
-          ...prev,
-          totalDocuments: blockchainStats.totalDocuments,
-          totalVerified: blockchainStats.totalVerified,
-          totalOwners: blockchainStats.totalOwners,
-          contractBalance: blockchainStats.contractBalance
-        }));
-      }
+      // Refresh documents from API
+      const docs = await copyrightApi.getAll();
+      setDocuments(docs);
+      
+      // Refresh stats from API
+      const apiStats = await copyrightApi.getStats();
+      setStats(prev => ({
+        ...prev,
+        ...apiStats
+      }));
 
       // Refresh dashboard
       setDashboard(prev => ({
         ...prev,
-        recentDocuments: documents.slice(0, 3),
-        pendingVerifications: documents.filter(doc => doc.status === 'pending'),
-        disputedDocuments: documents.filter(doc => doc.status === 'disputed')
+        recentDocuments: docs.slice(0, 3),
+        pendingVerifications: docs.filter((doc: AdminDocument) => doc.status === 'pending'),
+        disputedDocuments: docs.filter((doc: AdminDocument) => doc.status === 'disputed')
       }));
     } catch (err: any) {
       setError(err.message || 'Failed to refresh data');
     } finally {
       setLoading(false);
     }
-  }, [documents]);
+  }, []);
 
   const getDocumentById = useCallback((id: string): AdminDocument | null => {
     return documents.find(doc => doc.id === id) || null;

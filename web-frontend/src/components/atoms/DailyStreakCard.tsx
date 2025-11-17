@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from '../../assets/css/DailyStreakCard.module.css'
 
 interface DailyStreakCardProps {
 	currentStreak: number
@@ -12,40 +13,18 @@ export default function DailyStreakCard({
 	const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 
 	return (
-		<div style={{ 
-			background: 'var(--card)', 
-			borderRadius: 'var(--radius-lg)', 
-			padding: '20px',
-			border: '1px solid var(--border)',
-			boxShadow: 'var(--shadow-sm)'
-		}}>
+		<div className={styles.container}>
 			{/* Title */}
-			<h3 style={{ 
-				fontSize: '18px', 
-				fontWeight: 700, 
-				color: 'var(--foreground)', 
-				marginBottom: '16px', 
-				margin: 0 
-			}}>
+			<h3 className={styles.title}>
 				Chuỗi ngày
 			</h3>
 
 			{/* Days of Week */}
-			<div style={{ 
-				display: 'flex', 
-				justifyContent: 'space-between', 
-				marginBottom: '12px' 
-			}}>
+			<div className={styles.daysRow}>
 				{days.map((day, index) => (
 					<span 
 						key={index}
-						style={{ 
-							fontSize: '14px', 
-							fontWeight: 500, 
-							color: 'var(--muted-foreground)',
-							textAlign: 'center',
-							width: '20px'
-						}}
+						className={styles.dayLabel}
 					>
 						{day}
 					</span>
@@ -53,43 +32,21 @@ export default function DailyStreakCard({
 			</div>
 
 			{/* Progress Dots */}
-			<div style={{ 
-				display: 'flex', 
-				justifyContent: 'space-between', 
-				marginBottom: '16px' 
-			}}>
+			<div className={styles.progressRow}>
 				{weeklyProgress.map((isCompleted, index) => (
 					<div 
 						key={index}
-						style={{ 
-							width: '12px', 
-							height: '12px', 
-							borderRadius: '50%', 
-							background: isCompleted ? 'var(--primary)' : 'var(--muted)', 
-							transition: 'background-color 0.3s ease'
-						}} 
+						className={`${styles.progressDot} ${isCompleted ? styles.progressDotCompleted : styles.progressDotIncomplete}`}
 					/>
 				))}
 			</div>
 
 			{/* Current Streak Summary */}
-			<div style={{ 
-				display: 'flex', 
-				justifyContent: 'space-between', 
-				alignItems: 'center' 
-			}}>
-				<span style={{ 
-					fontSize: '14px', 
-					fontWeight: 500, 
-					color: 'var(--foreground)' 
-				}}>
+			<div className={styles.streakSummary}>
+				<span className={styles.streakLabel}>
 					Chuỗi hiện tại:
 				</span>
-				<span style={{ 
-					fontSize: '16px', 
-					fontWeight: 700, 
-					color: 'var(--accent)' 
-				}}>
+				<span className={styles.streakValue}>
 					{currentStreak} ngày
 				</span>
 			</div>

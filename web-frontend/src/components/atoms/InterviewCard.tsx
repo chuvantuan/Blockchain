@@ -1,6 +1,7 @@
 import React from 'react'
 import { Clock, Lock, Star } from 'lucide-react'
 import Badge from '../atoms/Badge'
+import styles from '../../assets/css/InterviewCard.module.css'
 
 interface Interview {
 	id: string
@@ -18,110 +19,46 @@ interface InterviewCardProps {
 }
 
 export default function InterviewCard({ interview, onStartInterview, onUnlockInterview }: InterviewCardProps): JSX.Element {
+	const cardClass = interview.isLocked ? `${styles.card} ${styles.cardLocked}` : styles.card
+
 	return (
-		<div
-			style={{
-				padding: '16px',
-				borderRadius: 'var(--radius-lg)',
-				border: '1px solid var(--border)',
-				background: 'var(--card)',
-				transition: 'all 0.2s',
-				position: 'relative',
-				cursor: interview.isLocked ? 'default' : 'pointer',
-				opacity: interview.isLocked ? 0.7 : 1,
-				boxShadow: 'var(--shadow-sm)',
-				overflow: 'hidden'
-			}}
-			onMouseEnter={(e) => {
-				if (!interview.isLocked) {
-					e.currentTarget.style.borderColor = 'var(--primary)'
-					e.currentTarget.style.transform = 'translateY(-2px)'
-					e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-				}
-			}}
-			onMouseLeave={(e) => {
-				if (!interview.isLocked) {
-					e.currentTarget.style.borderColor = 'var(--border)'
-					e.currentTarget.style.transform = 'translateY(0)'
-					e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-				}
-			}}
-		>
+		<div className={cardClass}>
 			{/* New Badge */}
 			{interview.isNew && (
-				<div style={{ 
-					position: 'absolute', 
-					top: '-8px', 
-					right: '-8px'
-				}}>
+				<div className={styles.badgeContainer}>
 					<Badge variant="accent" size="sm">
-						<Star style={{ width: '12px', height: '12px' }} />
+						<Star className={styles.badgeIcon} />
 					</Badge>
 				</div>
 			)}
 
 			{/* Content */}
-			<div style={{ marginBottom: '12px' }}>
-				<h3 style={{ 
-					fontSize: '18px', 
-					fontWeight: 600, 
-					color: 'var(--foreground)', 
-					marginBottom: '4px', 
-					margin: 0 
-				}}>
+			<div className={styles.content}>
+				<h3 className={styles.title}>
 					{interview.title}
 				</h3>
-				<p style={{ 
-					fontSize: '14px', 
-					color: 'var(--muted-foreground)', 
-					margin: 0 
-				}}>
+				<p className={styles.description}>
 					{interview.description}
 				</p>
 			</div>
 
 			{/* Duration */}
-			<div style={{ 
-				display: 'flex', 
-				alignItems: 'center', 
-				fontSize: '14px', 
-				color: 'var(--muted-foreground)', 
-				marginBottom: '16px' 
-			}}>
-				<Clock style={{ width: '16px', height: '16px', marginRight: '4px' }} />
+			<div className={styles.duration}>
+				<Clock className={styles.durationIcon} />
 				{interview.duration}
 			</div>
 
 			{/* Action Button */}
-			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+			<div className={styles.actionSection}>
 				{interview.isLocked ? (
-					<div style={{ display: 'flex', alignItems: 'center', color: 'var(--muted-foreground)' }}>
-						<Lock style={{ width: '16px', height: '16px', marginRight: '8px' }} />
-						<span style={{ fontSize: '14px' }}>Premium</span>
+					<div className={styles.lockedInfo}>
+						<Lock className={styles.lockedIcon} />
+						<span className={styles.lockedText}>Premium</span>
 					</div>
 				) : (
 					<button
 						onClick={() => onStartInterview?.(interview.id)}
-						style={{
-							background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-							color: 'white',
-							padding: '8px 16px',
-							borderRadius: 'var(--radius-md)',
-							fontSize: '14px',
-							fontWeight: 500,
-							border: 'none',
-							cursor: 'pointer',
-							transition: 'transform 0.2s, box-shadow 0.2s',
-							boxShadow: 'none'
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.transform = 'translateY(-2px)'
-							e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.transform = 'translateY(0)'
-							e.currentTarget.style.boxShadow = 'none'
-						}}
+						className={styles.startButton}
 					>
 						Dùng thử miễn phí
 					</button>
@@ -130,22 +67,7 @@ export default function InterviewCard({ interview, onStartInterview, onUnlockInt
 				{interview.isLocked && (
 					<button
 						onClick={() => onUnlockInterview?.(interview.id)}
-						style={{
-							color: 'var(--accent)',
-							fontSize: '14px',
-							fontWeight: 500,
-							background: 'none',
-							border: 'none',
-							cursor: 'pointer',
-							transition: 'color 0.2s',
-							textDecoration: 'underline'
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.color = 'var(--primary)'
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.color = 'var(--accent)'
-						}}
+						className={styles.unlockButton}
 					>
 						Mở khóa
 					</button>

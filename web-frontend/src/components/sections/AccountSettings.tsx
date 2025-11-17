@@ -92,12 +92,12 @@ export default function AccountSettings({ settings, onUpdateSettings }: AccountS
         }
       });
 
-      alert('✅ Dữ liệu đã được export thành công!');
+      alert('Dữ liệu đã được export thành công!');
     }, 2000);
   };
 
   const handleDeleteAccount = () => {
-    const confirmMessage = `⚠️ XÓA TÀI KHOẢN
+    const confirmMessage = `XÓA TÀI KHOẢN
 
 Bạn có chắc chắn muốn xóa tài khoản "${settings.username}"?
 
@@ -108,7 +108,7 @@ Thao tác này sẽ xóa vĩnh viễn:
 - Lịch sử bài thi và điểm số
 - Token và ví blockchain
 
-⚠️ DỮ LIỆU KHÔNG THỂ KHÔI PHỤC!
+DỮ LIỆU KHÔNG THỂ KHÔI PHỤC!
 
 Nhập "DELETE" để xác nhận:`;
 
@@ -128,14 +128,14 @@ Nhập "DELETE" để xác nhận:`;
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(newEmail)) {
-        alert('⚠️ Email không hợp lệ!');
+        alert('Email không hợp lệ!');
         return;
       }
 
       // Check if email already exists
       const emailExists = settings.emailAddresses.some(e => e.email === newEmail);
       if (emailExists) {
-        alert('⚠️ Email này đã được thêm!');
+        alert('Email này đã được thêm!');
         return;
       }
 

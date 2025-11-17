@@ -7,11 +7,6 @@ interface ImportMetaEnv {
   readonly VITE_TOKEN_REWARD_API_URL?: string
   readonly VITE_LEARN_TOKEN_ADDRESS?: string
   readonly VITE_COPYRIGHT_REGISTRY_ADDRESS?: string
-  readonly VITE_ADMIN_SERVICE_URL?: string
-  readonly VITE_EXAM_API_URL?: string
-  readonly VITE_ONLINE_EXAM_API_URL?: string
-  readonly VITE_MULTISIG_SERVICE_URL?: string
-  readonly VITE_TOKEN_API_URL?: string
 }
 
 interface ImportMeta {

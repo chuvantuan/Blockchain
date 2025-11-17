@@ -20,6 +20,7 @@ export const ExamTakingPage: React.FC = () => {
   const [currentViolation, setCurrentViolation] = useState<CheatingDetection | null>(null);
   const [showViolationAlert, setShowViolationAlert] = useState(false);
   const [examStopped, setExamStopped] = useState(false);
+  const [isExamSubmitted, setIsExamSubmitted] = useState(false); // Flag để báo cho camera monitor biết exam đã submit
 
   const authUser = useSelector((state: RootState) => state.auth.user);
 
@@ -93,6 +94,23 @@ export const ExamTakingPage: React.FC = () => {
     }, 2000);
   }, [currentExam, navigate]);
 
+  // Handle admin warning
+  const handleAdminWarning = useCallback((data: { message: string; sentBy?: string | null; timestamp: string }) => {
+    alert(`Cảnh báo từ giám thị:\n\n${data.message}`);
+  }, []);
+
+  // Handle exam terminated by admin
+  const handleExamTerminated = useCallback((data: { reason?: string; terminatedBy?: string | null }) => {
+    setExamStopped(true);
+    setShowViolationAlert(false);
+    alert(`Bài thi đã bị dừng:\n\n${data.reason || 'Phiên thi đã bị dừng bởi giám thị'}`);
+    
+    // Navigate to result page or show stopped message
+    setTimeout(() => {
+      navigate('/user/home');
+    }, 2000);
+  }, [navigate]);
+
   // Handle camera metrics update
   const handleMetricsUpdate = useCallback((metrics: any) => {
     setCameraMetrics(metrics);
@@ -100,6 +118,8 @@ export const ExamTakingPage: React.FC = () => {
 
   // Submit exam using backend API
   const handleSubmitExamWithBackend = useCallback(async () => {
+    // Set flag to stop camera monitoring before submitting
+    setIsExamSubmitted(true);
     // Call original submit handler which uses backend API
     handleSubmitExam();
   }, [currentExam, answers, totalQuestions, handleSubmitExam]);
@@ -180,21 +200,17 @@ export const ExamTakingPage: React.FC = () => {
           
               {/* AI Camera Monitor - Hidden but functional */}
               {currentExam && session && authUser && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '-9999px', 
-                  left: '-9999px',
-                  width: '1px',
-                  height: '1px',
-                  overflow: 'hidden'
-                }}>
+                <div className={styles.aiCameraMonitorHidden}>
                   <AICameraMonitor
                     examId={currentExam.id}
                     studentId={authUser.id}
                     sessionId={session.id}
                     onViolationDetected={handleViolationDetected}
                     onMetricsUpdate={handleMetricsUpdate}
+                    onAdminWarning={handleAdminWarning}
+                    onExamTerminated={handleExamTerminated}
                     className={styles.aiCameraMonitor}
+                    shouldStop={isExamSubmitted}
                   />
                 </div>
               )}

@@ -29,7 +29,7 @@ export default function CourseFilterBar({ filters, onFilterChange, onClearFilter
 	const hasActiveFilters =
 		filters.search !== '' ||
 		filters.visibility !== 'all' ||
-		filters.instructorId !== 'all' ||
+		filters.organizationId !== 'all' ||
 		filters.sortBy !== 'title' ||
 		filters.sortOrder !== 'asc'
 
@@ -60,15 +60,15 @@ export default function CourseFilterBar({ filters, onFilterChange, onClearFilter
 				</div>
 
 				<div className="filter-group">
-					<label className="filter-label">ID giảng viên</label>
+					<label className="filter-label">Organization ID</label>
 					<input
 						type="text"
 						className="form-input"
 						placeholder="Tất cả"
-						value={filters.instructorId === 'all' ? '' : filters.instructorId}
+						value={filters.organizationId === 'all' ? '' : filters.organizationId}
 						onChange={(event) => {
 							const value = event.target.value.trim()
-							onFilterChange('instructorId', value.length === 0 ? 'all' : value)
+							onFilterChange('organizationId', value.length === 0 ? 'all' : value)
 						}}
 					/>
 				</div>

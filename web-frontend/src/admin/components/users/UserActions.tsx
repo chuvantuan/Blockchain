@@ -28,12 +28,13 @@ export default function UserActions({
 			</button>
 
 			{/* Nút khóa/mở khóa */}
+			{/* Logic: status = 'active' → hiển thị Unlock (ổ khóa mở), status = 'inactive' → hiển thị Lock (ổ khóa đóng) */}
 			<button
 				className="btn btn-sm btn-secondary"
 				onClick={() => onToggleStatus(user)}
 				title={user.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
 			>
-				{user.status === 'active' ? <Lock size={16} /> : <Unlock size={16} />}
+				{user.status === 'active' ? <Unlock size={16} /> : <Lock size={16} />}
 			</button>
 
 			{/* Nút xóa */}

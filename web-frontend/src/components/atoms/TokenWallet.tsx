@@ -14,6 +14,31 @@ import {
 import { getBalance, getHistory, withdrawTokens } from '../../services/api/tokenRewardApi'
 import TokenWithdrawModal from '../molecules/TokenWithdrawModal'
 
+const asNumber = (value: unknown, fallback = 0): number => {
+    if (value === null || value === undefined) {
+        return fallback
+    }
+
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : fallback
+    }
+
+    if (typeof value === 'bigint') {
+        try {
+            return Number(value)
+        } catch {
+            return fallback
+        }
+    }
+
+    if (typeof value === 'string') {
+        const parsed = Number(value)
+        return Number.isNaN(parsed) ? fallback : parsed
+    }
+
+    return fallback
+}
+
 interface TokenWalletProps {
     userId?: string
 }
@@ -71,8 +96,18 @@ export default function TokenWallet({ userId }: TokenWalletProps): JSX.Element {
         try {
             // Fetch balance
             const balanceData = await getBalance(userId)
-            setTokenBalance(balanceData.balance || 0)
-            setTotalEarned(balanceData.totalEarned || balanceData.balance || 0)
+            const totalSpentValue = asNumber(balanceData.totalSpent ?? balanceData.lifetimeSpent, 0)
+            const balanceValue = asNumber(
+                balanceData.availableBalance ?? balanceData.balance ?? balanceData.tokenBalance,
+                0
+            )
+            const totalEarnedValue = asNumber(
+                balanceData.totalEarned ?? balanceData.lifetimeEarned,
+                balanceValue + totalSpentValue
+            )
+
+            setTokenBalance(balanceValue)
+            setTotalEarned(totalEarnedValue)
 
             // Fetch recent transactions (limit 4)
             const historyData = await getHistory(userId, 1, 4)
@@ -81,7 +116,7 @@ export default function TokenWallet({ userId }: TokenWalletProps): JSX.Element {
             const dataArray = (historyData as any).rewards || historyData.transactions || []
             const transformedTransactions = dataArray.map((item: any) => {
                 const isEarn = item.transaction_type === 'EARN'
-                const amount = item.tokensAwarded || item.amount || 0
+                const amount = asNumber(item.tokensAwarded ?? item.amount, 0)
                 
                 // Get reason label
                 const reasonLabels: Record<string, string> = {
@@ -210,11 +245,14 @@ export default function TokenWallet({ userId }: TokenWalletProps): JSX.Element {
     return (
         <div className="card stagger-load hover-lift interactive" style={{
             animationDelay: '200ms',
-            height: '370px',
-            padding: '16px',
+            minHeight: '370px',
+            height: '100%',
+            padding: 'clamp(12px, 2vw, 16px)',
             display: 'flex',
             flexDirection: 'column',
-            position: 'relative'
+            position: 'relative',
+            width: '100%',
+            boxSizing: 'border-box'
         }}>
             {/* --- HEADER --- */}
             <div style={{ flexShrink: 0 }}>

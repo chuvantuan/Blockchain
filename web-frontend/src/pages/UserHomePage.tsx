@@ -49,19 +49,8 @@ export default function UserHomePage(): JSX.Element {
 			{/* Background Pattern */}
 			<div className={styles.userHomePattern} />
 			
-			<main style={{
-				paddingTop: 'var(--space-24)',
-				maxWidth: '1400px',
-				margin: '0 auto',
-				padding: 'var(--space-24) var(--space-6) 0',
-				position: 'relative',
-				zIndex: 2
-			}}>
-				<div style={{
-					display: 'flex',
-					flexDirection: 'column',
-					gap: 'var(--space-8)'
-				}}>
+			<main className={styles.main}>
+				<div className={styles.contentWrapper}>
 					{/* Welcome Banner */}
 					<WelcomeBanner 
 						userName={user?.name || 'User'} 
@@ -72,22 +61,11 @@ export default function UserHomePage(): JSX.Element {
 						streak={7}
 					/>
 
-					{/* Main Content - Flexbox Layout */}
-					<div style={{
-						display: 'flex',
-						flexDirection: 'column',
-						gap: '16px',
-						marginBottom: '32px'
-					}}>
+					{/* Main Content - Responsive Flexbox Layout */}
+					<div className={styles.mainContent}>
 						{/* Row 1 - Mock Interviews và Token Wallet */}
-						<div style={{
-							display: 'flex',
-							gap: '16px'
-						}}>
-							<div style={{
-								flex: '2',
-								minHeight: '280px'
-							}}>
+						<div className={styles.responsiveRow}>
+							<div className={`${styles.responsiveRowItem} ${styles.responsiveRowItemFlex2}`}>
 								{/* Mock Interviews */}
 								<MockInterviews 
 									onStartInterview={handleStartInterview}
@@ -95,10 +73,7 @@ export default function UserHomePage(): JSX.Element {
 								/>
 							</div>
 
-							<div style={{
-								flex: '1',
-								minHeight: '280px'
-							}}>
+							<div className={`${styles.responsiveRowItem} ${styles.responsiveRowItemFlex1}`}>
 								{/* Token Wallet */}
 								<TokenWallet
 									userId={user?.id}
@@ -107,9 +82,7 @@ export default function UserHomePage(): JSX.Element {
 						</div>
 
 						{/* Row 2 - Practice Skills Full Width */}
-						<div style={{
-							minHeight: '280px'
-						}}>
+						<div className={styles.responsiveRowItemFullWidth}>
 							{/* Practice Skills */}
 							<PracticeSkills 
 								onSkillClick={handleSkillClick}
@@ -117,14 +90,8 @@ export default function UserHomePage(): JSX.Element {
 						</div>
 
 						{/* Row 3 - Recent Exams, Course Progress, Upcoming Exams */}
-						<div style={{
-							display: 'flex',
-							gap: '16px'
-						}}>
-							<div style={{
-								flex: '1',
-								minHeight: '280px'
-							}}>
+						<div className={styles.responsiveRow}>
+							<div className={`${styles.responsiveRowItem} ${styles.responsiveRowItemFlex1}`}>
 								{/* Recent Exams */}
 								<RecentExams 
 									onViewExam={handleViewExam}
@@ -132,10 +99,7 @@ export default function UserHomePage(): JSX.Element {
 								/>
 							</div>
 
-							<div style={{
-								flex: '1',
-								minHeight: '280px'
-							}}>
+							<div className={`${styles.responsiveRowItem} ${styles.responsiveRowItemFlex1}`}>
 								{/* Course Progress */}
 								<CourseProgress 
 									onContinueCourse={handleContinueCourse}
@@ -143,28 +107,24 @@ export default function UserHomePage(): JSX.Element {
 								/>
 							</div>
 
-							<div style={{
-								flex: '1',
-								minHeight: '280px'
-							}}>
+							<div className={`${styles.responsiveRowItem} ${styles.responsiveRowItemFlex1}`}>
 								{/* Upcoming Exams */}
-							<UpcomingExams exams={quizzes} />
+								<UpcomingExams exams={quizzes} />
 							</div>
 						</div>
-
 					</div>
 				</div>
-		</main>
+			</main>
 
-		{/* Footer */}
-		<Footer />
+			{/* Footer */}
+			<Footer />
 
-		{/* Modals - Rendered at page level for full screen display */}
-		<RewardStoreModal
-			isOpen={showRewardStore}
-			onClose={() => setShowRewardStore(false)}
-			userId={user?.id || 'user-123'}
-		/>
-	</div>
-)
+			{/* Modals - Rendered at page level for full screen display */}
+			<RewardStoreModal
+				isOpen={showRewardStore}
+				onClose={() => setShowRewardStore(false)}
+				userId={user?.id || 'user-123'}
+			/>
+		</div>
+	)
 }

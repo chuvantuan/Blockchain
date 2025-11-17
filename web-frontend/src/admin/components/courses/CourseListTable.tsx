@@ -107,7 +107,7 @@ export default function CourseListTable({
 				<thead>
 					<tr>
 						<th>Khóa học</th>
-						<th>Giảng viên</th>
+						<th>Organization</th>
 						<th>Slug</th>
 						<th>Trạng thái</th>
 						<th>Cập nhật</th>
@@ -138,7 +138,7 @@ export default function CourseListTable({
 								<td>
 									<div className="meta-item">
 										<User size={14} />
-										<span>ID #{course.instructorId}</span>
+										<span>{(course as any).organizationId || '—'}</span>
 									</div>
 								</td>
 								<td>

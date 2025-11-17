@@ -110,7 +110,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         
         {timeLeft <= 60 && (
           <div className="mt-2 text-sm font-medium">
-            ⚠️ Thời gian sắp hết!
+            Thời gian sắp hết!
           </div>
         )}
       </div>

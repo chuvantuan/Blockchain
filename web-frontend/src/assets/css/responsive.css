@@ -1,0 +1,251 @@
+/* Responsive Breakpoints */
+:root {
+  --breakpoint-xs: 0px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* Responsive Utilities */
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .show-mobile {
+    display: block !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-center {
+    text-align: center !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .hide-tablet {
+    display: none !important;
+  }
+  
+  .show-tablet {
+    display: block !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none !important;
+  }
+  
+  .show-desktop {
+    display: block !important;
+  }
+}
+
+/* Prevent horizontal overflow globally */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  position: relative;
+}
+
+/* Common Responsive Container */
+.responsive-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    padding: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container {
+    padding: 32px;
+  }
+}
+
+/* Responsive Grid */
+.responsive-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Responsive Flex */
+.responsive-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .responsive-flex {
+    flex-direction: row;
+  }
+}
+
+/* Responsive Text */
+.responsive-text-sm {
+  font-size: 14px;
+}
+
+.responsive-text-base {
+  font-size: 16px;
+}
+
+.responsive-text-lg {
+  font-size: 18px;
+}
+
+.responsive-text-xl {
+  font-size: 20px;
+}
+
+.responsive-text-2xl {
+  font-size: 24px;
+}
+
+.responsive-text-3xl {
+  font-size: 30px;
+}
+
+.responsive-text-4xl {
+  font-size: 36px;
+}
+
+@media (min-width: 768px) {
+  .responsive-text-sm {
+    font-size: 14px;
+  }
+  
+  .responsive-text-base {
+    font-size: 16px;
+  }
+  
+  .responsive-text-lg {
+    font-size: 18px;
+  }
+  
+  .responsive-text-xl {
+    font-size: 22px;
+  }
+  
+  .responsive-text-2xl {
+    font-size: 28px;
+  }
+  
+  .responsive-text-3xl {
+    font-size: 36px;
+  }
+  
+  .responsive-text-4xl {
+    font-size: 48px;
+  }
+}
+
+/* Responsive Spacing */
+.responsive-padding {
+  padding: 16px;
+}
+
+.responsive-padding-x {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.responsive-padding-y {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding: 24px;
+  }
+  
+  .responsive-padding-x {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  
+  .responsive-padding-y {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-padding {
+    padding: 32px;
+  }
+  
+  .responsive-padding-x {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+  
+  .responsive-padding-y {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+}
+
+
+
+/* Fix for cards and containers to prevent overflow */
+.card,
+[class*="card"],
+[class*="Card"],
+[class*="container"],
+[class*="Container"] {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure all flex and grid children don't overflow */
+[style*="display: flex"] > *,
+[style*="display: grid"] > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}

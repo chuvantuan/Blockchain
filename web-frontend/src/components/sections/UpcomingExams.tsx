@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, Clock, AlertCircle, CheckCircle, X, Camera, Mic, User, Shield, Info, Award } from 'lucide-react'
+import styles from '../../assets/css/UpcomingExams.module.css'
 
 interface UpcomingExam {
 	id: string
@@ -11,6 +12,7 @@ interface UpcomingExam {
 	type: 'scheduled' | 'practice' | 'certification'
 	status: 'upcoming' | 'registered' | 'ready'
 	proctoring?: boolean
+	isStopped?: boolean // Bài thi đã bị dừng bởi giám thị
 }
 
 interface UpcomingExamsProps {
@@ -84,11 +86,11 @@ export default function UpcomingExams({
 	const getStatusIcon = (status: string) => {
 		switch (status) {
 			case 'ready':
-				return <CheckCircle className="w-4 h-4 text-green-500" style={{ width: '16px', height: '16px', color: 'var(--primary)' }} />
+				return <CheckCircle className={styles.statusIcon} style={{ color: 'var(--primary)' }} />
 			case 'registered':
-				return <Clock className="w-4 h-4 text-blue-500" style={{ width: '16px', height: '16px', color: 'var(--primary)' }} />
+				return <Clock className={styles.statusIcon} style={{ color: 'var(--primary)' }} />
 			case 'upcoming':
-				return <AlertCircle className="w-4 h-4 text-yellow-500" style={{ width: '16px', height: '16px', color: 'var(--accent)' }} />
+				return <AlertCircle className={styles.statusIcon} style={{ color: 'var(--accent)' }} />
 			default:
 				return null
 		}
@@ -172,32 +174,21 @@ export default function UpcomingExams({
 	}
 
 	const getActionButton = (exam: UpcomingExam) => {
+		// Nếu bài thi đã bị dừng, không hiển thị nút hành động
+		if (exam.isStopped) {
+			return (
+				<div className={`${styles.actionButton} ${styles.actionButtonStopped}`}>
+					Đã bị dừng
+				</div>
+			)
+		}
+		
 		switch (exam.status) {
 			case 'ready':
 				return (
 					<button
 						onClick={() => handleStartExam(exam.id)}
-						style={{
-							background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-							color: 'white',
-							padding: '8px 16px',
-							borderRadius: 'var(--radius-md)',
-							fontSize: '14px',
-							fontWeight: 500,
-							border: 'none',
-							cursor: 'pointer',
-							transition: 'all 0.2s ease',
-							minWidth: '120px',
-							textAlign: 'center'
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.transform = 'translateY(-2px)'
-							e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.transform = 'translateY(0)'
-							e.currentTarget.style.boxShadow = 'none'
-						}}
+						className={`${styles.actionButton} ${styles.actionButtonPrimary}`}
 					>
 						Bắt đầu thi
 					</button>
@@ -206,27 +197,7 @@ export default function UpcomingExams({
 				return (
 					<button
 						onClick={() => handleStartExam(exam.id)}
-						style={{
-							background: 'linear-gradient(135deg, var(--accent), var(--primary))',
-							color: 'white',
-							padding: '8px 16px',
-							borderRadius: 'var(--radius-md)',
-							fontSize: '14px',
-							fontWeight: 500,
-							border: 'none',
-							cursor: 'pointer',
-							transition: 'all 0.2s ease',
-							minWidth: '120px',
-							textAlign: 'center'
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.transform = 'translateY(-2px)'
-							e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.transform = 'translateY(0)'
-							e.currentTarget.style.boxShadow = 'none'
-						}}
+						className={`${styles.actionButton} ${styles.actionButtonAccent}`}
 					>
 						Tiếp tục làm bài
 					</button>
@@ -235,27 +206,7 @@ export default function UpcomingExams({
 				return (
 					<button
 						onClick={() => handleRegisterExam(exam.id)}
-						style={{
-							background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-							color: 'white',
-							padding: '8px 16px',
-							borderRadius: 'var(--radius-md)',
-							fontSize: '14px',
-							fontWeight: 500,
-							border: 'none',
-							cursor: 'pointer',
-							transition: 'all 0.2s ease',
-							minWidth: '120px',
-							textAlign: 'center'
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.transform = 'translateY(-2px)'
-							e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.transform = 'translateY(0)'
-							e.currentTarget.style.boxShadow = 'none'
-						}}
+						className={`${styles.actionButton} ${styles.actionButtonPrimary}`}
 					>
 						Đăng ký
 					</button>
@@ -267,94 +218,54 @@ export default function UpcomingExams({
 
 	return (
 		<>
-			<div className="card stagger-load hover-lift interactive" style={{ animationDelay: '500ms', padding: '16px', height: '490px', display: 'flex', flexDirection: 'column', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-				<div className="flex items-center justify-between mb-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-					<h3 className="text-lg font-semibold flex items-center" style={{ fontSize: '18px', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center' }}>
-						<Calendar className="w-5 h-5 mr-2" style={{ width: '20px', height: '20px', marginRight: '8px', color: 'var(--accent)' }} />
+			<div className={`card stagger-load hover-lift interactive ${styles.container}`}>
+				<div className={styles.header}>
+					<h3 className={styles.headerTitle}>
+						<Calendar className={styles.headerIcon} />
 						Bài thi sắp tới
 					</h3>
 					<button
 						onClick={handleViewSchedule}
-						className="text-sm text-[var(--accent)] hover:underline"
-						style={{
-							fontSize: '14px',
-							color: 'var(--primary)',
-							background: 'none',
-							border: 'none',
-							cursor: 'pointer',
-							transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-							padding: '4px 8px',
-							borderRadius: '6px',
-							fontWeight: 500
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.background = 'var(--primary-light)'
-							e.currentTarget.style.textDecoration = 'underline'
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.background = 'none'
-							e.currentTarget.style.textDecoration = 'none'
-						}}
+						className={styles.viewScheduleButton}
 					>
 						Xem lịch
 					</button>
 				</div>
 
-				<div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+				<div className={styles.examList}>
+					<div className={styles.examListContainer}>
 						{exams.map((exam) => (
 							<div
 								key={exam.id}
-								style={{
-									padding: '12px',
-									borderRadius: 'var(--radius-md)',
-									border: '1px solid var(--border)',
-									background: 'var(--card)',
-									transition: 'all 0.2s ease',
-									cursor: 'pointer',
-									boxShadow: 'var(--shadow-sm)'
-								}}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.borderColor = 'var(--primary)'
-									e.currentTarget.style.transform = 'translateX(4px)'
-									e.currentTarget.style.boxShadow = 'var(--shadow-md)'
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.borderColor = 'var(--border)'
-									e.currentTarget.style.transform = 'translateX(0)'
-									e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-								}}
+								className={styles.examCard}
 							>
-								<div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-									<div style={{ flex: 1, marginRight: '8px' }}>
-										<div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+								<div className={styles.examCardHeader}>
+									<div className={styles.examCardContent}>
+										<div className={styles.examCardTitleRow}>
 											{getStatusIcon(exam.status)}
-											<h4 style={{ fontSize: '14px', fontWeight: 500, marginLeft: '8px', margin: 0 }}>
+											<h4 className={styles.examTitle}>
 												{exam.title}
 											</h4>
 										</div>
-										<div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: 'var(--muted-foreground)', marginBottom: '4px' }}>
-											<Calendar style={{ width: '12px', height: '12px', marginRight: '4px' }} />
+										<div className={styles.examMeta}>
+											<Calendar className={styles.examMetaIcon} />
 											{exam.date} lúc {exam.time}
 										</div>
-										<div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: 'var(--muted-foreground)' }}>
-											<Clock style={{ width: '12px', height: '12px', marginRight: '4px' }} />
+										<div className={styles.examMeta}>
+											<Clock className={styles.examMetaIcon} />
 											{exam.duration}
 											{exam.proctoring && (
-												<span style={{ marginLeft: '8px', padding: '2px 8px', background: 'var(--destructive)', color: 'white', borderRadius: '9999px', fontSize: '11px' }}>
+												<span className={styles.proctoringBadge}>
 													Giám sát
 												</span>
 											)}
 										</div>
 									</div>
 
-									<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+									<div className={styles.examTypeBadge}>
 										<span
+											className={styles.typeLabel}
 											style={{
-												fontSize: '11px',
-												padding: '4px 10px',
-												borderRadius: '9999px',
-												fontWeight: 500,
 												background: getTypeColor(exam.type) + '20',
 												color: getTypeColor(exam.type)
 											}}
@@ -364,7 +275,7 @@ export default function UpcomingExams({
 									</div>
 								</div>
 
-								<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+								<div className={styles.examCardActions}>
 									{getActionButton(exam)}
 								</div>
 							</div>
@@ -375,135 +286,56 @@ export default function UpcomingExams({
 
 			{/* Exam Detail Modal */}
 			{showExamDetailModal && selectedExam && (
-				<div style={{
-					position: 'fixed',
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-					background: 'rgba(0, 0, 0, 0.7)',
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'center',
-					zIndex: 10000,
-					backdropFilter: 'blur(4px)',
-					animation: 'fadeIn 0.2s ease'
-				}}>
-					<div style={{
-						background: 'var(--card)',
-						borderRadius: 'var(--radius-lg)',
-						padding: '32px',
-						maxWidth: '500px',
-						width: '90%',
-						position: 'relative',
-						boxShadow: 'var(--shadow-xl)',
-						animation: 'slideInUp 0.3s ease'
-					}}>
+				<div className={styles.modalOverlay} onClick={() => setShowExamDetailModal(false)}>
+					<div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
 						<button
 							onClick={() => setShowExamDetailModal(false)}
-							style={{
-								position: 'absolute',
-								top: '16px',
-								right: '16px',
-								background: 'var(--muted)',
-								border: 'none',
-								borderRadius: '50%',
-								width: '32px',
-								height: '32px',
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								cursor: 'pointer',
-								transition: 'all 0.2s ease'
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.background = 'var(--destructive)'
-								e.currentTarget.style.transform = 'scale(1.1)'
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.background = 'var(--muted)'
-								e.currentTarget.style.transform = 'scale(1)'
-							}}
+							className={styles.modalCloseButton}
 						>
-							<X style={{ width: '20px', height: '20px' }} />
+							<X className={styles.modalCloseIcon} />
 						</button>
 
-						<div style={{ textAlign: 'center' }}>
-							<Calendar style={{
-								width: '64px',
-								height: '64px',
-								color: 'var(--primary)',
-								margin: '0 auto 16px'
-							}} />
+						<div className={styles.modalHeader}>
+							<Calendar className={styles.modalIcon} />
 
-							<h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>
+							<h2 className={styles.modalTitle}>
 								{selectedExam.title}
 							</h2>
 
 							<span
+								className={styles.modalTypeBadge}
 								style={{
-									display: 'inline-block',
-									fontSize: '12px',
-									padding: '4px 12px',
-									borderRadius: '9999px',
-									fontWeight: 500,
 									background: getTypeColor(selectedExam.type) + '20',
-									color: getTypeColor(selectedExam.type),
-									marginBottom: '24px'
+									color: getTypeColor(selectedExam.type)
 								}}
 							>
 								{getTypeLabel(selectedExam.type)}
 							</span>
 
-							<div style={{
-								background: 'var(--muted)',
-								padding: '20px',
-								borderRadius: 'var(--radius-md)',
-								marginBottom: '24px',
-								textAlign: 'left'
-							}}>
-								<div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
-									<Calendar style={{ width: '16px', height: '16px', color: 'var(--primary)', marginRight: '8px' }} />
-									<strong>Ngày thi:</strong> {selectedExam.date}
+							<div className={styles.modalInfoBox}>
+								<div className={styles.modalInfoItem}>
+									<Calendar className={styles.modalInfoIcon} />
+									<span><strong>Ngày thi:</strong> {selectedExam.date}</span>
 								</div>
-								<div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
-									<Clock style={{ width: '16px', height: '16px', color: 'var(--primary)', marginRight: '8px' }} />
-									<strong>Giờ:</strong> {selectedExam.time}
+								<div className={styles.modalInfoItem}>
+									<Clock className={styles.modalInfoIcon} />
+									<span><strong>Giờ:</strong> {selectedExam.time}</span>
 								</div>
-								<div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
-									<Clock style={{ width: '16px', height: '16px', color: 'var(--primary)', marginRight: '8px' }} />
-									<strong>Thời lượng:</strong> {selectedExam.duration}
+								<div className={styles.modalInfoItem}>
+									<Clock className={styles.modalInfoIcon} />
+									<span><strong>Thời lượng:</strong> {selectedExam.duration}</span>
 								</div>
 								{selectedExam.proctoring && (
-									<div style={{ display: 'flex', alignItems: 'center' }}>
-										<Shield style={{ width: '16px', height: '16px', color: 'var(--destructive)', marginRight: '8px' }} />
-										<strong>Giám sát:</strong> Có (camera & micro)
+									<div className={styles.modalInfoItem}>
+										<Shield className={`${styles.modalInfoIcon} ${styles.modalInfoIconDestructive}`} />
+										<span><strong>Giám sát:</strong> Có (camera & micro)</span>
 									</div>
 								)}
 							</div>
 
 							<button
 								onClick={() => setShowExamDetailModal(false)}
-								style={{
-									width: '100%',
-									padding: '12px',
-									background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-									color: 'white',
-									border: 'none',
-									borderRadius: 'var(--radius-md)',
-									fontSize: '16px',
-									fontWeight: 600,
-									cursor: 'pointer',
-									transition: 'all 0.2s ease'
-								}}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.transform = 'translateY(-2px)'
-									e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.transform = 'translateY(0)'
-									e.currentTarget.style.boxShadow = 'none'
-								}}
+								className={`${styles.modalButton} ${styles.modalButtonPrimary}`}
 							>
 								Đã hiểu
 							</button>
@@ -514,144 +346,53 @@ export default function UpcomingExams({
 
 			{/* Register Modal */}
 			{showRegisterModal && selectedExam && (
-				<div style={{
-					position: 'fixed',
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-					background: 'rgba(0, 0, 0, 0.7)',
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'center',
-					zIndex: 10000,
-					backdropFilter: 'blur(4px)',
-					animation: 'fadeIn 0.2s ease'
-				}}>
-					<div style={{
-						background: 'var(--card)',
-						borderRadius: 'var(--radius-lg)',
-						padding: '32px',
-						maxWidth: '500px',
-						width: '90%',
-						position: 'relative',
-						boxShadow: 'var(--shadow-xl)',
-						animation: 'slideInUp 0.3s ease'
-					}}>
+				<div className={styles.modalOverlay} onClick={() => setShowRegisterModal(false)}>
+					<div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
 						<button
 							onClick={() => setShowRegisterModal(false)}
-							style={{
-								position: 'absolute',
-								top: '16px',
-								right: '16px',
-								background: 'var(--muted)',
-								border: 'none',
-								borderRadius: '50%',
-								width: '32px',
-								height: '32px',
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								cursor: 'pointer',
-								transition: 'all 0.2s ease'
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.background = 'var(--destructive)'
-								e.currentTarget.style.transform = 'scale(1.1)'
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.background = 'var(--muted)'
-								e.currentTarget.style.transform = 'scale(1)'
-							}}
+							className={styles.modalCloseButton}
 						>
-							<X style={{ width: '20px', height: '20px' }} />
+							<X className={styles.modalCloseIcon} />
 						</button>
 
-						<div style={{ textAlign: 'center' }}>
-							<Info style={{
-								width: '64px',
-								height: '64px',
-								color: 'var(--primary)',
-								margin: '0 auto 16px'
-							}} />
+						<div className={styles.modalHeader}>
+							<Info className={styles.modalIcon} />
 
-							<h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>
+							<h2 className={styles.modalTitle}>
 								Xác nhận đăng ký
 							</h2>
 
-							<p style={{ color: 'var(--muted-foreground)', marginBottom: '24px' }}>
+							<p className={styles.modalDescription}>
 								Bạn muốn đăng ký tham gia kỳ thi này?
 							</p>
 
-							<div style={{
-								background: 'var(--muted)',
-								padding: '16px',
-								borderRadius: 'var(--radius-md)',
-								marginBottom: '24px',
-								textAlign: 'left'
-							}}>
-								<h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px' }}>
+							<div className={styles.modalInfoBox}>
+								<h3 className={styles.modalInfoTitle}>
 									{selectedExam.title}
 								</h3>
-								<p style={{ fontSize: '14px', margin: '4px 0' }}>
+								<p className={styles.modalInfoText}>
 									📅 {selectedExam.date} lúc {selectedExam.time}
 								</p>
-								<p style={{ fontSize: '14px', margin: '4px 0' }}>
+								<p className={styles.modalInfoText}>
 									⏱️ {selectedExam.duration}
 								</p>
 								{selectedExam.proctoring && (
-									<p style={{ fontSize: '14px', margin: '4px 0', color: 'var(--destructive)' }}>
+									<p className={`${styles.modalInfoText} ${styles.modalInfoTextDestructive}`}>
 										🔒 Bài thi có giám sát
 									</p>
 								)}
 							</div>
 
-							<div style={{ display: 'flex', gap: '12px' }}>
+							<div className={styles.modalButtonGroup}>
 								<button
 									onClick={() => setShowRegisterModal(false)}
-									style={{
-										flex: 1,
-										padding: '12px',
-										background: 'var(--muted)',
-										color: 'var(--foreground)',
-										border: '1px solid var(--border)',
-										borderRadius: 'var(--radius-md)',
-										fontSize: '16px',
-										fontWeight: 600,
-										cursor: 'pointer',
-										transition: 'all 0.2s ease'
-									}}
-									onMouseEnter={(e) => {
-										e.currentTarget.style.background = 'var(--border)'
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.background = 'var(--muted)'
-									}}
+									className={`${styles.modalButton} ${styles.modalButtonSecondary}`}
 								>
 									Hủy
 								</button>
 								<button
 									onClick={handleConfirmRegistration}
-									style={{
-										flex: 1,
-										padding: '12px',
-										background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-										color: 'white',
-										border: 'none',
-										borderRadius: 'var(--radius-md)',
-										fontSize: '16px',
-										fontWeight: 600,
-										cursor: 'pointer',
-										transition: 'all 0.2s ease'
-									}}
-									onMouseEnter={(e) => {
-										e.currentTarget.style.transform = 'translateY(-2px)'
-										e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.transform = 'translateY(0)'
-										e.currentTarget.style.boxShadow = 'none'
-									}}
+									className={`${styles.modalButton} ${styles.modalButtonPrimary}`}
 								>
 									Xác nhận
 								</button>
@@ -663,32 +404,19 @@ export default function UpcomingExams({
 
 			{/* Pre-Check Modal for Proctored Exams */}
 			{showPreCheckModal && selectedExam && selectedExam.proctoring && (
-				<div style={{
-					position: 'fixed',
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-					background: 'rgba(0, 0, 0, 0.7)',
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'center',
-					zIndex: 10000,
-					backdropFilter: 'blur(4px)',
-					animation: 'fadeIn 0.2s ease'
-				}}>
-					<div style={{
-						background: 'var(--card)',
-						borderRadius: 'var(--radius-lg)',
-						padding: '32px',
-						maxWidth: '600px',
-						width: '90%',
-						maxHeight: '80vh',
-						overflowY: 'auto',
-						position: 'relative',
-						boxShadow: 'var(--shadow-xl)',
-						animation: 'slideInUp 0.3s ease'
-					}}>
+				<div 
+					className={styles.modalOverlay} 
+					onClick={() => {
+						setShowPreCheckModal(false)
+						setChecklistItems({
+							webcam: false,
+							microphone: false,
+							identity: false,
+							agreement: false
+						})
+					}}
+				>
+					<div className={`${styles.modalContent} ${styles.modalContentLarge}`} onClick={(e) => e.stopPropagation()}>
 						<button
 							onClick={() => {
 								setShowPreCheckModal(false)
@@ -699,197 +427,75 @@ export default function UpcomingExams({
 									agreement: false
 								})
 							}}
-							style={{
-								position: 'absolute',
-								top: '16px',
-								right: '16px',
-								background: 'var(--muted)',
-								border: 'none',
-								borderRadius: '50%',
-								width: '32px',
-								height: '32px',
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								cursor: 'pointer',
-								transition: 'all 0.2s ease'
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.background = 'var(--destructive)'
-								e.currentTarget.style.transform = 'scale(1.1)'
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.background = 'var(--muted)'
-								e.currentTarget.style.transform = 'scale(1)'
-							}}
+							className={styles.modalCloseButton}
 						>
-							<X style={{ width: '20px', height: '20px' }} />
+							<X className={styles.modalCloseIcon} />
 						</button>
 
-						<div style={{ textAlign: 'center' }}>
-							<Shield style={{
-								width: '64px',
-								height: '64px',
-								color: 'var(--primary)',
-								margin: '0 auto 16px'
-							}} />
+						<div className={styles.modalHeader}>
+							<Shield className={styles.modalIcon} />
 
-							<h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>
+							<h2 className={styles.modalTitle}>
 								Kiểm tra trước khi thi
 							</h2>
 
-							<p style={{ color: 'var(--muted-foreground)', marginBottom: '24px' }}>
+							<p className={styles.modalDescription}>
 								Bài thi này yêu cầu giám sát. Vui lòng xác nhận các mục sau:
 							</p>
 
-							<div style={{
-								background: 'var(--muted)',
-								padding: '20px',
-								borderRadius: 'var(--radius-md)',
-								marginBottom: '24px',
-								textAlign: 'left'
-							}}>
+							<div className={styles.checklistContainer}>
 								{/* Webcam Check */}
 								<div
 									onClick={() => toggleChecklistItem('webcam')}
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										padding: '12px',
-										background: 'var(--card)',
-										borderRadius: 'var(--radius-md)',
-										marginBottom: '12px',
-										cursor: 'pointer',
-										border: `2px solid ${checklistItems.webcam ? 'var(--primary)' : 'var(--border)'}`,
-										transition: 'all 0.2s ease'
-									}}
+									className={`${styles.checklistItem} ${checklistItems.webcam ? styles.checklistItemChecked : ''}`}
 								>
-									<div style={{
-										width: '24px',
-										height: '24px',
-										borderRadius: '50%',
-										border: '2px solid var(--primary)',
-										marginRight: '12px',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										background: checklistItems.webcam ? 'var(--primary)' : 'transparent'
-									}}>
-										{checklistItems.webcam && <CheckCircle style={{ width: '16px', height: '16px', color: 'white' }} />}
+									<div className={`${styles.checklistCheckbox} ${checklistItems.webcam ? styles.checklistCheckboxChecked : ''}`}>
+										{checklistItems.webcam && <CheckCircle className={styles.checklistCheckIcon} />}
 									</div>
-									<Camera style={{ width: '20px', height: '20px', marginRight: '8px', color: 'var(--primary)' }} />
-									<span>Webcam hoạt động tốt</span>
+									<Camera className={styles.checklistItemIcon} />
+									<span className={styles.checklistItemText}>Webcam hoạt động tốt</span>
 								</div>
 
 								{/* Microphone Check */}
 								<div
 									onClick={() => toggleChecklistItem('microphone')}
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										padding: '12px',
-										background: 'var(--card)',
-										borderRadius: 'var(--radius-md)',
-										marginBottom: '12px',
-										cursor: 'pointer',
-										border: `2px solid ${checklistItems.microphone ? 'var(--primary)' : 'var(--border)'}`,
-										transition: 'all 0.2s ease'
-									}}
+									className={`${styles.checklistItem} ${checklistItems.microphone ? styles.checklistItemChecked : ''}`}
 								>
-									<div style={{
-										width: '24px',
-										height: '24px',
-										borderRadius: '50%',
-										border: '2px solid var(--primary)',
-										marginRight: '12px',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										background: checklistItems.microphone ? 'var(--primary)' : 'transparent'
-									}}>
-										{checklistItems.microphone && <CheckCircle style={{ width: '16px', height: '16px', color: 'white' }} />}
+									<div className={`${styles.checklistCheckbox} ${checklistItems.microphone ? styles.checklistCheckboxChecked : ''}`}>
+										{checklistItems.microphone && <CheckCircle className={styles.checklistCheckIcon} />}
 									</div>
-									<Mic style={{ width: '20px', height: '20px', marginRight: '8px', color: 'var(--primary)' }} />
-									<span>Microphone hoạt động tốt</span>
+									<Mic className={styles.checklistItemIcon} />
+									<span className={styles.checklistItemText}>Microphone hoạt động tốt</span>
 								</div>
 
 								{/* Identity Check */}
 								<div
 									onClick={() => toggleChecklistItem('identity')}
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										padding: '12px',
-										background: 'var(--card)',
-										borderRadius: 'var(--radius-md)',
-										marginBottom: '12px',
-										cursor: 'pointer',
-										border: `2px solid ${checklistItems.identity ? 'var(--primary)' : 'var(--border)'}`,
-										transition: 'all 0.2s ease'
-									}}
+									className={`${styles.checklistItem} ${checklistItems.identity ? styles.checklistItemChecked : ''}`}
 								>
-									<div style={{
-										width: '24px',
-										height: '24px',
-										borderRadius: '50%',
-										border: '2px solid var(--primary)',
-										marginRight: '12px',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										background: checklistItems.identity ? 'var(--primary)' : 'transparent'
-									}}>
-										{checklistItems.identity && <CheckCircle style={{ width: '16px', height: '16px', color: 'white' }} />}
+									<div className={`${styles.checklistCheckbox} ${checklistItems.identity ? styles.checklistCheckboxChecked : ''}`}>
+										{checklistItems.identity && <CheckCircle className={styles.checklistCheckIcon} />}
 									</div>
-									<User style={{ width: '20px', height: '20px', marginRight: '8px', color: 'var(--primary)' }} />
-									<span>Tôi đã chuẩn bị giấy tờ tùy thân</span>
+									<User className={styles.checklistItemIcon} />
+									<span className={styles.checklistItemText}>Tôi đã chuẩn bị giấy tờ tùy thân</span>
 								</div>
 
 								{/* Agreement Check */}
 								<div
 									onClick={() => toggleChecklistItem('agreement')}
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										padding: '12px',
-										background: 'var(--card)',
-										borderRadius: 'var(--radius-md)',
-										cursor: 'pointer',
-										border: `2px solid ${checklistItems.agreement ? 'var(--primary)' : 'var(--border)'}`,
-										transition: 'all 0.2s ease'
-									}}
+									className={`${styles.checklistItem} ${checklistItems.agreement ? styles.checklistItemChecked : ''}`}
 								>
-									<div style={{
-										width: '24px',
-										height: '24px',
-										borderRadius: '50%',
-										border: '2px solid var(--primary)',
-										marginRight: '12px',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										background: checklistItems.agreement ? 'var(--primary)' : 'transparent'
-									}}>
-										{checklistItems.agreement && <CheckCircle style={{ width: '16px', height: '16px', color: 'white' }} />}
+									<div className={`${styles.checklistCheckbox} ${checklistItems.agreement ? styles.checklistCheckboxChecked : ''}`}>
+										{checklistItems.agreement && <CheckCircle className={styles.checklistCheckIcon} />}
 									</div>
-									<Shield style={{ width: '20px', height: '20px', marginRight: '8px', color: 'var(--primary)' }} />
-									<span>Tôi đồng ý với quy định thi</span>
+									<Shield className={styles.checklistItemIcon} />
+									<span className={styles.checklistItemText}>Tôi đồng ý với quy định thi</span>
 								</div>
 							</div>
 
 							{!allChecksPassed() && (
-								<div style={{
-									padding: '12px',
-									background: 'var(--destructive)',
-									color: 'white',
-									borderRadius: 'var(--radius-md)',
-									fontSize: '14px',
-									marginBottom: '16px',
-									display: 'flex',
-									alignItems: 'center',
-									gap: '8px'
-								}}>
-									<AlertCircle style={{ width: '16px', height: '16px' }} />
+								<div className={styles.checklistWarning}>
+									<AlertCircle className={styles.checklistWarningIcon} />
 									Vui lòng hoàn thành tất cả các mục kiểm tra
 								</div>
 							)}
@@ -897,31 +503,7 @@ export default function UpcomingExams({
 							<button
 								onClick={handleProceedToExam}
 								disabled={!allChecksPassed()}
-								style={{
-									width: '100%',
-									padding: '12px',
-									background: allChecksPassed() ? 'linear-gradient(135deg, var(--primary), var(--accent))' : 'var(--muted)',
-									color: allChecksPassed() ? 'white' : 'var(--muted-foreground)',
-									border: 'none',
-									borderRadius: 'var(--radius-md)',
-									fontSize: '16px',
-									fontWeight: 600,
-									cursor: allChecksPassed() ? 'pointer' : 'not-allowed',
-									transition: 'all 0.2s ease',
-									opacity: allChecksPassed() ? 1 : 0.6
-								}}
-								onMouseEnter={(e) => {
-									if (allChecksPassed()) {
-										e.currentTarget.style.transform = 'translateY(-2px)'
-										e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-									}
-								}}
-								onMouseLeave={(e) => {
-									if (allChecksPassed()) {
-										e.currentTarget.style.transform = 'translateY(0)'
-										e.currentTarget.style.boxShadow = 'none'
-									}
-								}}
+								className={`${styles.checklistProceedButton} ${allChecksPassed() ? styles.checklistProceedButtonEnabled : ''}`}
 							>
 								Bắt đầu thi
 							</button>
@@ -929,24 +511,6 @@ export default function UpcomingExams({
 					</div>
 				</div>
 			)}
-
-			{/* Add animations */}
-			<style>{`
-				@keyframes fadeIn {
-					from { opacity: 0; }
-					to { opacity: 1; }
-				}
-				@keyframes slideInUp {
-					from {
-						opacity: 0;
-						transform: translateY(30px);
-					}
-					to {
-						opacity: 1;
-						transform: translateY(0);
-					}
-				}
-			`}</style>
 		</>
 	)
 }

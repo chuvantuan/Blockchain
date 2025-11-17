@@ -195,7 +195,7 @@ export default function PreparePage(): JSX.Element {
             <div className={styles.header}>
                 <div className={styles.headerContent}>
                     <h1 className={styles.title}>
-                        <Book style={{ width: '32px', height: '32px' }} />
+                        <Book />
                         Học Tập & Chuẩn Bị
                     </h1>
                     <p className={styles.subtitle}>
@@ -206,7 +206,7 @@ export default function PreparePage(): JSX.Element {
                 {/* Search and Filter */}
                 <div className={styles.searchFilter}>
                     <div className={styles.searchBox}>
-                        <Search style={{ width: '20px', height: '20px' }} />
+                        <Search />
                         <input
                             type="text"
                             placeholder="Tìm kiếm khóa học..."
@@ -232,7 +232,7 @@ export default function PreparePage(): JSX.Element {
             <section className={styles.section}>
                 <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>
-                        <TrendingUp style={{ width: '24px', height: '24px' }} />
+                        <TrendingUp />
                         Lộ Trình Học Tập
                     </h2>
                     <p className={styles.sectionDesc}>Chọn lộ trình phù hợp với mục tiêu nghề nghiệp của bạn</p>
@@ -245,15 +245,15 @@ export default function PreparePage(): JSX.Element {
                             <h3 className={styles.pathTitle}>{path.title}</h3>
                             <p className={styles.pathDesc}>{path.description}</p>
                             <div className={styles.pathMeta}>
-                                <span><Book style={{ width: '16px', height: '16px' }} /> {path.courses} khóa học</span>
-                                <span><Clock style={{ width: '16px', height: '16px' }} /> {path.duration}</span>
-                                <span style={{ color: getDifficultyColor(path.difficulty) }}>
+                                <span><Book /> {path.courses} khóa học</span>
+                                <span><Clock /> {path.duration}</span>
+                                <span className={styles.pathMetaDifficulty} style={{ color: getDifficultyColor(path.difficulty) }}>
                                     {path.difficulty}
                                 </span>
                             </div>
                             <button className={styles.pathBtn}>
                                 Xem chi tiết
-                                <ChevronRight style={{ width: '16px', height: '16px' }} />
+                                <ChevronRight />
                             </button>
                         </div>
                     ))}
@@ -264,7 +264,7 @@ export default function PreparePage(): JSX.Element {
             <section className={styles.section}>
                 <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>
-                        <Video style={{ width: '24px', height: '24px' }} />
+                        <Video />
                         Khóa Học Của Bạn
                     </h2>
                     <p className={styles.sectionDesc}>
@@ -277,13 +277,13 @@ export default function PreparePage(): JSX.Element {
                         <div key={course.id} className={`${styles.courseCard} ${course.isLocked ? styles.locked : ''}`}>
                             {course.isLocked && (
                                 <div className={styles.lockBadge}>
-                                    <Lock style={{ width: '16px', height: '16px' }} />
+                                    <Lock />
                                 </div>
                             )}
 
                             <div className={styles.courseThumbnail}>
                                 <div className={styles.thumbnailPlaceholder}>
-                                    <Code style={{ width: '48px', height: '48px' }} />
+                                    <Code />
                                 </div>
                                 {course.progress > 0 && (
                                     <div className={styles.progressBadge}>
@@ -298,7 +298,7 @@ export default function PreparePage(): JSX.Element {
                                         {course.level}
                                     </span>
                                     <span className={styles.courseRating}>
-                                        <Star style={{ width: '14px', height: '14px', fill: 'var(--accent)' }} />
+                                        <Star fill="var(--accent)" />
                                         {course.rating}
                                     </span>
                                 </div>
@@ -312,11 +312,11 @@ export default function PreparePage(): JSX.Element {
 
                                 <div className={styles.courseStats}>
                                     <span>
-                                        <FileText style={{ width: '16px', height: '16px' }} />
+                                        <FileText />
                                         {course.completedLessons}/{course.totalLessons} bài
                                     </span>
                                     <span>
-                                        <Clock style={{ width: '16px', height: '16px' }} />
+                                        <Clock />
                                         {course.duration}
                                     </span>
                                 </div>
@@ -336,17 +336,17 @@ export default function PreparePage(): JSX.Element {
                                 >
                                     {course.isLocked ? (
                                         <>
-                                            <Lock style={{ width: '16px', height: '16px' }} />
+                                            <Lock />
                                             Mở khóa với token
                                         </>
                                     ) : course.progress > 0 ? (
                                         <>
-                                            <Play style={{ width: '16px', height: '16px' }} />
+                                            <Play />
                                             Tiếp tục học
                                         </>
                                     ) : (
                                         <>
-                                            <Play style={{ width: '16px', height: '16px' }} />
+                                            <Play />
                                             Bắt đầu học
                                         </>
                                     )}

@@ -91,7 +91,7 @@ export const ExamInstructionsSection: React.FC<ExamInstructionsSectionProps> = (
           border: '1px solid #f59e0b'
         }}>
           <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#92400e', marginBottom: 'var(--space-3)' }}>
-            ⚠️ Lưu ý quan trọng:
+            Lưu ý quan trọng:
           </h3>
           <ul style={{ fontSize: '14px', color: '#92400e', lineHeight: 1.6, paddingLeft: 0, listStyle: 'none' }}>
             <li style={{ marginBottom: 'var(--space-2)' }}>• Không được trao đổi với người khác</li>

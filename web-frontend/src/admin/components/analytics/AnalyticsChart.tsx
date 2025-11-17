@@ -100,17 +100,39 @@ const renderChart = (chart: AnalyticsChart, canvasRef: React.RefObject<HTMLCanva
 
 const drawLineChart = (ctx: CanvasRenderingContext2D, data: any, width: number, height: number) => {
 	const { labels, datasets } = data
-	const dataset = datasets[0]
 	
-	if (!dataset || !dataset.data.length) return
+	if (!datasets || datasets.length === 0 || !datasets[0] || !datasets[0].data || datasets[0].data.length === 0) {
+		// Draw empty state message
+		ctx.fillStyle = '#64748b'
+		ctx.font = '14px sans-serif'
+		ctx.textAlign = 'center'
+		ctx.fillText('Chưa có dữ liệu', width / 2, height / 2)
+		return
+	}
 	
 	const padding = 40
 	const chartWidth = width - padding * 2
 	const chartHeight = height - padding * 2
 	
-	const maxValue = Math.max(...dataset.data)
-	const minValue = Math.min(...dataset.data)
-	const valueRange = maxValue - minValue
+	// Find max and min across all datasets
+	let maxValue = -Infinity
+	let minValue = Infinity
+	datasets.forEach((dataset: any) => {
+		if (dataset.data && dataset.data.length > 0) {
+			maxValue = Math.max(maxValue, ...dataset.data)
+			minValue = Math.min(minValue, ...dataset.data)
+		}
+	})
+	
+	if (maxValue === -Infinity || minValue === Infinity) {
+		ctx.fillStyle = '#64748b'
+		ctx.font = '14px sans-serif'
+		ctx.textAlign = 'center'
+		ctx.fillText('Chưa có dữ liệu', width / 2, height / 2)
+		return
+	}
+	
+	const valueRange = maxValue - minValue || 1 // Avoid division by zero
 	
 	// Draw axes
 	ctx.strokeStyle = '#e5e7eb'
@@ -121,33 +143,38 @@ const drawLineChart = (ctx: CanvasRenderingContext2D, data: any, width: number, 
 	ctx.lineTo(width - padding, height - padding)
 	ctx.stroke()
 	
-	// Draw line
-	ctx.strokeStyle = dataset.borderColor || '#3b82f6'
-	ctx.lineWidth = 2
-	ctx.beginPath()
-	
-	dataset.data.forEach((value: number, index: number) => {
-		const x = padding + (index / (dataset.data.length - 1)) * chartWidth
-		const y = height - padding - ((value - minValue) / valueRange) * chartHeight
+	// Draw each dataset
+	datasets.forEach((dataset: any) => {
+		if (!dataset.data || dataset.data.length === 0) return
 		
-		if (index === 0) {
-			ctx.moveTo(x, y)
-		} else {
-			ctx.lineTo(x, y)
-		}
-	})
-	
-	ctx.stroke()
-	
-	// Draw points
-	ctx.fillStyle = dataset.borderColor || '#3b82f6'
-	dataset.data.forEach((value: number, index: number) => {
-		const x = padding + (index / (dataset.data.length - 1)) * chartWidth
-		const y = height - padding - ((value - minValue) / valueRange) * chartHeight
-		
+		// Draw line
+		ctx.strokeStyle = dataset.borderColor || '#3b82f6'
+		ctx.lineWidth = 2
 		ctx.beginPath()
-		ctx.arc(x, y, 4, 0, 2 * Math.PI)
-		ctx.fill()
+		
+		dataset.data.forEach((value: number, index: number) => {
+			const x = padding + (index / (dataset.data.length - 1 || 1)) * chartWidth
+			const y = height - padding - ((value - minValue) / valueRange) * chartHeight
+			
+			if (index === 0) {
+				ctx.moveTo(x, y)
+			} else {
+				ctx.lineTo(x, y)
+			}
+		})
+		
+		ctx.stroke()
+		
+		// Draw points
+		ctx.fillStyle = dataset.borderColor || '#3b82f6'
+		dataset.data.forEach((value: number, index: number) => {
+			const x = padding + (index / (dataset.data.length - 1 || 1)) * chartWidth
+			const y = height - padding - ((value - minValue) / valueRange) * chartHeight
+			
+			ctx.beginPath()
+			ctx.arc(x, y, 4, 0, 2 * Math.PI)
+			ctx.fill()
+		})
 	})
 }
 
@@ -155,7 +182,14 @@ const drawBarChart = (ctx: CanvasRenderingContext2D, data: any, width: number, h
 	const { labels, datasets } = data
 	const dataset = datasets[0]
 	
-	if (!dataset || !dataset.data.length) return
+	if (!dataset || !dataset.data || dataset.data.length === 0) {
+		// Draw empty state message
+		ctx.fillStyle = '#64748b'
+		ctx.font = '14px sans-serif'
+		ctx.textAlign = 'center'
+		ctx.fillText('Chưa có dữ liệu', width / 2, height / 2)
+		return
+	}
 	
 	const padding = 40
 	const chartWidth = width - padding * 2
@@ -179,7 +213,14 @@ const drawDoughnutChart = (ctx: CanvasRenderingContext2D, data: any, width: numb
 	const { labels, datasets } = data
 	const dataset = datasets[0]
 	
-	if (!dataset || !dataset.data.length) return
+	if (!dataset || !dataset.data || dataset.data.length === 0) {
+		// Draw empty state message
+		ctx.fillStyle = '#64748b'
+		ctx.font = '14px sans-serif'
+		ctx.textAlign = 'center'
+		ctx.fillText('Chưa có dữ liệu', width / 2, height / 2)
+		return
+	}
 	
 	const centerX = width / 2
 	const centerY = height / 2
@@ -214,6 +255,7 @@ export const AnalyticsChartComponent: React.FC<AnalyticsChartProps> = ({
 	height = 300,
 	showControls = true
 }) => {
+	console.log('AnalyticsChartComponent rendered with chart:', chart.id, chart.title, 'data:', chart.data)
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 	const ChartIcon = getChartIcon(chart.type)
 	

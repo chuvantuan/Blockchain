@@ -30,6 +30,7 @@ import UserCoursesPage from '../pages/UserCoursesPage'
 import CourseDetailPage from '../pages/CourseDetailPage'
 import CourseLearnPage from '../pages/CourseLearnPage'
 import MultisigWalletPage from '../pages/MultisigWalletPage'
+import OAuthCallbackPage from '../pages/OAuthCallbackPage'
 import { checkAuth } from '../store/slices/authSlice'
 
 export default function AppRoutes(): JSX.Element {
@@ -45,6 +46,7 @@ export default function AppRoutes(): JSX.Element {
 			<Routes>
 			<Route path="/auth/*" element={<AuthLayout />} />
 			<Route path="/login" element={<Navigate to="/auth" replace />} />
+			<Route path="/oauth/callback" element={<OAuthCallbackPage />} />
 			
 			{/* Admin Routes */}
 			<Route path="/admin/*" element={

@@ -56,6 +56,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 		content: '',
 		displayOrder: 1
 	})
+	const [uploading, setUploading] = useState(false)
 	const [quizModalOpen, setQuizModalOpen] = useState(false)
 
 	useEffect(() => {
@@ -103,6 +104,43 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 		}
 	}
 
+	const handleUploadMaterialFile = async (file: File | null) => {
+		if (!file || !course?.id) return
+		try {
+			setUploading(true)
+			const res = await courseApi.uploadMaterialFile(course.id, file)
+			const storageKey = (res.data?.storageKey || res.data?.url) as string
+			if (storageKey) {
+				setNewMaterial(prev => ({ ...prev, storageKey }))
+			}
+		} catch (e) {
+			alert('Tải file học liệu thất bại')
+		} finally {
+			setUploading(false)
+		}
+	}
+
+	const moveMaterial = async (idx: number, direction: -1 | 1) => {
+		const targetIdx = idx + direction
+		if (targetIdx < 0 || targetIdx >= materials.length) return
+		const a = materials[idx]
+		const b = materials[targetIdx]
+		// Swap displayOrder (fallback to index if missing)
+		const aOrder = a.displayOrder ?? idx + 1
+		const bOrder = b.displayOrder ?? targetIdx + 1
+		try {
+			await Promise.all([
+				courseApi.updateMaterial(a.id, { displayOrder: bOrder }),
+				courseApi.updateMaterial(b.id, { displayOrder: aOrder })
+			])
+			// Reload
+			const updated = await courseApi.getCourseMaterials(course.id)
+			setMaterials(updated.data ?? [])
+		} catch (e) {
+			alert('Cập nhật thứ tự thất bại')
+		}
+	}
+
 	const handleDeleteMaterial = async (materialId: string) => {
 		try {
 			await courseApi.deleteMaterial(materialId)
@@ -140,10 +178,10 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 					</div>
 					<div className="modal-info-pairs">
 						<div className="modal-info-pair">
-							<div className="info-label">Giảng viên</div>
+							<div className="info-label">Organization</div>
 							<div className="info-value">
 								<User size={14} style={{ marginRight: 6 }} />
-								#{course.instructorId ?? '—'}
+								{course.organizationId ?? '—'}
 							</div>
 						</div>
 						<div className="modal-info-pair">
@@ -210,6 +248,17 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 							<option value="quiz">Quiz</option>
 							<option value="text">Text</option>
 						</select>
+						{newMaterial.type !== 'text' && newMaterial.type !== 'quiz' && (
+							<>
+								<input
+									type="file"
+									className="form-input"
+									style={{ minWidth: 220 }}
+									onChange={(e) => handleUploadMaterialFile(e.target.files?.[0] || null)}
+									disabled={uploading}
+								/>
+							</>
+						)}
 						<input
 					type="text"
 							className="form-input"
@@ -260,6 +309,14 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 									)}
 									</div>
 									<div className="item-meta">
+										<div style={{ display: 'flex', gap: 6 }}>
+											<button className="modal-action-button" type="button" onClick={() => moveMaterial(materials.findIndex(x => x.id === m.id), -1)}>
+												Lên
+											</button>
+											<button className="modal-action-button" type="button" onClick={() => moveMaterial(materials.findIndex(x => x.id === m.id), 1)}>
+												Xuống
+											</button>
+										</div>
 										<button className="modal-action-button" type="button" onClick={() => handleDeleteMaterial(m.id)}>
 											Xóa
 										</button>
@@ -270,7 +327,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 					)}
 				</div>
 
-				<CourseQuizModal isOpen={quizModalOpen} onClose={() => setQuizModalOpen(false)} />
+				<CourseQuizModal isOpen={quizModalOpen} onClose={() => setQuizModalOpen(false)} courseId={course.id} />
 			</div>
 		</Modal>
 	)

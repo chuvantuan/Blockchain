@@ -1,88 +1,150 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import AuthForm from '../components/molecules/AuthForm'
 import Input from '../components/atoms/Input'
 import PasswordStrength from '../components/atoms/PasswordStrength'
 import SocialAuthButtons from '../components/molecules/SocialAuthButtons'
-import { validateEmail, validatePassword, validateName, validateConfirmPassword, checkPasswordStrength } from '../utils/authValidation'
+import { validateEmail, validatePassword, validateName, validateUsername, validateConfirmPassword, checkPasswordStrength } from '../utils/authValidation'
+import { useFormValidation } from '../hooks/useFormValidation'
 import { registerUser, clearError } from '../store/slices/authSlice'
+import styles from '../assets/css/RegisterPage.module.css'
+import authFormStyles from '../assets/css/AuthForm.module.css'
 
 export default function RegisterPage(): JSX.Element {
 	const dispatch = useAppDispatch()
 	const navigate = useNavigate()
 	const { loading, error } = useAppSelector((state) => state.auth)
+	const wasLoadingRef = React.useRef(false)
 
-	const [formData, setFormData] = useState({
-		username: '',
-		email: '',
-		password: '',
-		confirmPassword: '',
-		firstName: '',
-		lastName: ''
-	})
-	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [passwordStrength, setPasswordStrength] = useState<'weak' | 'fair' | 'good' | 'strong'>('weak')
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault()
+	// Form validation setup
+	const {
+		formData,
+		fields,
+		handleChange,
+		handleBlur,
+		handleFocus,
+		handleSubmit,
+		setFieldError
+	} = useFormValidation(
+		{
+			username: '',
+			email: '',
+			password: '',
+			confirmPassword: '',
+			firstName: '',
+			lastName: ''
+		},
+		{
+			username: validateUsername,
+			email: validateEmail,
+			password: validatePassword,
+			confirmPassword: (value: string) => validateConfirmPassword(formData.password, value),
+			firstName: (value: string) => validateName(value, 'Họ'),
+			lastName: (value: string) => validateName(value, 'Tên')
+		},
+		{
+			debounceMs: 300,
+			validateOnChange: true,
+			validateOnBlur: true
+		}
+	)
 
-		// Validate form
-		const usernameError = validateName(formData.username)
-		const emailError = validateEmail(formData.email)
-		const passwordError = validatePassword(formData.password)
-		const confirmPasswordError = validateConfirmPassword(formData.password, formData.confirmPassword)
-		const firstNameError = validateName(formData.firstName)
-		const lastNameError = validateName(formData.lastName)
 
-		if (usernameError || emailError || passwordError || confirmPasswordError || firstNameError || lastNameError) {
-			setErrors({
-				username: usernameError || '',
-				email: emailError || '',
-				password: passwordError || '',
-				confirmPassword: confirmPasswordError || '',
-				firstName: firstNameError || '',
-				lastName: lastNameError || ''
+	// Clear error when component mounts
+	useEffect(() => {
+		dispatch(clearError())
+	}, [dispatch])
+
+	// Update password strength when password changes
+	useEffect(() => {
+		setPasswordStrength(checkPasswordStrength(formData.password))
+	}, [formData.password])
+
+	// Handle server-side errors
+	useEffect(() => {
+		if (error && typeof error === 'string') {
+			// Map server errors to specific fields
+			if (error.toLowerCase().includes('email')) {
+				setFieldError('email', error)
+			} else if (error.toLowerCase().includes('username')) {
+				setFieldError('username', error)
+			} else if (error.toLowerCase().includes('password')) {
+				setFieldError('password', error)
+			}
+		}
+	}, [error, setFieldError])
+
+	// Watch for successful registration (alternative approach)
+	useEffect(() => {
+		// If loading was true and now false, and no error, registration was successful
+		if (wasLoadingRef.current && !loading && !error) {
+			
+			// Registration success, redirect to login with pre-filled data
+			const registrationData = {
+				email: formData.email,
+				username: formData.username,
+				fullName: `${formData.firstName} ${formData.lastName}`.trim()
+			}
+			
+			// Store registration data temporarily for login page
+			sessionStorage.setItem('registrationSuccess', JSON.stringify(registrationData))
+			
+			// Navigate to login page
+			navigate('/auth/login', { 
+				state: { 
+					fromRegistration: true,
+					registrationData 
+				}
 			})
-			return
 		}
+		
+		wasLoadingRef.current = loading
+	}, [loading, error, formData, navigate])
 
-		// Dispatch register action
-		const result = await dispatch(registerUser({
-			username: formData.username,
-			email: formData.email,
-			password: formData.password,
-			firstName: formData.firstName,
-			lastName: formData.lastName
-		}))
-
-		if (registerUser.fulfilled.match(result)) {
-			// Registration success, redirect to login
-			alert('Registration successful! Please log in.')
-			navigate('/auth/login')
-		}
-	}
-
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target
-		setFormData(prev => ({
-			...prev,
-			[name]: value
-		}))
-
-		// Clear errors when user starts typing
-		if (errors[name]) {
-			setErrors(prev => ({
-				...prev,
-				[name]: ''
+	const onSubmit = useCallback(async () => {
+		try {
+			// Dispatch register action
+			const result = await dispatch(registerUser({
+				username: formData.username,
+				email: formData.email,
+				password: formData.password,
+				firstName: formData.firstName,
+				lastName: formData.lastName
 			}))
-		}
 
-		// Update password strength
-		if (name === 'password') {
-			setPasswordStrength(checkPasswordStrength(value))
+			// Check if registration was successful
+			const isSuccess = registerUser.fulfilled.match(result) || 
+							 (result.type === 'auth/registerUser/fulfilled')
+
+			if (isSuccess) {
+				// Registration success, redirect to login with pre-filled data
+				const registrationData = {
+					email: formData.email,
+					username: formData.username,
+					fullName: `${formData.firstName} ${formData.lastName}`.trim()
+				}
+				
+				// Store registration data temporarily for login page
+				sessionStorage.setItem('registrationSuccess', JSON.stringify(registrationData))
+				
+				// Small delay to ensure state is updated
+				setTimeout(() => {
+					// Navigate to login page
+					navigate('/auth/login', { 
+						state: { 
+							fromRegistration: true,
+							registrationData 
+						}
+					})
+				}, 100)
+			}
+		} catch (error) {
+			console.error('Registration error:', error)
 		}
-	}
+	}, [dispatch, formData, navigate])
 
 	const handleGoogleAuth = () => {
 		console.log('Google authentication')
@@ -95,49 +157,48 @@ export default function RegisterPage(): JSX.Element {
 	}
 
 	return (
-		<AuthForm
-			title="Tạo tài khoản"
-			subtitle="Đăng ký để bắt đầu với EduPlatform"
-			onSubmit={handleSubmit}
-			buttonText="Tạo tài khoản"
-			loading={loading}
-			error={error}
-			afterButton={
-				<div>
-					<SocialAuthButtons
-						onGoogleAuth={handleGoogleAuth}
-						onGitHubAuth={handleGitHubAuth}
-					/>
-				</div>
-			}
-			footer={
-				<p style={{ margin: 0 }}>
-					Đã có tài khoản?{' '}
-					<Link 
-						to="/auth/login"
-						style={{
-							background: 'none',
-							border: 'none',
-							color: 'var(--primary)',
-							cursor: 'pointer',
-							textDecoration: 'underline',
-							fontSize: 'inherit',
-							fontFamily: 'inherit'
-						}}
-					>
-						Đăng nhập
-					</Link>
-				</p>
-			}
-		>
+		<div className={styles.page}>
+			<div className={styles.container}>
+				<AuthForm
+					title="Tạo tài khoản"
+					subtitle="Đăng ký để bắt đầu với EduPlatform"
+					onSubmit={(e) => handleSubmit(onSubmit, e)}
+					buttonText="Tạo tài khoản"
+					loading={loading}
+					error={error}
+					afterButton={
+						<div>
+							<SocialAuthButtons
+								onGoogleAuth={handleGoogleAuth}
+								onGitHubAuth={handleGitHubAuth}
+							/>
+						</div>
+					}
+					footer={
+						<p>
+							Đã có tài khoản?{' '}
+							<Link 
+								to="/auth/login"
+								className={authFormStyles.footerLink}
+							>
+								Đăng nhập
+							</Link>
+						</p>
+					}
+				>
 			<Input
 				id="username"
 				name="username"
 				type="text"
 				value={formData.username}
-				onChange={handleInputChange}
+				onChange={handleChange}
+				onBlur={handleBlur}
+				onFocus={handleFocus}
 				placeholder="Nhập tên đăng nhập"
-				error={errors.username}
+				error={fields.username?.error || undefined}
+				success={fields.username?.isValid && fields.username?.value.length > 0}
+				suggestions={fields.username?.suggestions}
+				autoComplete="username"
 				required
 			/>
 
@@ -146,9 +207,14 @@ export default function RegisterPage(): JSX.Element {
 				name="firstName"
 				type="text"
 				value={formData.firstName}
-				onChange={handleInputChange}
+				onChange={handleChange}
+				onBlur={handleBlur}
+				onFocus={handleFocus}
 				placeholder="Nhập họ"
-				error={errors.firstName}
+				error={fields.firstName?.error || undefined}
+				success={fields.firstName?.isValid && fields.firstName?.value.length > 0}
+				suggestions={fields.firstName?.suggestions}
+				autoComplete="given-name"
 				required
 			/>
 
@@ -157,9 +223,14 @@ export default function RegisterPage(): JSX.Element {
 				name="lastName"
 				type="text"
 				value={formData.lastName}
-				onChange={handleInputChange}
+				onChange={handleChange}
+				onBlur={handleBlur}
+				onFocus={handleFocus}
 				placeholder="Nhập tên"
-				error={errors.lastName}
+				error={fields.lastName?.error || undefined}
+				success={fields.lastName?.isValid && fields.lastName?.value.length > 0}
+				suggestions={fields.lastName?.suggestions}
+				autoComplete="family-name"
 				required
 			/>
 
@@ -168,9 +239,14 @@ export default function RegisterPage(): JSX.Element {
 				name="email"
 				type="email"
 				value={formData.email}
-				onChange={handleInputChange}
+				onChange={handleChange}
+				onBlur={handleBlur}
+				onFocus={handleFocus}
 				placeholder="Nhập email của bạn"
-				error={errors.email}
+				error={fields.email?.error || undefined}
+				success={fields.email?.isValid && fields.email?.value.length > 0}
+				suggestions={fields.email?.suggestions}
+				autoComplete="email"
 				required
 			/>
 			
@@ -180,9 +256,14 @@ export default function RegisterPage(): JSX.Element {
 					name="password"
 					type="password"
 					value={formData.password}
-					onChange={handleInputChange}
+					onChange={handleChange}
+					onBlur={handleBlur}
+					onFocus={handleFocus}
 					placeholder="Tạo mật khẩu"
-					error={errors.password}
+					error={fields.password?.error || undefined}
+					success={fields.password?.isValid && fields.password?.value.length > 0}
+					suggestions={fields.password?.suggestions}
+					autoComplete="new-password"
 					required
 				/>
 				<PasswordStrength strength={passwordStrength} />
@@ -193,11 +274,18 @@ export default function RegisterPage(): JSX.Element {
 				name="confirmPassword"
 				type="password"
 				value={formData.confirmPassword}
-				onChange={handleInputChange}
+				onChange={handleChange}
+				onBlur={handleBlur}
+				onFocus={handleFocus}
 				placeholder="Xác nhận mật khẩu"
-				error={errors.confirmPassword}
+				error={fields.confirmPassword?.error || undefined}
+				success={fields.confirmPassword?.isValid && fields.confirmPassword?.value.length > 0}
+				suggestions={fields.confirmPassword?.suggestions}
+				autoComplete="new-password"
 				required
 			/>
-		</AuthForm>
+				</AuthForm>
+			</div>
+		</div>
 	)
 }

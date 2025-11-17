@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
-
-const API_BASE_URL = '/api'
+import { getAllQuizzes, getMyAllSubmissions } from '../services/api/onlineExamApi'
 
 interface Quiz {
 	id: string
@@ -47,27 +45,13 @@ export function useExamSchedule(filters: FilterOptions) {
 			setLoading(true)
 			setError(null)
 			
-			// Fetch all quizzes
-			const response = await axios.get(`${API_BASE_URL}/quizzes`)
-			
-			if (!response.data.success) {
-				throw new Error('Failed to fetch exam schedules')
-			}
-			
-			let quizzes = response.data.data || []
+			// Fetch all quizzes using onlineExamApi
+			let quizzes = await getAllQuizzes()
 			
 			// Fetch user's submissions to determine actual status
 			let submissions: any[] = []
 			try {
-				const token = localStorage.getItem('accessToken')
-				if (token) {
-					const subsResponse = await axios.get(`${API_BASE_URL}/my-submissions`, {
-						headers: { Authorization: `Bearer ${token}` }
-					})
-				if (subsResponse.data.success) {
-					submissions = subsResponse.data.data || []
-				}
-				}
+				submissions = await getMyAllSubmissions()
 			} catch (err) {
 				console.error('Error fetching submissions:', err)
 			}

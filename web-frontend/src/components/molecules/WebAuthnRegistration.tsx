@@ -142,7 +142,7 @@ const WebAuthnRegistration: React.FC = () => {
                     cursor: webAuthnLoading ? 'not-allowed' : 'pointer'
                 }}
             >
-                {webAuthnLoading ? '⏳ Đang đăng ký...' : '🔐 Đăng ký khoá bảo mật (WebAuthn)'}
+                {webAuthnLoading ? 'Đang đăng ký...' : 'Đăng ký khoá bảo mật'}
             </button>
             <p style={{ fontSize: '0.875rem', color: '#6c757d', marginTop: '0.5rem' }}>
                 Thêm một khoá bảo mật để đăng nhập không cần mật khẩu.

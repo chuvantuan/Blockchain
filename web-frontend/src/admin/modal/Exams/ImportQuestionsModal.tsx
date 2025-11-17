@@ -38,36 +38,36 @@ export default function ImportQuestionsModal({
 
 		// Validation
 		if (!selectedFile) {
-			alert('⚠️ Vui lòng chọn file Excel')
+			alert('Vui lòng chọn file Excel')
 			return
 		}
 
 		// Check file extension
 		const fileName = selectedFile.name.toLowerCase()
 		if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
-			alert('⚠️ File phải có định dạng .xlsx hoặc .xls')
+			alert('File phải có định dạng .xlsx hoặc .xls')
 			return
 		}
 
 		if (!subject.trim()) {
-			alert('⚠️ Vui lòng nhập tên môn học')
+			alert('Vui lòng nhập tên môn học')
 			return
 		}
 
 		// Validate subject length
 		if (subject.trim().length < 2) {
-			alert('⚠️ Tên môn học phải có ít nhất 2 ký tự')
+			alert('Tên môn học phải có ít nhất 2 ký tự')
 			return
 		}
 
 		if (subject.trim().length > 100) {
-			alert('⚠️ Tên môn học không được vượt quá 100 ký tự')
+			alert('Tên môn học không được vượt quá 100 ký tự')
 			return
 		}
 
 		// Validate tags if provided
 		if (tags.trim() && tags.trim().length > 500) {
-			alert('⚠️ Tags không được vượt quá 500 ký tự')
+			alert('Tags không được vượt quá 500 ký tự')
 			return
 		}
 
@@ -264,9 +264,9 @@ export default function ImportQuestionsModal({
 							</h4>
 						</div>
 						<div style={{ fontSize: '14px', lineHeight: '1.8' }}>
-							<p style={{ margin: '4px 0' }}><strong>✅ Đã import:</strong> {uploadResult.imported} câu hỏi</p>
-							<p style={{ margin: '4px 0' }}><strong>⚠️ Bỏ qua:</strong> {uploadResult.skipped} dòng</p>
-							<p style={{ margin: '4px 0' }}><strong>❌ Lỗi:</strong> {uploadResult.errors} dòng</p>
+							<p style={{ margin: '4px 0' }}><strong>Đã import:</strong> {uploadResult.imported} câu hỏi</p>
+							<p style={{ margin: '4px 0' }}><strong>Bỏ qua:</strong> {uploadResult.skipped} dòng</p>
+							<p style={{ margin: '4px 0' }}><strong>Lỗi:</strong> {uploadResult.errors} dòng</p>
 						</div>
 						{uploadResult.errorDetails && uploadResult.errorDetails.length > 0 && (
 							<details style={{ marginTop: '12px' }}>

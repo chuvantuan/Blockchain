@@ -15,7 +15,14 @@ const LEARN_TOKEN_ABI = [
 
 // Contract address (update after deployment)
 // Vite uses import.meta.env instead of process.env
-const LEARN_TOKEN_ADDRESS = import.meta.env.VITE_LEARN_TOKEN_ADDRESS || '0x0000000000000000000000000000000000000000'
+const LEARN_TOKEN_ADDRESS = (import.meta.env.VITE_LEARN_TOKEN_ADDRESS as string | undefined) ?? '0x0000000000000000000000000000000000000000'
+const ZERO_ADDRESS_PATTERN = /^0x0{40}$/i
+
+const isHexAddress = (value: string | null | undefined): value is string =>
+	!!value && /^0x[a-fA-F0-9]{40}$/.test(value)
+
+export const isRewardTokenConfigured = (): boolean =>
+	isHexAddress(LEARN_TOKEN_ADDRESS) && !ZERO_ADDRESS_PATTERN.test(LEARN_TOKEN_ADDRESS)
 
 export interface WalletInfo {
 	address: string
@@ -111,6 +118,10 @@ export async function getLearnTokenContract(): Promise<ethers.Contract> {
 		throw new Error('Provider not available')
 	}
 
+	if (!isRewardTokenConfigured()) {
+		throw new Error('Reward token contract is not configured')
+	}
+
 	const signer = await provider.getSigner()
 	return new ethers.Contract(LEARN_TOKEN_ADDRESS, LEARN_TOKEN_ABI, signer)
 }
@@ -124,6 +135,10 @@ export function getLearnTokenContractReadOnly(): ethers.Contract {
 		throw new Error('Provider not available')
 	}
 
+	if (!isRewardTokenConfigured()) {
+		throw new Error('Reward token contract is not configured')
+	}
+
 	return new ethers.Contract(LEARN_TOKEN_ADDRESS, LEARN_TOKEN_ABI, provider)
 }
 
@@ -132,8 +147,25 @@ export function getLearnTokenContractReadOnly(): ethers.Contract {
  */
 export async function getTokenBalance(address: string): Promise<string> {
 	try {
+		if (!isRewardTokenConfigured()) {
+			return '0'
+		}
+
+		if (!isHexAddress(address)) {
+			console.warn('getTokenBalance: invalid address provided', address)
+			return '0'
+		}
+
+		let normalizedAddress: string
+		try {
+			normalizedAddress = ethers.getAddress(address)
+		} catch (addressError) {
+			console.warn('getTokenBalance: unable to normalize address', address, addressError)
+			return '0'
+		}
+
 		const contract = getLearnTokenContractReadOnly()
-		const balance: bigint = await contract.balanceOf(address)
+		const balance: bigint = await contract.balanceOf(normalizedAddress)
 		return ethers.formatEther(balance)
 	} catch (error) {
 		console.error('Error getting token balance:', error)
@@ -213,6 +245,62 @@ export async function transferTokens(
 			throw new Error('Số dư không đủ để chuyển')
 		}
 		throw new Error('Không thể thực hiện giao dịch chuyển token')
+	}
+}
+
+export interface TokenTransferCostEstimate {
+	gasLimit: bigint
+	gasCostWei: bigint
+	gasPriceWei: bigint | null
+	maxFeePerGas: bigint | null
+	maxPriorityFeePerGas: bigint | null
+}
+
+export async function estimateTokenTransferCost(
+	toAddress: string,
+	amount: string
+): Promise<TokenTransferCostEstimate> {
+	const provider = getProvider()
+	if (!provider) {
+		throw new Error('Provider not available')
+	}
+
+	if (!isRewardTokenConfigured()) {
+		throw new Error('Reward token contract is not configured')
+	}
+
+	const contract = await getLearnTokenContract()
+	if (!contract) {
+		throw new Error('Contract not available')
+	}
+
+	const amountWei = ethers.parseEther(amount)
+
+	// In ethers v6, use contract.transfer.estimateGas() instead of contract.estimateGas.transfer()
+	let gasLimit: bigint
+	try {
+		gasLimit = await contract.transfer.estimateGas(toAddress, amountWei)
+	} catch (error: any) {
+		console.error('Gas estimation error:', error)
+		throw new Error(`Cannot estimate gas: ${error?.message || 'Unknown error'}`)
+	}
+
+	const feeData = await provider.getFeeData()
+
+	let gasPrice: bigint | null = feeData.maxFeePerGas ?? feeData.gasPrice ?? null
+	let gasCostWei = 0n
+	if (gasPrice !== null && gasPrice !== undefined) {
+		gasCostWei = gasLimit * gasPrice
+	} else {
+		gasPrice = null
+	}
+
+	return {
+		gasLimit,
+		gasCostWei,
+		gasPriceWei: gasPrice,
+		maxFeePerGas: feeData.maxFeePerGas ?? null,
+		maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ?? null
 	}
 }
 

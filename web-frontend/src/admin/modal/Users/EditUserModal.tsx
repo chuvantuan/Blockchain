@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Modal from '../../components/common/Modal'
-import { User, User as UserIcon, Mail, Phone, Shield, Building } from 'lucide-react'
+import { User, User as UserIcon, Mail, Phone, Shield } from 'lucide-react'
 import { User as UserType } from '../../types/user'
 
 interface EditUserModalProps {
@@ -20,8 +20,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 		name: '',
 		email: '',
 		phone: '',
-		role: 'student',
-		department: ''
+		role: 'student'
 	})
 
 	useEffect(() => {
@@ -30,8 +29,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 				name: user.name || '',
 				email: user.email || '',
 				phone: user.phone || '',
-				role: user.role || 'student',
-				department: user.department || ''
+				role: user.role || 'student'
 			})
 		}
 	}, [user])
@@ -152,21 +150,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 								<option value="user">Người dùng</option>
 							</select>
 						</div>
-					</div>
-
-					<div className="modal-form-group">
-						<label className="form-label">
-							<Building />
-							Phòng ban
-						</label>
-						<input
-							type="text"
-							name="department"
-							className="form-input"
-							value={formData.department}
-							onChange={handleInputChange}
-							placeholder="Nhập tên phòng ban"
-						/>
 					</div>
 				</div>
 			</div>

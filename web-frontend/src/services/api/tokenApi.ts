@@ -4,15 +4,21 @@ import tokenRewardApi, {
   spendTokens as spendTokensReward,
   getBalance as getBalanceReward,
   getHistory as getHistoryReward,
+  grantCourseCompletionTokens,
   type GrantTokenRequest,
   type SpendTokenRequest,
   type BalanceResponse,
   type HistoryResponse,
+  type CourseCompletionRewardRequest,
+  type Transaction,
 } from './tokenRewardApi'
 
-import { TOKEN_API } from '../../config/api';
-
-const API_BASE_URL = import.meta.env.VITE_TOKEN_API_URL || TOKEN_API || 'http://localhost:9009'
+// Use API Gateway - This API_BASE_URL is not actually used because we're using tokenRewardApi
+// Keeping it for backward compatibility if needed
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tokens`
+const DEFAULT_COURSE_COMPLETION_REWARD = Number(
+	import.meta.env.VITE_COURSE_COMPLETION_REWARD ?? 100
+)
 
 // Create axios instance with interceptors
 const api = axios.create({
@@ -53,6 +59,8 @@ export type {
   SpendTokenRequest,
   BalanceResponse,
   HistoryResponse,
+  CourseCompletionRewardRequest,
+  Transaction,
 } from './tokenRewardApi'
 
 export interface RewardRequest {
@@ -141,14 +149,61 @@ export async function awardContestWin(request: RewardRequest & { rank: number })
 	return res.data
 }
 
+export interface CourseCompletionAwardParams {
+	userId: string | number
+	courseId: string | number
+	amount?: number
+	reasonCode?: string
+}
+
+export async function awardCourseCompletion({
+	userId,
+	courseId,
+	amount,
+	reasonCode
+}: CourseCompletionAwardParams): Promise<Transaction> {
+	if (userId === undefined || userId === null) {
+		throw new Error('User id is required to award course completion tokens.')
+	}
+	if (courseId === undefined || courseId === null) {
+		throw new Error('Course id is required to award course completion tokens.')
+	}
+
+	const normalizedUserId =
+		typeof userId === 'string'
+			? (() => {
+					const trimmed = userId.trim()
+					if (trimmed.length === 0) {
+						throw new Error('User id is required to award course completion tokens.')
+					}
+					return Number.isFinite(Number(trimmed)) ? Number(trimmed) : trimmed
+			  })()
+			: userId
+
+	const rewardAmount = Number.isFinite(Number(amount))
+		? Number(amount)
+		: DEFAULT_COURSE_COMPLETION_REWARD
+
+	if (!(rewardAmount > 0)) {
+		throw new Error('Reward amount must be a positive number.')
+	}
+
+	return grantCourseCompletionTokens({
+		studentId: normalizedUserId,
+		courseId,
+		amount: rewardAmount,
+		reasonCode,
+	})
+}
+
 /**
  * Get available gifts for redemption
  * Uses token-reward-service backend
  */
 export async function getAvailableGifts(category?: string): Promise<GiftItem[]> {
-	const API_BASE_URL = import.meta.env.VITE_TOKEN_REWARD_API_URL ? `${import.meta.env.VITE_TOKEN_REWARD_API_URL}/api/tokens` : (typeof window !== 'undefined' ? (await import('../../config/api')).TOKEN_REWARD_API : undefined) || 'http://localhost:9009/api/tokens'
+	const API_GATEWAY_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tokens`
 	const params = category && category !== 'all' ? `?category=${category}` : ''
-	const res = await fetch(`${API_BASE_URL}/gifts${params}`)
+	const res = await fetch(`${API_GATEWAY_URL}/gifts${params}`)
 	if (!res.ok) {
 		throw new Error('Failed to fetch gifts')
 	}

@@ -1,73 +1,50 @@
 .contestSection {
-  margin-bottom: 64px;
+  margin-bottom: clamp(32px, 6vw, 64px);
+  width: 100%;
 }
 
 .contestList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: clamp(12px, 2vw, 16px);
+  width: 100%;
 }
 
 .contestGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(12px, 2.5vw, 20px);
   width: 100%;
-  justify-content: flex-start;
 }
 
 .emptyState {
   text-align: center;
-  padding: 48px 24px;
+  padding: clamp(32px, 5vw, 48px) clamp(16px, 3vw, 24px);
   background: var(--card);
   border-radius: 12px;
   border: 1px dashed var(--border);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .emptyText {
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
   color: var(--muted-foreground);
   margin: 0;
   font-weight: 500;
+  word-break: break-word;
 }
-
 
 /* Responsive design */
-@media (max-width: 1200px) {
+@media (min-width: 640px) {
   .contestGrid {
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   }
 }
 
-@media (max-width: 768px) {
-  .contestSection {
-    margin-bottom: 48px;
-  }
-  
+@media (min-width: 1024px) {
   .contestGrid {
-    gap: 12px;
-  }
-  
-  .contestList {
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
 
-@media (max-width: 480px) {
-  .contestSection {
-    margin-bottom: 32px;
-  }
-  
-  .contestGrid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .emptyState {
-    padding: 32px 16px;
-  }
-  
-  .emptyText {
-    font-size: 14px;
-  }
-}

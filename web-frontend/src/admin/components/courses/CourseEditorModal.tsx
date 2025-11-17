@@ -3,11 +3,12 @@ import { type CourseForm } from '../../types/course'
 import { type Course as ApiCourse, type CourseVisibility } from '../../../services/api/courseApi'
 import Modal from '../common/Modal'
 import { Save, X } from 'lucide-react'
+import organizationApi from '../../services/organizationApi'
 
 interface CourseEditorModalProps {
 	isOpen: boolean
 	onClose: () => void
-	onSave: (course: CourseForm) => void
+	onSave: (course: CourseForm, thumbnailFile?: File | null) => void
     editingCourse?: ApiCourse | null
 	title?: string
 }
@@ -23,7 +24,7 @@ const visibilityOptions: Array<{ value: CourseVisibility; label: string }> = [
 const emptyForm: CourseForm = {
 	title: '',
 	description: '',
-	instructorId: '',
+	organizationId: '',
 	thumbnailUrl: '',
 	visibility: 'draft'
 }
@@ -40,6 +41,11 @@ export default function CourseEditorModal({
 }: CourseEditorModalProps): JSX.Element {
 	const [form, setForm] = useState<CourseForm>(emptyForm)
 	const [errors, setErrors] = useState<Record<string, string>>({})
+	const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
+	const [thumbnailMode, setThumbnailMode] = useState<'url' | 'file'>('url')
+	const [orgOptions, setOrgOptions] = useState<Array<{ id: string; name: string }>>([])
+	const [orgLoading, setOrgLoading] = useState<boolean>(false)
+	const [orgError, setOrgError] = useState<string>('')
 
     useEffect(() => {
 		if (editingCourse) {
@@ -47,18 +53,49 @@ export default function CourseEditorModal({
 				id: editingCourse.id,
 				title: editingCourse.title ?? '',
 				description: editingCourse.description ?? '',
-				instructorId: editingCourse.instructorId ? String(editingCourse.instructorId) : '',
+				organizationId: (editingCourse as any).organizationId ?? '',
 				thumbnailUrl: editingCourse.thumbnailUrl ?? '',
 				visibility: isValidVisibility(editingCourse.visibility)
 					? editingCourse.visibility
 					: 'draft'
 			})
+			setThumbnailFile(null)
+			setThumbnailMode('url')
 		} else {
 			setForm(emptyForm)
+			setThumbnailFile(null)
+			setThumbnailMode('url')
 		}
 
 		setErrors({})
 	}, [editingCourse, isOpen])
+
+	// Load organizations for selector
+	useEffect(() => {
+		if (!isOpen) return
+		let mounted = true
+		;(async () => {
+			try {
+				setOrgLoading(true)
+				setOrgError('')
+				const list = await organizationApi.getAll()
+				if (!mounted) return
+				const opts = list.map(o => ({ id: o.id, name: o.name || o.id }))
+				setOrgOptions(opts)
+				// If empty and not set, default to first option
+				if (!form.organizationId && opts.length > 0) {
+					setForm(prev => ({ ...prev, organizationId: opts[0].id }))
+				}
+			} catch (e: any) {
+				if (!mounted) return
+				setOrgError(e?.message || 'Không tải được danh sách tổ chức')
+				setOrgOptions([])
+			} finally {
+				if (mounted) setOrgLoading(false)
+			}
+		})()
+		return () => { mounted = false }
+	}, [isOpen])
 
 	const validateForm = (): boolean => {
 		const nextErrors: Record<string, string> = {}
@@ -71,10 +108,8 @@ export default function CourseEditorModal({
 			nextErrors.description = 'Mô tả không được để trống'
 		}
 
-		if (!form.instructorId.trim()) {
-			nextErrors.instructorId = 'Vui lòng nhập ID giảng viên'
-		} else if (Number.isNaN(Number(form.instructorId))) {
-			nextErrors.instructorId = 'ID giảng viên phải là số'
+		if (!form.organizationId.trim()) {
+			nextErrors.organizationId = 'Vui lòng chọn Organization'
 		}
 
 		if (!form.visibility) {
@@ -91,8 +126,8 @@ export default function CourseEditorModal({
 
 		onSave({
 			...form,
-			instructorId: form.instructorId.trim(),
-		})
+			organizationId: form.organizationId.trim(),
+		}, thumbnailFile || (thumbnailMode === 'file' ? thumbnailFile : null))
 			onClose()
 	}
 
@@ -145,27 +180,72 @@ export default function CourseEditorModal({
 							{errors.description && <span className="error-message">{errors.description}</span>}
 							</div>
 
-							<div className="modal-form-group">
-							<label className="form-label">ID giảng viên <span className="required">*</span></label>
-							<input
-								type="number"
-								className={`form-input ${errors.instructorId ? 'error' : ''}`}
-									value={form.instructorId}
-								onChange={(e) => setForm(prev => ({ ...prev, instructorId: e.target.value }))}
-								placeholder="Nhập ID giảng viên"
-								/>
-								{errors.instructorId && <span className="error-message">{errors.instructorId}</span>}
+						<div className="modal-form-group">
+							<label className="form-label">Tổ chức (Organization) <span className="required">*</span></label>
+							<select
+								className={`form-input ${errors.organizationId ? 'error' : ''}`}
+								value={form.organizationId}
+								onChange={(e) => setForm(prev => ({ ...prev, organizationId: e.target.value }))}
+								disabled={orgLoading}
+							>
+								{orgOptions.length === 0 ? (
+									<option value="">{orgLoading ? 'Đang tải...' : 'Không có dữ liệu'}</option>
+								) : (
+									orgOptions.map(opt => (
+										<option key={opt.id} value={opt.id}>
+											{opt.name} — {opt.id}
+										</option>
+									))
+								)}
+							</select>
+							{orgError && <span className="error-message">{orgError}</span>}
+							{errors.organizationId && <span className="error-message">{errors.organizationId}</span>}
 						</div>
 
 							<div className="modal-form-group">
-							<label className="form-label">Ảnh đại diện</label>
+							<label className="form-label">Ảnh thu nhỏ (thumbnailUrl)</label>
+							<div
+								className="thumb-toggle"
+								style={{
+									display: 'grid',
+									gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+									gap: 8,
+									marginBottom: 8
+								}}
+							>
+								<button
+									type="button"
+									className={`btn ${thumbnailMode === 'url' ? 'btn-primary' : 'btn-secondary'}`}
+									style={{ width: '100%' }}
+									onClick={() => setThumbnailMode('url')}
+								>
+									URL
+								</button>
+								<button
+									type="button"
+									className={`btn ${thumbnailMode === 'file' ? 'btn-primary' : 'btn-secondary'}`}
+									style={{ width: '100%' }}
+									onClick={() => setThumbnailMode('file')}
+								>
+									Tải file
+								</button>
+							</div>
+							{thumbnailMode === 'url' ? (
 								<input
 									type="url"
 									className="form-input"
-								value={form.thumbnailUrl}
-								onChange={(e) => setForm(prev => ({ ...prev, thumbnailUrl: e.target.value }))}
-								placeholder="https://example.com/thumbnail.jpg"
-							/>
+									value={form.thumbnailUrl}
+									onChange={(e) => setForm(prev => ({ ...prev, thumbnailUrl: e.target.value }))}
+									placeholder="https://example.com/thumbnail.jpg"
+								/>
+							) : (
+								<input
+									type="file"
+									accept="image/*"
+									className="form-input"
+									onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
+								/>
+							)}
 						</div>
 						
 						<div className="modal-form-group">

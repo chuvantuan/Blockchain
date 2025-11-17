@@ -31,8 +31,9 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
           className={styles.viewAllButton}
           onClick={handleViewAllClick}
           type="button"
+          aria-label="Xem tất cả"
         >
-          Xem tất cả →
+          Xem tất cả
         </button>
       )}
     </div>

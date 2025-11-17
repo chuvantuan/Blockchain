@@ -331,3 +331,128 @@
   height: 300px;
 }
 
+/* Main Content Layout */
+.main {
+  padding-top: var(--space-24);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(12px, 3vw, 20px) clamp(12px, 3vw, 20px) 0;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  width: 100%;
+  align-items: stretch;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vw, 16px);
+  margin-bottom: clamp(24px, 3vw, 32px);
+  width: 100%;
+  align-items: stretch;
+}
+
+/* Responsive Row Layout */
+.responsiveRow {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vw, 16px);
+  width: 100%;
+  align-items: stretch;
+}
+
+.responsiveRowItem {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.responsiveRowItemFlex2 {
+  flex: 2;
+  min-height: clamp(240px, 30vw, 280px);
+  width: 100%;
+  min-width: 0;
+}
+
+.responsiveRowItemFlex1 {
+  flex: 1;
+  min-height: clamp(240px, 30vw, 280px);
+  width: 100%;
+  min-width: 0;
+}
+
+.responsiveRowItemFullWidth {
+  min-height: clamp(240px, 30vw, 280px);
+  width: 100%;
+  min-width: 0;
+}
+
+/* Responsive Breakpoints */
+@media (min-width: 768px) {
+  .responsiveRow {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 767px) {
+  .responsiveRowItemFlex2,
+  .responsiveRowItemFlex1,
+  .responsiveRowItemFullWidth {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .main {
+    padding: clamp(10px, 2.5vw, 16px) clamp(10px, 2.5vw, 16px) 0;
+  }
+
+  .mainContent {
+    gap: clamp(10px, 1.5vw, 14px);
+    margin-bottom: clamp(20px, 2.5vw, 28px);
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: clamp(10px, 2vw, 14px) clamp(10px, 2vw, 14px) 0;
+  }
+
+  .mainContent {
+    gap: clamp(10px, 1.5vw, 12px);
+    margin-bottom: clamp(16px, 2vw, 24px);
+  }
+
+  .responsiveRow {
+    gap: clamp(10px, 1.5vw, 12px);
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: clamp(8px, 1.5vw, 10px) clamp(8px, 1.5vw, 10px) 0;
+  }
+
+  .mainContent {
+    gap: clamp(8px, 1.5vw, 10px);
+    margin-bottom: clamp(12px, 2vw, 16px);
+  }
+
+  .responsiveRow {
+    gap: clamp(8px, 1.5vw, 10px);
+  }
+}
+

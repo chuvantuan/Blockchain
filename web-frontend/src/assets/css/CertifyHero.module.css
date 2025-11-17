@@ -1,10 +1,11 @@
 .hero {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 100px 0;
+  padding: clamp(60px, 10vw, 100px) 0;
   position: relative;
   overflow: hidden;
   animation: fadeInScale 0.8s ease-out;
+  width: 100%;
 }
 
 @keyframes fadeInScale {
@@ -45,9 +46,11 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 clamp(16px, 4vw, 24px);
   position: relative;
   z-index: 2;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .content {
@@ -68,9 +71,9 @@
 }
 
 .title {
-  font-size: 56px;
+  font-size: clamp(32px, 6vw, 56px);
   font-weight: 800;
-  margin: 20px 0 50px 0;
+  margin: clamp(16px, 2.5vw, 20px) 0 clamp(32px, 5vw, 50px) 0;
   line-height: 1.1;
   background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
   -webkit-background-clip: text;
@@ -78,6 +81,7 @@
   background-clip: text;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   animation: titleSlideIn 1s ease-out;
+  word-break: break-word;
 }
 
 @keyframes titleSlideIn {
@@ -93,11 +97,12 @@
 
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 48px;
-  max-width: 1100px;
+  grid-template-columns: 1fr;
+  gap: clamp(24px, 4vw, 48px);
+  max-width: min(1100px, 95vw);
   margin: 0 auto;
   animation: featuresSlideUp 1.2s ease-out;
+  width: 100%;
 }
 
 @keyframes featuresSlideUp {
@@ -113,7 +118,7 @@
 
 .feature {
   text-align: left;
-  padding: 32px;
+  padding: clamp(20px, 3vw, 32px);
   background: rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   backdrop-filter: blur(20px);
@@ -121,6 +126,8 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .feature::before {
@@ -148,19 +155,21 @@
 }
 
 .featureTitle {
-  font-size: 22px;
+  font-size: clamp(18px, 3vw, 22px);
   font-weight: 700;
-  margin: 0 0 16px 0;
+  margin: 0 0 clamp(12px, 2vw, 16px) 0;
   color: white;
   letter-spacing: -0.02em;
+  word-break: break-word;
 }
 
 .featureDescription {
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.85);
   margin: 0;
   font-weight: 400;
+  word-break: break-word;
 }
 
 /* Dark mode class-based (for theme toggle) */
@@ -208,53 +217,20 @@
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
-  .hero {
-    padding: 80px 0;
-  }
-  
-  .title {
-    font-size: 42px;
-    margin-bottom: 60px;
-  }
-  
+@media (min-width: 768px) {
   .features {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   }
-  
+}
+
+@media (max-width: 767px) {
   .feature {
     text-align: center;
-    padding: 24px;
-  }
-  
-  .featureTitle {
-    font-size: 20px;
-  }
-  
-  .featureDescription {
-    font-size: 15px;
   }
 }
 
 @media (max-width: 480px) {
-  .container {
-    padding: 0 16px;
-  }
-  
-  .hero {
-    padding: 60px 0;
-  }
-  
-  .title {
-    font-size: 32px;
-  }
-  
   .features {
-    gap: 24px;
-  }
-  
-  .feature {
-    padding: 20px;
+    gap: clamp(20px, 3vw, 24px);
   }
 }

@@ -34,6 +34,7 @@ interface OrganizationTableProps {
 	onEditOrganization: (organization: Organization) => void
 	onDeleteOrganization: (organizationId: string) => void
 	onToggleStatus: (organizationId: string, newStatus: OrganizationStatus) => void
+	onToggleVerification: (organizationId: string, newStatus: VerificationStatus) => void
 	loading: boolean
 	emptyMessage: string
 }
@@ -44,6 +45,7 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({
 	onEditOrganization,
 	onDeleteOrganization,
 	onToggleStatus,
+	onToggleVerification,
 	loading,
 	emptyMessage
 }) => {
@@ -236,17 +238,29 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({
 									</div>
 								</td>
 								<td>
-									<Badge variant={getStatusBadgeVariant(organization.status)}>
-										{organization.status}
-									</Badge>
-									<div className="status-info" style={{ marginTop: '4px' }}>
-										<span className="last-login">Đăng nhập: {formatTime(organization.lastLoginAt)}</span>
+									<div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+										<Badge variant={getStatusBadgeVariant(organization.status)}>
+											{organization.status}
+										</Badge>
+										<div className="status-info">
+											<span className="last-login">Đăng nhập: {formatTime(organization.lastLoginAt)}</span>
+										</div>
 									</div>
 								</td>
 								<td>
-									<div className="verification-status">
-										{getVerificationStatusIcon(organization.verificationStatus)}
-										<span className="verification-text">{organization.verificationStatus}</span>
+									<div className="verification-status" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+										<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+											{getVerificationStatusIcon(organization.verificationStatus)}
+											<span className="verification-text">{organization.verificationStatus}</span>
+										</div>
+										<button
+											className={`btn btn-sm btn-outline ${organization.verificationStatus === 'verified' ? 'btn-secondary' : 'btn-success'}`}
+											onClick={() => onToggleVerification(organization.id, organization.verificationStatus === 'verified' ? 'not_verified' : 'verified')}
+											title={organization.verificationStatus === 'verified' ? 'Hủy xác minh' : 'Xác minh'}
+											style={{ padding: '4px 8px', fontSize: '12px' }}
+										>
+											{organization.verificationStatus === 'verified' ? 'Hủy' : 'Xác minh'}
+										</button>
 									</div>
 								</td>
 								<td>

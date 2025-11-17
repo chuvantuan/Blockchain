@@ -5,18 +5,45 @@ import {
 	OrganizationFilters, 
 	OrganizationDashboard,
 	OrganizationStatus,
-	OrganizationType,
 	OrganizationSize,
 	SubscriptionPlan,
-	SubscriptionStatus,
 	VerificationStatus
 } from '../types/organization'
-import { mockOrganizations, mockOrganizationDashboard } from '../mock/organizations'
+import organizationApi from '../services/organizationApi'
+
+// Initial empty dashboard
+const initialDashboard: OrganizationDashboard = {
+	stats: {
+		totalOrganizations: 0,
+		activeOrganizations: 0,
+		inactiveOrganizations: 0,
+		pendingOrganizations: 0,
+		verifiedOrganizations: 0,
+		premiumOrganizations: 0,
+		totalEmployees: 0,
+		totalStudents: 0,
+		totalCourses: 0,
+		totalRevenue: 0,
+		averageEmployees: 0,
+		averageStudents: 0,
+		averageCourses: 0,
+		topIndustries: [],
+		topCountries: [],
+		subscriptionDistribution: [],
+		sizeDistribution: [],
+		monthlyGrowth: []
+	},
+	recentOrganizations: [],
+	topOrganizations: [],
+	expiringSubscriptions: [],
+	verificationPending: [],
+	alerts: []
+}
 
 export default function useOrganizations() {
-	const [organizations, setOrganizations] = useState<Organization[]>(mockOrganizations)
-	const [dashboard, setDashboard] = useState<OrganizationDashboard>(mockOrganizationDashboard)
-	const [loading, setLoading] = useState(false)
+	const [organizations, setOrganizations] = useState<Organization[]>([])
+	const [dashboard, setDashboard] = useState<OrganizationDashboard>(initialDashboard)
+	const [loading, setLoading] = useState(true)
 	const [filters, setFilters] = useState<OrganizationFilters>({
 		search: '',
 		type: 'all',
@@ -171,103 +198,153 @@ export default function useOrganizations() {
 		})
 	}, [])
 
-	// Add new organization
-	const addOrganization = useCallback((organizationForm: OrganizationForm) => {
-		const newOrganization: Organization = {
-			id: `org-${Date.now()}`,
-			...organizationForm,
-			departments: Math.floor(Math.random() * 20) + 1,
-			courses: Math.floor(Math.random() * 100) + 1,
-			students: Math.floor(Math.random() * 5000) + 100,
-			instructors: Math.floor(Math.random() * 200) + 10,
-			admins: Math.floor(Math.random() * 10) + 1,
-			subscriptionStatus: 'active' as SubscriptionStatus,
-			subscriptionExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-			features: [],
-			settings: {
-				timezone: 'Asia/Ho_Chi_Minh',
-				language: 'vi',
-				dateFormat: 'DD/MM/YYYY',
-				currency: 'VND',
-				notifications: {
-					email: true,
-					sms: false,
-					push: true,
-					marketing: false,
-					updates: true,
-					security: false
-				},
-				privacy: {
-					dataSharing: false,
-					analytics: true,
-					marketing: false,
-					thirdParty: false
-				},
-				learning: {
-					certificates: true,
-					badges: false,
-					gamification: false,
-					socialLearning: false,
-					offlineMode: false
-				},
-				security: {
-					twoFactor: false,
-					sso: false,
-					passwordPolicy: true,
-					sessionTimeout: 480,
-					ipWhitelist: false
-				}
-			},
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-			lastLoginAt: new Date().toISOString(),
-			isActive: organizationForm.status === 'active',
-			isVerified: false,
-			isPremium: organizationForm.subscriptionPlan === 'enterprise' || organizationForm.subscriptionPlan === 'professional',
-			verificationStatus: 'not_verified' as VerificationStatus,
-			notes: organizationForm.notes || ''
+	// Fetch organizations from API
+	const fetchOrganizations = useCallback(async () => {
+		try {
+			setLoading(true)
+			const data = await organizationApi.getAll(filters)
+			setOrganizations(data)
+		} catch (error) {
+			console.error('Error fetching organizations:', error)
+		} finally {
+			setLoading(false)
 		}
+	}, [filters])
 
-		setOrganizations(prev => [newOrganization, ...prev])
-		updateDashboardStats()
+	// Add new organization
+	const addOrganization = useCallback(async (organizationForm: OrganizationForm) => {
+		try {
+			setLoading(true)
+			const newOrganization = await organizationApi.create(organizationForm)
+			setOrganizations(prev => [newOrganization, ...prev])
+			updateDashboardStats()
+		} catch (error) {
+			console.error('Error adding organization:', error)
+			throw error
+		} finally {
+			setLoading(false)
+		}
 	}, [])
 
 	// Update organization
-	const updateOrganization = useCallback((organizationForm: OrganizationForm, organizationId: string) => {
-		setOrganizations(prev => prev.map(org => 
-			org.id === organizationId 
-				? {
-					...org,
-					...organizationForm,
-					updatedAt: new Date().toISOString(),
-					isActive: organizationForm.status === 'active',
-					isPremium: organizationForm.subscriptionPlan === 'enterprise' || organizationForm.subscriptionPlan === 'professional'
-				}
-				: org
-		))
-		updateDashboardStats()
+	const updateOrganization = useCallback(async (organizationForm: OrganizationForm, organizationId: string) => {
+		try {
+			setLoading(true)
+			const updated = await organizationApi.update(organizationId, organizationForm)
+			setOrganizations(prev => prev.map(org => 
+				org.id === organizationId ? updated : org
+			))
+			updateDashboardStats()
+		} catch (error) {
+			console.error('Error updating organization:', error)
+			throw error
+		} finally {
+			setLoading(false)
+		}
 	}, [])
 
 	// Delete organization
-	const deleteOrganization = useCallback((organizationId: string) => {
-		setOrganizations(prev => prev.filter(org => org.id !== organizationId))
-		updateDashboardStats()
+	const deleteOrganization = useCallback(async (organizationId: string) => {
+		try {
+			setLoading(true)
+			await organizationApi.delete(organizationId)
+			setOrganizations(prev => prev.filter(org => org.id !== organizationId))
+			updateDashboardStats()
+		} catch (error) {
+			console.error('Error deleting organization:', error)
+			throw error
+		} finally {
+			setLoading(false)
+		}
 	}, [])
 
 	// Toggle organization status
-	const toggleOrganizationStatus = useCallback((organizationId: string, newStatus: OrganizationStatus) => {
-		setOrganizations(prev => prev.map(org => 
-			org.id === organizationId 
-				? {
-					...org,
-					status: newStatus,
-					isActive: newStatus === 'active',
-					updatedAt: new Date().toISOString()
-				}
-				: org
-		))
-		updateDashboardStats()
-	}, [])
+	const toggleOrganizationStatus = useCallback(async (organizationId: string, newStatus: OrganizationStatus) => {
+		try {
+			const org = organizations.find(o => o.id === organizationId)
+			if (!org) return
+
+			const form: OrganizationForm = {
+				name: org.name,
+				description: org.description,
+				shortDescription: org.shortDescription,
+				logo: org.logo,
+				website: org.website,
+				email: org.email,
+				phone: org.phone,
+				address: org.address,
+				city: org.city,
+				country: org.country,
+				postalCode: org.postalCode,
+				type: org.type,
+				status: newStatus,
+				size: org.size,
+				industry: org.industry,
+				foundedYear: org.foundedYear,
+				revenue: org.revenue,
+				currency: org.currency,
+				employees: org.employees,
+				subscriptionPlan: org.subscriptionPlan,
+				contactPerson: org.contactPerson,
+				socialMedia: org.socialMedia,
+				tags: org.tags,
+				notes: org.notes
+			}
+
+			await updateOrganization(form, organizationId)
+		} catch (error) {
+			console.error('Error toggling status:', error)
+			throw error
+		}
+	}, [organizations, updateOrganization])
+
+	// Toggle organization verification status
+	const toggleOrganizationVerification = useCallback(async (organizationId: string, newVerificationStatus: VerificationStatus) => {
+		try {
+			const org = organizations.find(o => o.id === organizationId)
+			if (!org) return
+
+			const form: OrganizationForm = {
+				name: org.name,
+				description: org.description,
+				shortDescription: org.shortDescription,
+				logo: org.logo,
+				website: org.website,
+				email: org.email,
+				phone: org.phone,
+				address: org.address,
+				city: org.city,
+				country: org.country,
+				postalCode: org.postalCode,
+				type: org.type,
+				status: org.status,
+				size: org.size,
+				industry: org.industry,
+				foundedYear: org.foundedYear,
+				revenue: org.revenue,
+				currency: org.currency,
+				employees: org.employees,
+				subscriptionPlan: org.subscriptionPlan,
+				contactPerson: org.contactPerson,
+				socialMedia: org.socialMedia,
+				tags: org.tags,
+				notes: org.notes
+			}
+
+			// Update verification status via API
+			await organizationApi.update(organizationId, {
+				...form,
+				verificationStatus: newVerificationStatus,
+				isVerified: newVerificationStatus === 'verified'
+			} as any)
+
+			// Refresh organizations list
+			await fetchOrganizations()
+		} catch (error) {
+			console.error('Error toggling verification:', error)
+			throw error
+		}
+	}, [organizations, fetchOrganizations])
 
 	// Update dashboard stats
 	const updateDashboardStats = useCallback(() => {
@@ -348,25 +425,10 @@ export default function useOrganizations() {
 		}))
 	}, [organizations])
 
-	// Simulate real-time updates
+	// Fetch organizations on mount and when filters change
 	useEffect(() => {
-		const interval = setInterval(() => {
-			// Randomly update some organization stats
-			setOrganizations(prev => prev.map(org => {
-				if (Math.random() < 0.1) { // 10% chance to update
-					return {
-						...org,
-						students: org.students + Math.floor(Math.random() * 10),
-						courses: org.courses + Math.floor(Math.random() * 2),
-						lastLoginAt: new Date().toISOString()
-					}
-				}
-				return org
-			}))
-		}, 30000) // Update every 30 seconds
-
-		return () => clearInterval(interval)
-	}, [])
+		fetchOrganizations()
+	}, [fetchOrganizations])
 
 	// Update dashboard when organizations change
 	useEffect(() => {
@@ -390,6 +452,7 @@ export default function useOrganizations() {
 		updateOrganization,
 		deleteOrganization,
 		toggleOrganizationStatus,
+		toggleOrganizationVerification,
 		
 		// Computed
 		totalCount: organizations.length,

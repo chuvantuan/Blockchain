@@ -21,17 +21,27 @@ export async function getAdminStats(): Promise<{
   todayTokensDistributed: number
 }> {
   try {
-    const API_BASE_URL = import.meta.env.VITE_TOKEN_REWARD_API_URL || 'http://localhost:9009'
-    const response = await fetch(`${API_BASE_URL}/api/tokens/admin/stats`)
+    const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tokens`
+    const token = localStorage.getItem('accessToken')
+    
+    const response = await fetch(`${API_BASE_URL}/admin/stats`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    })
     
     if (!response.ok) {
-      throw new Error('Failed to fetch admin stats')
+      const errorData = await response.json().catch(() => ({}))
+      const errorMessage = errorData.message || errorData.error || `HTTP ${response.status}: Failed to fetch admin stats`
+      console.error('[getAdminStats] Error response:', errorData)
+      throw new Error(errorMessage)
     }
     
     return await response.json()
   } catch (error) {
     console.error('Error fetching admin stats:', error)
-    throw new Error('Failed to fetch admin stats')
+    throw error instanceof Error ? error : new Error('Failed to fetch admin stats')
   }
 }
 
@@ -48,17 +58,25 @@ export async function getAllTransactions(
   transactions: Array<any>
 }> {
   try {
-    const API_BASE_URL = import.meta.env.VITE_TOKEN_REWARD_API_URL || 'http://localhost:9009'
-    const response = await fetch(`${API_BASE_URL}/api/tokens/admin/transactions?page=${page}&limit=${limit}`)
+    const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tokens`
+    const token = localStorage.getItem('accessToken')
+    
+    const response = await fetch(`${API_BASE_URL}/admin/transactions?page=${page}&limit=${limit}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    })
     
     if (!response.ok) {
-      throw new Error('Failed to fetch all transactions')
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || errorData.error || 'Failed to fetch all transactions')
     }
     
     return await response.json()
   } catch (error) {
     console.error('Error fetching all transactions:', error)
-    throw new Error('Failed to fetch all transactions')
+    throw error instanceof Error ? error : new Error('Failed to fetch all transactions')
   }
 }
 
@@ -113,17 +131,25 @@ export async function getTopUsers(limit: number = 10): Promise<Array<{
   transactionCount: number
 }>> {
   try {
-    const API_BASE_URL = import.meta.env.VITE_TOKEN_REWARD_API_URL || 'http://localhost:9009'
-    const response = await fetch(`${API_BASE_URL}/api/tokens/admin/top-users?limit=${limit}`)
+    const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tokens`
+    const token = localStorage.getItem('accessToken')
+    
+    const response = await fetch(`${API_BASE_URL}/admin/top-users?limit=${limit}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    })
     
     if (!response.ok) {
-      throw new Error('Failed to fetch top users')
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || errorData.error || 'Failed to fetch top users')
     }
     
     return await response.json()
   } catch (error) {
     console.error('Error fetching top users:', error)
-    throw new Error('Failed to fetch top users')
+    throw error instanceof Error ? error : new Error('Failed to fetch top users')
   }
 }
 
@@ -139,17 +165,25 @@ export async function getRulePerformance(): Promise<Array<{
   averageReward: number
 }>> {
   try {
-    const API_BASE_URL = import.meta.env.VITE_TOKEN_REWARD_API_URL || 'http://localhost:9009'
-    const response = await fetch(`${API_BASE_URL}/api/tokens/admin/rule-performance`)
+    const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tokens`
+    const token = localStorage.getItem('accessToken')
+    
+    const response = await fetch(`${API_BASE_URL}/admin/rule-performance`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    })
     
     if (!response.ok) {
-      throw new Error('Failed to fetch rule performance')
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || errorData.error || 'Failed to fetch rule performance')
     }
     
     return await response.json()
   } catch (error) {
     console.error('Error fetching rule performance:', error)
-    throw new Error('Failed to fetch rule performance')
+    throw error instanceof Error ? error : new Error('Failed to fetch rule performance')
   }
 }
 

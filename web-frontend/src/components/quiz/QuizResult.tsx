@@ -42,7 +42,7 @@ export default function QuizResult({
 
         {/* Status */}
         <h1 className={`result-status ${isPassed ? 'passed' : 'failed'}`}>
-          {isPassed ? 'Chúc mừng! 🎉' : 'Chưa đạt 😔'}
+          {isPassed ? 'Chúc mừng!' : 'Chưa đạt'}
         </h1>
 
         <p className="result-message">

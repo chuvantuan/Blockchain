@@ -246,7 +246,7 @@ export default function ProfileCompletionBanner({ completion, onCompleteProfile 
               color: getCompletionColor(),
               margin: 0
             }}>
-              Hồ sơ đã hoàn thành 100%! 🎉
+              Hồ sơ đã hoàn thành 100%!
             </p>
           </div>
         )}

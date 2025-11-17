@@ -206,7 +206,7 @@ export function useCopyright() {
         statsData = response as unknown as CopyrightStats;
       } else {
         // Try to find data in nested structure
-        console.warn('⚠️ Unexpected response format:', JSON.stringify(response, null, 2));
+        console.warn('Unexpected response format:', JSON.stringify(response, null, 2));
         throw new Error('Invalid response format. Expected { success: true, data: {...} } but got: ' + JSON.stringify(response));
       }
       

@@ -4,6 +4,7 @@ import { X, Gift, ShoppingCart, Loader2, CheckCircle, AlertCircle, Search, Arrow
 import { useAppSelector } from '../store/hooks'
 import { type GiftItem, getAvailableGifts } from '../services/api/tokenApi'
 import { getBalance, spendTokens } from '../services/api/tokenRewardApi'
+import styles from '../assets/css/RewardStorePage.module.css'
 
 export default function RewardStorePage(): JSX.Element {
     const navigate = useNavigate()
@@ -160,156 +161,53 @@ export default function RewardStorePage(): JSX.Element {
     }
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: 'var(--background)',
-            padding: '24px',
-            boxSizing: 'border-box',
-            width: '100%'
-        }}>
-            <div style={{
-                maxWidth: '1400px',
-                margin: '0 auto',
-                width: '100%',
-                boxSizing: 'border-box'
-            }}>
+        <div className={styles.page}>
+            <div className={styles.container}>
                 {/* Header */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '24px',
-                    padding: '20px',
-                    background: 'var(--card)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-sm)'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div className={styles.header}>
+                    <div className={styles.headerLeft}>
                         <button
                             onClick={() => navigate('/user/prepare')}
-                            style={{
-                                background: 'var(--muted)',
-                                border: 'none',
-                                borderRadius: '50%',
-                                width: '40px',
-                                height: '40px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'var(--primary)'
-                                e.currentTarget.style.transform = 'scale(1.05)'
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'var(--muted)'
-                                e.currentTarget.style.transform = 'scale(1)'
-                            }}
+                            className={styles.backButton}
                         >
-                            <ArrowLeft style={{ width: '20px', height: '20px' }} />
+                            <ArrowLeft className={styles.backButtonIcon} />
                         </button>
-                        <h1 style={{
-                            margin: 0,
-                            fontSize: '28px',
-                            fontWeight: 700,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px'
-                        }}>
-                            <Gift style={{ width: '32px', height: '32px', color: 'var(--primary)' }} />
+                        <h1 className={styles.headerTitle}>
+                            <Gift className={styles.headerTitleIcon} />
                             Cửa hàng quà tặng
                         </h1>
                     </div>
-                    <div style={{
-                        padding: '12px 24px',
-                        background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                        color: 'white',
-                        borderRadius: 'var(--radius-lg)',
-                        fontSize: '18px',
-                        fontWeight: 700,
-                        boxShadow: 'var(--shadow-md)'
-                    }}>
+                    <div className={styles.balanceBadge}>
                         {currentBalance.toLocaleString()} token
                     </div>
                 </div>
 
                 {/* Content */}
                 {step === 'browse' && (
-                    <div style={{
-                        background: 'var(--card)',
-                        borderRadius: 'var(--radius-lg)',
-                        padding: '24px',
-                        boxShadow: 'var(--shadow-sm)'
-                    }}>
+                    <div className={styles.contentCard}>
                         {/* Search and Filter */}
-                        <div style={{ marginBottom: '24px' }}>
-                            <div style={{
-                                position: 'relative',
-                                marginBottom: '16px'
-                            }}>
-                                <Search style={{
-                                    position: 'absolute',
-                                    left: '16px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    width: '20px',
-                                    height: '20px',
-                                    color: 'var(--muted-foreground)',
-                                    pointerEvents: 'none',
-                                    zIndex: 1
-                                }} />
+                        <div className={styles.searchFilterSection}>
+                            <div className={styles.searchContainer}>
+                                <Search className={styles.searchIcon} />
                                 <input
                                     type="text"
                                     placeholder="Tìm kiếm quà tặng..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '14px 16px 14px 48px',
-                                        borderRadius: 'var(--radius-md)',
-                                        border: '1px solid var(--border)',
-                                        fontSize: '16px',
-                                        background: 'var(--background)',
-                                        boxSizing: 'border-box',
-                                        outline: 'none'
-                                    }}
+                                    className={styles.searchInput}
                                 />
                             </div>
 
-                            <div style={{
-                                display: 'flex',
-                                gap: '12px',
-                                overflowX: 'auto',
-                                paddingBottom: '8px'
-                            }}>
+                            <div className={styles.categoriesContainer}>
                                 {categories.map(cat => (
                                     <button
                                         key={cat.value}
                                         onClick={() => setSelectedCategory(cat.value)}
-                                        style={{
-                                            padding: '10px 20px',
-                                            background: selectedCategory === cat.value ? 'var(--primary)' : 'var(--muted)',
-                                            color: selectedCategory === cat.value ? 'white' : 'var(--foreground)',
-                                            border: 'none',
-                                            borderRadius: 'var(--radius-md)',
-                                            fontSize: '15px',
-                                            fontWeight: 500,
-                                            cursor: 'pointer',
-                                            whiteSpace: 'nowrap',
-                                            transition: 'all 0.2s ease'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (selectedCategory !== cat.value) {
-                                                e.currentTarget.style.background = 'var(--border)'
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (selectedCategory !== cat.value) {
-                                                e.currentTarget.style.background = 'var(--muted)'
-                                            }
-                                        }}
+                                        className={`${styles.categoryButton} ${
+                                            selectedCategory === cat.value
+                                                ? styles.categoryButtonActive
+                                                : styles.categoryButtonInactive
+                                        }`}
                                     >
                                         {cat.label}
                                     </button>
@@ -319,78 +217,39 @@ export default function RewardStorePage(): JSX.Element {
 
                         {/* Gift Grid */}
                         {isLoading ? (
-                            <div style={{ textAlign: 'center', padding: '60px' }}>
-                                <Loader2 style={{
-                                    width: '48px',
-                                    height: '48px',
-                                    color: 'var(--primary)',
-                                    animation: 'spin 1s linear infinite',
-                                    margin: '0 auto'
-                                }} />
+                            <div className={styles.loadingContainer}>
+                                <Loader2 className={styles.loadingSpinner} />
                             </div>
                         ) : filteredGifts.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '60px' }}>
-                                <Gift style={{
-                                    width: '64px',
-                                    height: '64px',
-                                    color: 'var(--muted-foreground)',
-                                    margin: '0 auto 16px'
-                                }} />
-                                <p style={{ margin: 0, color: 'var(--muted-foreground)', fontSize: '16px' }}>
+                            <div className={styles.emptyState}>
+                                <Gift className={styles.emptyStateIcon} />
+                                <p className={styles.emptyStateText}>
                                     Không tìm thấy quà tặng nào
                                 </p>
                             </div>
                         ) : (
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                                gap: '20px'
-                            }}>
+                            <div className={styles.giftsGrid}>
                                 {filteredGifts.map(gift => (
                                     <div
                                         key={gift.id}
                                         onClick={() => handleSelectGift(gift)}
-                                        style={{
-                                            background: 'var(--card)',
-                                            border: '1px solid var(--border)',
-                                            borderRadius: 'var(--radius-lg)',
-                                            overflow: 'hidden',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease',
-                                            boxShadow: 'var(--shadow-sm)'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.transform = 'translateY(-8px)'
-                                            e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-                                            e.currentTarget.style.borderColor = 'var(--primary)'
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.transform = 'translateY(0)'
-                                            e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-                                            e.currentTarget.style.borderColor = 'var(--border)'
-                                        }}
+                                        className={styles.giftCard}
                                     >
-                                        <div style={{
-                                            height: '200px',
-                                            background: 'var(--muted)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}>
-                                            <Gift style={{ width: '64px', height: '64px', color: 'var(--muted-foreground)' }} />
+                                        <div className={styles.giftImage}>
+                                            <Gift className={styles.giftImageIcon} />
                                         </div>
-                                        <div style={{ padding: '16px' }}>
-                                            <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 600 }}>
+                                        <div className={styles.giftContent}>
+                                            <h4 className={styles.giftName}>
                                                 {gift.name}
                                             </h4>
-                                            <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--muted-foreground)', lineHeight: '1.5' }}>
+                                            <p className={styles.giftDescription}>
                                                 {gift.description}
                                             </p>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--primary)' }}>
+                                            <div className={styles.giftFooter}>
+                                                <span className={styles.giftPrice}>
                                                     {gift.tokenPrice} token
                                                 </span>
-                                                <span style={{ fontSize: '13px', color: 'var(--muted-foreground)' }}>
+                                                <span className={styles.giftStock}>
                                                     Còn {gift.stockQuantity}
                                                 </span>
                                             </div>
@@ -403,38 +262,21 @@ export default function RewardStorePage(): JSX.Element {
                 )}
 
                 {step === 'confirm' && selectedGift && (
-                    <div style={{
-                        background: 'var(--card)',
-                        borderRadius: 'var(--radius-lg)',
-                        padding: '32px',
-                        boxShadow: 'var(--shadow-sm)',
-                        maxWidth: '800px',
-                        margin: '0 auto'
-                    }}>
-                        <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '24px' }}>
+                    <div className={styles.confirmCard}>
+                        <h2 className={styles.confirmTitle}>
                             Xác nhận đổi quà
                         </h2>
 
-                        <div style={{
-                            padding: '24px',
-                            background: 'var(--muted)',
-                            borderRadius: 'var(--radius-md)',
-                            marginBottom: '24px'
-                        }}>
-                            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: 600 }}>
+                        <div className={styles.confirmGiftInfo}>
+                            <h3 className={styles.confirmGiftName}>
                                 {selectedGift.name}
                             </h3>
-                            <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: 'var(--muted-foreground)' }}>
+                            <p className={styles.confirmGiftDescription}>
                                 {selectedGift.description}
                             </p>
 
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{
-                                    display: 'block',
-                                    fontSize: '14px',
-                                    fontWeight: 500,
-                                    marginBottom: '8px'
-                                }}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>
                                     Số lượng
                                 </label>
                                 <input
@@ -443,25 +285,13 @@ export default function RewardStorePage(): JSX.Element {
                                     max={selectedGift.stockQuantity}
                                     value={quantity}
                                     onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                    style={{
-                                        width: '100%',
-                                        padding: '12px',
-                                        borderRadius: 'var(--radius-md)',
-                                        border: '1px solid var(--border)',
-                                        fontSize: '14px',
-                                        background: 'var(--background)'
-                                    }}
+                                    className={styles.formInput}
                                 />
                             </div>
 
                             {selectedGift.category === 'physical' && (
-                                <div style={{ marginBottom: '16px' }}>
-                                    <label style={{
-                                        display: 'block',
-                                        fontSize: '14px',
-                                        fontWeight: 500,
-                                        marginBottom: '8px'
-                                    }}>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.formLabel}>
                                         Địa chỉ giao hàng
                                     </label>
                                     <textarea
@@ -469,86 +299,44 @@ export default function RewardStorePage(): JSX.Element {
                                         onChange={(e) => setDeliveryAddress(e.target.value)}
                                         placeholder="Nhập địa chỉ nhận hàng"
                                         rows={3}
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            borderRadius: 'var(--radius-md)',
-                                            border: '1px solid var(--border)',
-                                            fontSize: '14px',
-                                            background: 'var(--background)',
-                                            resize: 'vertical'
-                                        }}
+                                        className={`${styles.formInput} ${styles.formTextarea}`}
                                     />
                                 </div>
                             )}
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-                                <span style={{ fontSize: '18px', fontWeight: 600 }}>Tổng cộng</span>
-                                <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--primary)' }}>
+                            <div className={styles.confirmTotal}>
+                                <span className={styles.confirmTotalLabel}>Tổng cộng</span>
+                                <span className={styles.confirmTotalValue}>
                                     {(selectedGift.tokenPrice * quantity).toLocaleString()} token
                                 </span>
                             </div>
                         </div>
 
                         {error && (
-                            <div style={{
-                                padding: '12px',
-                                background: 'var(--destructive)',
-                                color: 'white',
-                                borderRadius: 'var(--radius-md)',
-                                marginBottom: '16px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                fontSize: '14px'
-                            }}>
-                                <AlertCircle style={{ width: '16px', height: '16px' }} />
+                            <div className={styles.errorAlert}>
+                                <AlertCircle className={styles.errorAlertIcon} />
                                 {error}
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', gap: '12px' }}>
+                        <div className={styles.confirmActions}>
                             <button
                                 onClick={() => setStep('browse')}
                                 disabled={isRedeeming}
-                                style={{
-                                    flex: 1,
-                                    padding: '14px',
-                                    background: 'var(--muted)',
-                                    color: 'var(--foreground)',
-                                    border: 'none',
-                                    borderRadius: 'var(--radius-md)',
-                                    fontSize: '16px',
-                                    fontWeight: 600,
-                                    cursor: isRedeeming ? 'not-allowed' : 'pointer',
-                                    opacity: isRedeeming ? 0.5 : 1
-                                }}
+                                className={`${styles.confirmButton} ${styles.confirmButtonSecondary}`}
                             >
                                 Quay lại
                             </button>
                             <button
                                 onClick={handleConfirmRedeem}
                                 disabled={isRedeeming}
-                                style={{
-                                    flex: 1,
-                                    padding: '14px',
-                                    background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: 'var(--radius-md)',
-                                    fontSize: '16px',
-                                    fontWeight: 600,
-                                    cursor: isRedeeming ? 'not-allowed' : 'pointer',
-                                    opacity: isRedeeming ? 0.7 : 1,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px'
-                                }}
+                                className={`${styles.confirmButton} ${styles.confirmButtonPrimary} ${
+                                    isRedeeming ? styles.confirmButtonLoading : ''
+                                }`}
                             >
                                 {isRedeeming ? (
                                     <>
-                                        <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+                                        <Loader2 className={styles.confirmButtonSpinner} />
                                         Đang xử lý...
                                     </>
                                 ) : (
@@ -560,55 +348,24 @@ export default function RewardStorePage(): JSX.Element {
                 )}
 
                 {step === 'success' && (
-                    <div style={{
-                        background: 'var(--card)',
-                        borderRadius: 'var(--radius-lg)',
-                        padding: '48px 32px',
-                        boxShadow: 'var(--shadow-sm)',
-                        maxWidth: '600px',
-                        margin: '0 auto',
-                        textAlign: 'center'
-                    }}>
-                        <CheckCircle style={{
-                            width: '80px',
-                            height: '80px',
-                            color: 'var(--primary)',
-                            margin: '0 auto 24px'
-                        }} />
-                        <h3 style={{ margin: '0 0 12px 0', fontSize: '28px', fontWeight: 700 }}>
+                    <div className={styles.successCard}>
+                        <CheckCircle className={styles.successIcon} />
+                        <h3 className={styles.successTitle}>
                             Đổi quà thành công!
                         </h3>
-                        <p style={{ margin: '0 0 32px 0', fontSize: '16px', color: 'var(--muted-foreground)' }}>
+                        <p className={styles.successMessage}>
                             Quà tặng của bạn sẽ được giao trong thời gian sớm nhất
                         </p>
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                        <div className={styles.successActions}>
                             <button
                                 onClick={resetPage}
-                                style={{
-                                    padding: '12px 24px',
-                                    background: 'var(--muted)',
-                                    color: 'var(--foreground)',
-                                    border: 'none',
-                                    borderRadius: 'var(--radius-md)',
-                                    fontSize: '16px',
-                                    fontWeight: 600,
-                                    cursor: 'pointer'
-                                }}
+                                className={`${styles.successButton} ${styles.successButtonSecondary}`}
                             >
                                 Đổi quà khác
                             </button>
                             <button
                                 onClick={() => navigate('/user/prepare')}
-                                style={{
-                                    padding: '12px 24px',
-                                    background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: 'var(--radius-md)',
-                                    fontSize: '16px',
-                                    fontWeight: 600,
-                                    cursor: 'pointer'
-                                }}
+                                className={`${styles.successButton} ${styles.successButtonPrimary}`}
                             >
                                 Về trang chủ
                             </button>
@@ -616,13 +373,6 @@ export default function RewardStorePage(): JSX.Element {
                     </div>
                 )}
             </div>
-
-            <style>{`
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-            `}</style>
         </div>
     )
 }

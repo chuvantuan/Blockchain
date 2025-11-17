@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { ProctoringSession } from '../../types/proctoring'
 import Badge from '../common/Badge'
 import EventLog from './EventLog'
@@ -12,24 +12,165 @@ import {
 	Clock,
 	User,
 	FileText,
-	AlertTriangle
+	AlertTriangle,
+	Loader2,
+	RefreshCw,
+	WifiOff
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { vi } from 'date-fns/locale'
+import type { StreamState } from '../../hooks/useProctoringStreams'
 
 interface SessionDetailViewProps {
 	session: ProctoringSession
 	onResolveViolation?: (violationId: string) => void
 	onTerminate?: (sessionId: string) => void
 	onSendWarning?: (sessionId: string) => void
+	onRequestStream?: (sessionId: string, options?: { force?: boolean }) => void
+	onStopStream?: (sessionId: string) => void
+	streamState?: StreamState
 }
 
 export default function SessionDetailView({ 
 	session, 
 	onResolveViolation,
 	onTerminate,
-	onSendWarning
+	onSendWarning,
+	onRequestStream,
+	onStopStream,
+	streamState
 }: SessionDetailViewProps): JSX.Element {
+	const videoRef = useRef<HTMLVideoElement>(null)
+	const streamStatus = streamState?.status ?? 'idle'
+	const hasLiveStream = streamStatus === 'live' && !!streamState?.stream
+
+	useEffect(() => {
+		const video = videoRef.current
+		if (!video) return
+
+		// Kiểm tra xem video element có còn trong DOM không
+		if (!video.isConnected) return
+
+		if (streamState?.stream) {
+			// Chỉ set srcObject nếu khác với stream hiện tại
+			if (video.srcObject !== streamState.stream) {
+				video.srcObject = streamState.stream
+			}
+
+			// Chỉ gọi play() nếu video element vẫn còn trong DOM và chưa đang phát
+			if (video.isConnected && video.paused) {
+				const playPromise = video.play()
+				if (playPromise !== undefined) {
+					playPromise.catch(error => {
+						// Chỉ log warning nếu video vẫn còn trong DOM
+						if (video.isConnected) {
+							console.warn('Không thể phát video trong modal:', error)
+						}
+					})
+				}
+			}
+		} else {
+			if (video.isConnected) {
+				video.pause()
+				video.srcObject = null
+			}
+		}
+
+		return () => {
+			// Cleanup chỉ khi video element vẫn còn trong DOM
+			if (video && video.isConnected) {
+				try {
+					video.pause()
+					video.srcObject = null
+				} catch (err) {
+					// Ignore errors khi cleanup
+				}
+			}
+		}
+	}, [streamState?.stream])
+
+	const streamStatusMeta = useMemo(() => {
+		switch (streamStatus) {
+			case 'live':
+				return { label: 'Đang phát', background: 'rgba(34,197,94,0.15)', color: '#15803d' }
+			case 'connecting':
+				return { label: 'Đang kết nối', background: 'rgba(59,130,246,0.15)', color: '#2563eb' }
+			case 'waiting':
+				return { label: 'Chờ phản hồi', background: 'rgba(250,204,21,0.2)', color: '#b45309' }
+			case 'error':
+				return { label: 'Lỗi kết nối', background: 'rgba(248,113,113,0.15)', color: '#dc2626' }
+			default:
+				return { label: 'Chưa khởi tạo', background: 'var(--muted)', color: 'var(--muted-foreground)' }
+		}
+	}, [streamStatus])
+
+	const lastUpdatedLabel = useMemo(() => {
+		if (!streamState?.lastUpdated) return 'Chưa có dữ liệu'
+		return formatDistanceToNow(streamState.lastUpdated, { addSuffix: true, locale: vi })
+	}, [streamState?.lastUpdated])
+
+	const handleRequest = (force = false) => {
+		onRequestStream?.(session.id, force ? { force: true } : undefined)
+	}
+
+	const handleStop = () => {
+		onStopStream?.(session.id)
+	}
+
+	const renderStreamPlaceholder = () => {
+		if (!session.cameraEnabled) {
+			return (
+				<StreamStatusMessage
+					icon={<VideoOff size={48} />}
+					title="Camera đã tắt"
+					description="Thí sinh chưa bật camera hoặc từ chối chia sẻ. Bạn có thể thử yêu cầu lại."
+					actionLabel="Yêu cầu lại"
+					onAction={() => handleRequest(true)}
+				/>
+			)
+		}
+
+		switch (streamStatus) {
+			case 'waiting':
+				return (
+					<StreamStatusMessage
+						icon={<Loader2 size={48} className="animate-spin" />}
+						title="Đang thiết lập kết nối"
+						description="Hệ thống đang kết nối tới camera của thí sinh, vui lòng đợi trong giây lát."
+					/>
+				)
+			case 'connecting':
+				return (
+					<StreamStatusMessage
+						icon={<Loader2 size={48} className="animate-spin" />}
+						title="Đang thiết lập kết nối"
+						description="Đang thiết lập phiên WebRTC, vui lòng đợi trong giây lát."
+					/>
+				)
+			case 'error':
+				return (
+					<StreamStatusMessage
+						icon={<WifiOff size={48} />}
+						title="Không thể hiển thị camera"
+						description={streamState?.error || 'Đã xảy ra lỗi khi kết nối tới camera của thí sinh.'}
+						actionLabel="Thử lại"
+						onAction={() => handleRequest(true)}
+						severity="error"
+					/>
+				)
+			case 'idle':
+			default:
+				return (
+					<StreamStatusMessage
+						icon={<Video size={48} />}
+						title="Chưa yêu cầu camera"
+						description="Nhấn nút bên dưới để yêu cầu thí sinh bật camera và chia sẻ hình ảnh."
+						actionLabel="Yêu cầu camera"
+						onAction={() => handleRequest(false)}
+					/>
+				)
+		}
+	}
 	
 	const getRiskBadgeVariant = (risk: string) => {
 		switch (risk) {
@@ -129,7 +270,7 @@ export default function SessionDetailView({
 				</div>
 			)}
 
-			{/* Video Stream Placeholder */}
+			{/* Video Stream */}
 			<div className="modal-detail-section">
 				<div className="section-title">
 					<Video />
@@ -145,47 +286,168 @@ export default function SessionDetailView({
 					position: 'relative',
 					overflow: 'hidden'
 				}}>
-				{session.cameraEnabled && session.faceDetected ? (
-					<>
-						<div style={{
-							color: 'white',
-							fontSize: '48px',
-							opacity: 0.5
-						}}>
-							📹
+					{/* Luôn render video element để tránh unmount/remount */}
+					<video
+						ref={videoRef}
+						autoPlay
+						playsInline
+						muted
+						controls={false}
+						style={{
+							width: '100%',
+							height: '100%',
+							objectFit: 'cover',
+							display: hasLiveStream ? 'block' : 'none'
+						}}
+						onLoadedMetadata={(e) => {
+							const video = e.currentTarget
+							if (video.isConnected && video.srcObject && video.paused) {
+								video.play().catch(err => {
+									if (video.isConnected) {
+										console.warn('Không thể phát video sau khi load metadata:', err)
+									}
+								})
+							}
+						}}
+						onCanPlay={(e) => {
+							const video = e.currentTarget
+							if (video.isConnected && video.paused && video.srcObject) {
+								video.play().catch(err => {
+									if (video.isConnected) {
+										console.warn('Không thể phát video sau khi canPlay:', err)
+									}
+								})
+							}
+						}}
+					/>
+					{/* Overlay placeholder khi không có stream */}
+					{!hasLiveStream && (
+						<div
+							style={{
+								position: 'absolute',
+								inset: 0,
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								padding: '32px'
+							}}
+						>
+							{renderStreamPlaceholder()}
 						</div>
-						<div style={{
+					)}
+
+					<div
+						style={{
 							position: 'absolute',
 							top: '16px',
 							left: '16px',
-							background: '#10b981',
-							color: 'white',
-							padding: '6px 12px',
-							borderRadius: 'var(--radius-md)',
-							fontSize: '13px',
-							fontWeight: 600,
 							display: 'flex',
 							alignItems: 'center',
-							gap: '6px'
-						}}>
-							<div style={{
+							gap: '12px'
+						}}
+					>
+						<div
+							style={{
+								padding: '6px 14px',
+								borderRadius: '999px',
+								fontSize: '12px',
+							fontWeight: 600,
+								background: streamStatusMeta.background,
+								color: streamStatusMeta.color,
+								textTransform: 'uppercase',
+								letterSpacing: '0.06em'
+							}}
+						>
+							{streamStatusMeta.label}
+						</div>
+						{hasLiveStream && (
+							<div
+								style={{
+							display: 'flex',
+							alignItems: 'center',
+									gap: '6px',
+									background: 'rgba(220,38,38,0.85)',
+									color: '#fff',
+									padding: '6px 12px',
+									borderRadius: '999px',
+									fontSize: '12px',
+									fontWeight: 600
+								}}
+							>
+								<span
+									style={{
 								width: '8px',
 								height: '8px',
 								borderRadius: '50%',
-								background: 'white',
-								animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-							}} />
+										background: '#fff',
+										boxShadow: '0 0 8px rgba(255,255,255,0.9)'
+									}}
+								/>
 							LIVE
-						</div>
-					</>
-				) : (
-					<div style={{ textAlign: 'center', color: 'white' }}>
-						<VideoOff size={64} style={{ marginBottom: '16px', opacity: 0.5 }} />
-						<div style={{ fontSize: '18px', fontWeight: 500 }}>
-							Camera không khả dụng
-						</div>
 					</div>
 				)}
+					</div>
+
+					<div
+						style={{
+							position: 'absolute',
+							bottom: '16px',
+							left: '16px',
+							display: 'flex',
+							alignItems: 'center',
+							gap: '8px',
+							background: 'rgba(15, 23, 42, 0.6)',
+							color: '#e2e8f0',
+							padding: '6px 12px',
+							borderRadius: '999px',
+							fontSize: '12px'
+						}}
+					>
+						<Clock size={14} />
+						Cập nhật {lastUpdatedLabel}
+					</div>
+				</div>
+
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'flex-end',
+						gap: '12px',
+						marginTop: '16px',
+						flexWrap: 'wrap'
+					}}
+				>
+					<button
+						type="button"
+						className="btn btn-secondary"
+						onClick={() => handleRequest(false)}
+						disabled={!onRequestStream}
+						style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+					>
+						<Video size={16} />
+						Yêu cầu camera
+					</button>
+					<button
+						type="button"
+						className="btn btn-secondary"
+						onClick={() => handleRequest(true)}
+						disabled={!onRequestStream}
+						style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+					>
+						<RefreshCw size={16} />
+						Yêu cầu lại
+					</button>
+					<button
+						type="button"
+						className="btn btn-secondary"
+						onClick={handleStop}
+						disabled={!onStopStream || streamStatus === 'idle'}
+						style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+					>
+						<VideoOff size={16} />
+						Dừng phát
+					</button>
+				</div>
 			</div>
 
 			{/* Progress Bar */}
@@ -215,7 +477,6 @@ export default function SessionDetailView({
 								   session.riskLevel === 'medium' ? '#eab308' : '#10b981',
 						transition: 'width 0.3s ease'
 					}} />
-				</div>
 			</div>
 			</div>
 
@@ -295,6 +556,68 @@ function StatCard({
 			</div>
 			<div className="card-title">{label}</div>
 			<div className="card-value" style={{ color }}>{value}</div>
+		</div>
+	)
+}
+
+function StreamStatusMessage({
+	icon,
+	title,
+	description,
+	actionLabel,
+	onAction,
+	severity = 'info'
+}: {
+	icon: React.ReactNode
+	title: string
+	description?: string
+	actionLabel?: string
+	onAction?: () => void
+	severity?: 'info' | 'error'
+}) {
+	const isError = severity === 'error'
+	return (
+		<div
+			style={{
+				display: 'flex',
+				flexDirection: 'column',
+				alignItems: 'center',
+				textAlign: 'center',
+				color: isError ? '#fca5a5' : '#e2e8f0',
+				gap: '16px',
+				maxWidth: '360px'
+			}}
+		>
+			<div style={{ color: isError ? '#f87171' : '#cbd5f5' }}>{icon}</div>
+			<div>
+				<div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>{title}</div>
+				{description && (
+					<div style={{ fontSize: '14px', lineHeight: 1.5 }}>
+						{description}
+					</div>
+				)}
+			</div>
+			{actionLabel && onAction && (
+				<button
+					type="button"
+					onClick={onAction}
+					style={{
+						padding: '8px 18px',
+						borderRadius: '999px',
+						border: 'none',
+						cursor: 'pointer',
+						fontSize: '13px',
+						fontWeight: 600,
+						background: isError
+							? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+							: 'linear-gradient(135deg, rgba(148,163,184,0.9) 0%, rgba(148,163,184,0.6) 100%)',
+						color: isError ? '#fff' : '#0f172a',
+						boxShadow: isError ? '0 8px 16px rgba(220, 38, 38, 0.35)' : 'none'
+					}}
+				>
+					{actionLabel}
+				</button>
+			)}
 		</div>
 	)
 }

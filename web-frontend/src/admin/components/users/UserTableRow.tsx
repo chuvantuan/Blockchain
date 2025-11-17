@@ -50,7 +50,7 @@ export default function UserTableRow({
 	const getStatusLabel = (status: string) => {
 		switch (status) {
 			case 'active': return 'Hoạt động'
-			case 'inactive': return 'Không hoạt động'
+			case 'inactive': return 'Bị khóa'
 			case 'suspended': return 'Bị khóa'
 			default: return status
 		}
@@ -91,8 +91,7 @@ export default function UserTableRow({
 					{getRoleLabel(user.role)}
 				</Badge>
 			</td>
-			<td>{user.department || '-'}</td>
-			<td>{user.phone || '-'}</td>
+			<td>{user.phone || user.phoneNumber || '-'}</td>
 			<td>
 				<Badge variant={getStatusBadgeVariant(user.status)}>
 					{getStatusLabel(user.status)}
