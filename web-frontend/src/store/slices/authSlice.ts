@@ -55,13 +55,15 @@ export const registerUser = createAsyncThunk(
 	async (credentials: RegisterCredentials, { rejectWithValue }) => {
 		try {
 			const response = await register(credentials)
-			if (response.success && response.user) {
-				return response.user
+			
+			if (response.success) {
+				// Return the credentials for success case even if no user data
+				return response.user || { email: credentials.email, username: credentials.username }
 			} else {
 				return rejectWithValue(response.message || 'Registration failed')
 			}
-		} catch (error) {
-			return rejectWithValue('Network error')
+		} catch (error: any) {
+			return rejectWithValue(error.message || 'Network error')
 		}
 	}
 )

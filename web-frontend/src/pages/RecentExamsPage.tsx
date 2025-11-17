@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, Award, ArrowRight, Calendar, FileText, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRecentSubmissions } from '../hooks/useRecentSubmissions';
 import Button from '../components/atoms/Button';
+import styles from '../assets/css/RecentExamsPage.module.css';
 
 export default function RecentExamsPage(): JSX.Element {
 	const navigate = useNavigate();
@@ -46,39 +47,32 @@ export default function RecentExamsPage(): JSX.Element {
 	const getStatusIcon = (status: string) => {
 		switch (status) {
 			case 'completed':
-				return <CheckCircle size={20} style={{ color: '#10b981' }} />;
+				return <CheckCircle size={20} className={styles.statusIconCompleted} />;
 			case 'failed':
-				return <XCircle size={20} style={{ color: '#ef4444' }} />;
+				return <XCircle size={20} className={styles.statusIconFailed} />;
 			case 'in-progress':
-				return <AlertCircle size={20} style={{ color: '#f59e0b' }} />;
+				return <AlertCircle size={20} className={styles.statusIconInProgress} />;
 			default:
-				return <Clock size={20} style={{ color: '#6b7280' }} />;
+				return <Clock size={20} className={styles.statusIconDefault} />;
 		}
 	};
 
 	const getStatusBadge = (status: string) => {
-		const styles = {
-			completed: { bg: '#dcfce7', color: '#166534', text: 'Hoàn thành' },
-			failed: { bg: '#fee2e2', color: '#991b1b', text: 'Chưa đạt' },
-			'in-progress': { bg: '#fef3c7', color: '#92400e', text: 'Đang làm' }
+		const statusTexts = {
+			completed: 'Hoàn thành',
+			failed: 'Chưa đạt',
+			'in-progress': 'Đang làm'
 		};
 
-		const style = styles[status as keyof typeof styles] || { bg: '#e5e7eb', color: '#374151', text: 'Chưa xác định' };
+		const text = statusTexts[status as keyof typeof statusTexts] || 'Chưa xác định';
+		const badgeClass = status === 'completed' ? styles.statusBadgeCompleted :
+			status === 'failed' ? styles.statusBadgeFailed :
+			status === 'in-progress' ? styles.statusBadgeInProgress : '';
 
 		return (
-			<span style={{
-				display: 'inline-flex',
-				alignItems: 'center',
-				gap: '6px',
-				padding: '4px 12px',
-				borderRadius: '12px',
-				fontSize: '13px',
-				fontWeight: 600,
-				background: style.bg,
-				color: style.color
-			}}>
+			<span className={`${styles.statusBadge} ${badgeClass}`}>
 				{getStatusIcon(status)}
-				{style.text}
+				{text}
 			</span>
 		);
 	};
@@ -97,25 +91,10 @@ export default function RecentExamsPage(): JSX.Element {
 
 	if (loading) {
 		return (
-			<div style={{
-				minHeight: '100vh',
-				background: 'var(--background)',
-				display: 'flex',
-				alignItems: 'center',
-				justifyContent: 'center',
-				padding: '24px'
-			}}>
-				<div style={{ textAlign: 'center' }}>
-					<div style={{
-						width: '48px',
-						height: '48px',
-						border: '3px solid var(--muted)',
-						borderTop: '3px solid var(--primary)',
-						borderRadius: '50%',
-						animation: 'spin 1s linear infinite',
-						margin: '0 auto 16px'
-					}} />
-					<p style={{ color: 'var(--muted-foreground)' }}>Đang tải bài thi gần đây...</p>
+			<div className={styles.loadingContainer}>
+				<div className={styles.loadingContent}>
+					<div className={styles.loadingSpinner} />
+					<p className={styles.loadingText}>Đang tải bài thi gần đây...</p>
 				</div>
 			</div>
 		);
@@ -123,25 +102,11 @@ export default function RecentExamsPage(): JSX.Element {
 
 	if (error) {
 		return (
-			<div style={{
-				minHeight: '100vh',
-				background: 'var(--background)',
-				display: 'flex',
-				alignItems: 'center',
-				justifyContent: 'center',
-				padding: '24px'
-			}}>
-				<div style={{
-					background: 'var(--card)',
-					padding: '40px',
-					borderRadius: 'var(--radius-lg)',
-					textAlign: 'center',
-					border: '1px solid var(--border)',
-					maxWidth: '400px'
-				}}>
-					<AlertCircle size={48} style={{ color: '#ef4444', marginBottom: '16px' }} />
-					<h2 style={{ marginBottom: '8px', color: 'var(--foreground)' }}>Lỗi</h2>
-					<p style={{ color: 'var(--muted-foreground)', marginBottom: '24px' }}>{error}</p>
+			<div className={styles.errorContainer}>
+				<div className={styles.errorCard}>
+					<AlertCircle className={styles.errorIcon} />
+					<h2 className={styles.errorTitle}>Lỗi</h2>
+					<p className={styles.errorMessage}>{error}</p>
 					<Button onClick={refetch} variant="primary">Thử lại</Button>
 				</div>
 			</div>
@@ -149,103 +114,60 @@ export default function RecentExamsPage(): JSX.Element {
 	}
 
 	return (
-		<div style={{
-			minHeight: '100vh',
-			background: 'var(--background)',
-			padding: '24px'
-		}}>
-			<div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+		<div className={styles.page}>
+			<div className={styles.container}>
 				{/* Header */}
-				<div style={{ marginBottom: '32px' }}>
-					<h1 style={{
-						fontSize: '36px',
-						fontWeight: 700,
-						marginBottom: '8px',
-						color: 'var(--foreground)',
-						display: 'flex',
-						alignItems: 'center',
-						gap: '12px'
-					}}>
-						<TrendingUp size={36} style={{ color: 'var(--primary)' }} />
+				<div className={styles.header}>
+					<h1 className={styles.title}>
+						<TrendingUp />
 						Bài thi gần đây
 					</h1>
-					<p style={{ color: 'var(--muted-foreground)', fontSize: '16px' }}>
+					<p className={styles.subtitle}>
 						Xem lại các bài thi bạn đã làm và theo dõi tiến độ học tập
 					</p>
 				</div>
 
 				{/* Statistics Cards */}
-				<div style={{
-					display: 'grid',
-					gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-					gap: '16px',
-					marginBottom: '32px'
-				}}>
-					<div style={{
-						background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-						padding: '24px',
-						borderRadius: 'var(--radius-lg)',
-						color: 'white'
-					}}>
-						<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-							<FileText size={24} />
-							<span style={{ fontSize: '14px', opacity: 0.9 }}>Tổng số bài</span>
+				<div className={styles.statsGrid}>
+					<div className={`${styles.statCard} ${styles.statCardPurple}`}>
+						<div className={styles.statHeader}>
+							<FileText />
+							<span className={styles.statLabel}>Tổng số bài</span>
 						</div>
-						<div style={{ fontSize: '32px', fontWeight: 700 }}>{stats.total}</div>
+						<div className={styles.statValue}>{stats.total}</div>
 					</div>
 
-					<div style={{
-						background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-						padding: '24px',
-						borderRadius: 'var(--radius-lg)',
-						color: 'white'
-					}}>
-						<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-							<CheckCircle size={24} />
-							<span style={{ fontSize: '14px', opacity: 0.9 }}>Hoàn thành</span>
+					<div className={`${styles.statCard} ${styles.statCardGreen}`}>
+						<div className={styles.statHeader}>
+							<CheckCircle />
+							<span className={styles.statLabel}>Hoàn thành</span>
 						</div>
-						<div style={{ fontSize: '32px', fontWeight: 700 }}>{stats.completed}</div>
+						<div className={styles.statValue}>{stats.completed}</div>
 					</div>
 
-					<div style={{
-						background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-						padding: '24px',
-						borderRadius: 'var(--radius-lg)',
-						color: 'white'
-					}}>
-						<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-							<XCircle size={24} />
-							<span style={{ fontSize: '14px', opacity: 0.9 }}>Chưa đạt</span>
+					<div className={`${styles.statCard} ${styles.statCardRed}`}>
+						<div className={styles.statHeader}>
+							<XCircle />
+							<span className={styles.statLabel}>Chưa đạt</span>
 						</div>
-						<div style={{ fontSize: '32px', fontWeight: 700 }}>{stats.failed}</div>
+						<div className={styles.statValue}>{stats.failed}</div>
 					</div>
 
-					<div style={{
-						background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-						padding: '24px',
-						borderRadius: 'var(--radius-lg)',
-						color: 'white'
-					}}>
-						<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-							<Award size={24} />
-							<span style={{ fontSize: '14px', opacity: 0.9 }}>Điểm TB</span>
+					<div className={`${styles.statCard} ${styles.statCardOrange}`}>
+						<div className={styles.statHeader}>
+							<Award />
+							<span className={styles.statLabel}>Điểm TB</span>
 						</div>
-						<div style={{ fontSize: '32px', fontWeight: 700 }}>{stats.avgScore}</div>
+						<div className={styles.statValue}>{stats.avgScore}</div>
 					</div>
 				</div>
 
 				{/* Filter Bar */}
 				{exams.length > 0 && (
-					<div style={{
-						display: 'flex',
-						gap: '12px',
-						alignItems: 'center',
-						marginBottom: '24px',
-						flexWrap: 'wrap'
-					}}>
-						<div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--muted-foreground)' }}>
-							<Filter size={20} />
-							<span style={{ fontWeight: 500 }}>Lọc:</span>
+					<div className={styles.filterBar}>
+						<div className={styles.filterLabel}>
+							<Filter />
+							<span className={styles.filterLabelText}>Lọc:</span>
 						</div>
 						
 						{[
@@ -257,41 +179,10 @@ export default function RecentExamsPage(): JSX.Element {
 							<button
 								key={filter.value}
 								onClick={() => handleFilterChange(filter.value as typeof filterStatus)}
-								style={{
-									padding: '8px 16px',
-									borderRadius: 'var(--radius-md)',
-									border: filterStatus === filter.value ? '2px solid var(--primary)' : '1px solid var(--border)',
-									background: filterStatus === filter.value ? 'var(--primary-light)' : 'var(--card)',
-									color: filterStatus === filter.value ? 'var(--primary)' : 'var(--foreground)',
-									fontWeight: filterStatus === filter.value ? 600 : 400,
-									cursor: 'pointer',
-									transition: 'all 0.2s',
-									display: 'flex',
-									alignItems: 'center',
-									gap: '6px'
-								}}
-								onMouseEnter={(e) => {
-									if (filterStatus !== filter.value) {
-										e.currentTarget.style.borderColor = 'var(--primary)';
-										e.currentTarget.style.background = 'var(--muted)';
-									}
-								}}
-								onMouseLeave={(e) => {
-									if (filterStatus !== filter.value) {
-										e.currentTarget.style.borderColor = 'var(--border)';
-										e.currentTarget.style.background = 'var(--card)';
-									}
-								}}
+								className={`${styles.filterButton} ${filterStatus === filter.value ? styles.filterButtonActive : ''}`}
 							>
 								<span>{filter.label}</span>
-								<span style={{
-									padding: '2px 8px',
-									borderRadius: '10px',
-									fontSize: '12px',
-									fontWeight: 600,
-									background: filterStatus === filter.value ? 'var(--primary)' : 'var(--muted)',
-									color: filterStatus === filter.value ? 'white' : 'var(--muted-foreground)'
-								}}>
+								<span className={styles.filterCount}>
 									{filter.count}
 								</span>
 							</button>
@@ -301,18 +192,12 @@ export default function RecentExamsPage(): JSX.Element {
 
 				{/* Exams List */}
 				{filteredExams.length === 0 ? (
-					<div style={{
-						background: 'var(--card)',
-						padding: '60px 24px',
-						borderRadius: 'var(--radius-lg)',
-						textAlign: 'center',
-						border: '1px solid var(--border)'
-					}}>
-						<FileText size={64} style={{ color: 'var(--muted-foreground)', marginBottom: '16px' }} />
-						<h3 style={{ marginBottom: '8px', color: 'var(--foreground)' }}>
+					<div className={styles.emptyState}>
+						<FileText className={styles.emptyStateIcon} />
+						<h3 className={styles.emptyStateTitle}>
 							{exams.length === 0 ? 'Chưa có bài thi nào' : 'Không tìm thấy bài thi'}
 						</h3>
-						<p style={{ color: 'var(--muted-foreground)', marginBottom: '24px' }}>
+						<p className={styles.emptyStateText}>
 							{exams.length === 0 
 								? 'Bạn chưa làm bài thi nào. Hãy bắt đầu làm bài thi đầu tiên!'
 								: `Không có bài thi nào với trạng thái "${filterStatus === 'completed' ? 'Hoàn thành' : filterStatus === 'failed' ? 'Chưa đạt' : 'Đang làm'}"`
@@ -326,114 +211,54 @@ export default function RecentExamsPage(): JSX.Element {
 					</div>
 				) : (
 					<>
-						<div style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							marginBottom: '16px'
-						}}>
-							<h2 style={{
-								fontSize: '20px',
-								fontWeight: 600,
-								color: 'var(--foreground)'
-							}}>
+						<div className={styles.examsListHeader}>
+							<h2 className={styles.examsListTitle}>
 								Lịch sử làm bài ({filteredExams.length})
 							</h2>
 							<Button 
 								onClick={handleViewAllExams} 
 								variant="outline"
-								style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+								className={styles.viewAllButton}
 							>
-								Xem tất cả bài thi <ArrowRight size={16} />
+								Xem tất cả bài thi <ArrowRight />
 							</Button>
 						</div>
 
-						<div style={{
-							display: 'flex',
-							flexDirection: 'column',
-							gap: '16px'
-						}}>
+						<div className={styles.examsList}>
 							{paginatedExams.map((exam) => (
 								<div
 									key={exam.id}
-									style={{
-										background: 'var(--card)',
-										border: '1px solid var(--border)',
-										borderRadius: 'var(--radius-lg)',
-										padding: '24px',
-										transition: 'all 0.2s',
-										cursor: 'pointer'
-									}}
-									onMouseEnter={(e) => {
-										e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-										e.currentTarget.style.borderColor = 'var(--primary)';
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.boxShadow = 'none';
-										e.currentTarget.style.borderColor = 'var(--border)';
-									}}
+									className={styles.examCard}
 								>
-									<div style={{
-										display: 'grid',
-										gridTemplateColumns: '1fr auto',
-										gap: '24px',
-										alignItems: 'start'
-									}}>
+									<div className={styles.examCardContent}>
 										{/* Left: Exam Info */}
-										<div>
-											<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+										<div className={styles.examInfo}>
+											<div className={styles.examBadges}>
 												{getStatusBadge(exam.status)}
 												{exam.certificate && (
-													<span style={{
-														display: 'inline-flex',
-														alignItems: 'center',
-														gap: '4px',
-														padding: '4px 12px',
-														borderRadius: '12px',
-														fontSize: '13px',
-														fontWeight: 600,
-														background: '#fef3c7',
-														color: '#92400e'
-													}}>
-														<Award size={14} />
+													<span className={styles.certificateBadge}>
+														<Award />
 														Đủ điều kiện nhận chứng chỉ
 													</span>
 												)}
 											</div>
 
-											<h3 style={{
-												fontSize: '20px',
-												fontWeight: 600,
-												marginBottom: '12px',
-												color: 'var(--foreground)'
-											}}>
+											<h3 className={styles.examTitle}>
 												{exam.title}
 											</h3>
 
-											<div style={{
-												display: 'flex',
-												flexWrap: 'wrap',
-												gap: '16px',
-												color: 'var(--muted-foreground)',
-												fontSize: '14px'
-											}}>
-												<div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-													<Calendar size={16} />
+											<div className={styles.examMeta}>
+												<div className={styles.examMetaItem}>
+													<Calendar />
 													<span>{exam.date}</span>
 												</div>
-												<div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-													<Clock size={16} />
+												<div className={styles.examMetaItem}>
+													<Clock />
 													<span>{exam.duration}</span>
 												</div>
 												{exam.score !== undefined && (
-													<div style={{
-														display: 'flex',
-														alignItems: 'center',
-														gap: '6px',
-														fontWeight: 600,
-														color: exam.status === 'completed' ? '#10b981' : '#ef4444'
-													}}>
-														<Award size={16} />
+													<div className={`${styles.examMetaItem} ${styles.examScore} ${exam.status === 'completed' ? styles.examScoreCompleted : styles.examScoreFailed}`}>
+														<Award />
 														<span>{exam.score}/{exam.maxScore} điểm</span>
 													</div>
 												)}
@@ -441,17 +266,12 @@ export default function RecentExamsPage(): JSX.Element {
 										</div>
 
 										{/* Right: Actions */}
-										<div style={{
-											display: 'flex',
-											flexDirection: 'column',
-											gap: '8px',
-											minWidth: '160px'
-										}}>
+										<div className={styles.examActions}>
 											{exam.status === 'in-progress' && (
 												<Button
 													onClick={() => handleContinueExam(exam.quizId)}
 													variant="primary"
-													style={{ width: '100%' }}
+													className={styles.examActionButton}
 												>
 													Tiếp tục làm bài
 												</Button>
@@ -460,7 +280,7 @@ export default function RecentExamsPage(): JSX.Element {
 												<Button
 													onClick={() => handleViewResult(exam.quizId, exam.id)}
 													variant="secondary"
-													style={{ width: '100%' }}
+													className={styles.examActionButton}
 												>
 													Xem kết quả
 												</Button>
@@ -473,69 +293,22 @@ export default function RecentExamsPage(): JSX.Element {
 
 						{/* Pagination */}
 						{totalPages > 1 && (
-							<div style={{
-								display: 'flex',
-								justifyContent: 'center',
-								alignItems: 'center',
-								gap: '12px',
-								marginTop: '32px'
-							}}>
+							<div className={styles.pagination}>
 								<button
 									onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
 									disabled={currentPage === 1}
-									style={{
-										padding: '8px 12px',
-										borderRadius: 'var(--radius-md)',
-										border: '1px solid var(--border)',
-										background: currentPage === 1 ? 'var(--muted)' : 'var(--card)',
-										color: currentPage === 1 ? 'var(--muted-foreground)' : 'var(--foreground)',
-										cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-										display: 'flex',
-										alignItems: 'center',
-										gap: '4px',
-										transition: 'all 0.2s'
-									}}
-									onMouseEnter={(e) => {
-										if (currentPage !== 1) {
-											e.currentTarget.style.background = 'var(--muted)';
-										}
-									}}
-									onMouseLeave={(e) => {
-										if (currentPage !== 1) {
-											e.currentTarget.style.background = 'var(--card)';
-										}
-									}}
+									className={styles.paginationButton}
 								>
-									<ChevronLeft size={16} />
+									<ChevronLeft />
 									Trước
 								</button>
 
-								<div style={{ display: 'flex', gap: '8px' }}>
+								<div className={styles.paginationNumbers}>
 									{Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
 										<button
 											key={page}
 											onClick={() => setCurrentPage(page)}
-											style={{
-												padding: '8px 12px',
-												borderRadius: 'var(--radius-md)',
-												border: currentPage === page ? '2px solid var(--primary)' : '1px solid var(--border)',
-												background: currentPage === page ? 'var(--primary)' : 'var(--card)',
-												color: currentPage === page ? 'white' : 'var(--foreground)',
-												fontWeight: currentPage === page ? 600 : 400,
-												cursor: 'pointer',
-												minWidth: '40px',
-												transition: 'all 0.2s'
-											}}
-											onMouseEnter={(e) => {
-												if (currentPage !== page) {
-													e.currentTarget.style.background = 'var(--muted)';
-												}
-											}}
-											onMouseLeave={(e) => {
-												if (currentPage !== page) {
-													e.currentTarget.style.background = 'var(--card)';
-												}
-											}}
+											className={`${styles.paginationNumber} ${currentPage === page ? styles.paginationNumberActive : ''}`}
 										>
 											{page}
 										</button>
@@ -545,31 +318,10 @@ export default function RecentExamsPage(): JSX.Element {
 								<button
 									onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
 									disabled={currentPage === totalPages}
-									style={{
-										padding: '8px 12px',
-										borderRadius: 'var(--radius-md)',
-										border: '1px solid var(--border)',
-										background: currentPage === totalPages ? 'var(--muted)' : 'var(--card)',
-										color: currentPage === totalPages ? 'var(--muted-foreground)' : 'var(--foreground)',
-										cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-										display: 'flex',
-										alignItems: 'center',
-										gap: '4px',
-										transition: 'all 0.2s'
-									}}
-									onMouseEnter={(e) => {
-										if (currentPage !== totalPages) {
-											e.currentTarget.style.background = 'var(--muted)';
-										}
-									}}
-									onMouseLeave={(e) => {
-										if (currentPage !== totalPages) {
-											e.currentTarget.style.background = 'var(--card)';
-										}
-									}}
+									className={styles.paginationButton}
 								>
 									Sau
-									<ChevronRight size={16} />
+									<ChevronRight />
 								</button>
 							</div>
 						)}

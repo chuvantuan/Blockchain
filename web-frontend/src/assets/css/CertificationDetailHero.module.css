@@ -1,6 +1,6 @@
 .hero {
   background: linear-gradient(135deg, var(--card) 0%, var(--muted) 100%);
-  padding: 100px 0 140px;
+  padding: clamp(60px, 10vw, 100px) 0 clamp(80px, 12vw, 140px);
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
@@ -41,16 +41,24 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 clamp(16px, 4vw, 24px);
   position: relative;
   z-index: 2;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
+  grid-template-columns: 1fr;
+  gap: clamp(40px, 6vw, 80px);
   align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .content {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .textContent {
@@ -58,12 +66,13 @@
 }
 
 .title {
-  font-size: 52px;
+  font-size: clamp(28px, 6vw, 52px);
   font-weight: 900;
   color: var(--foreground);
   line-height: 1.1;
-  margin-bottom: 28px;
+  margin-bottom: clamp(20px, 3vw, 28px);
   letter-spacing: -0.03em;
+  word-break: break-word;
 }
 
 .certificationTitle {
@@ -87,24 +96,26 @@
 }
 
 .description {
-  font-size: 18px;
+  font-size: clamp(14px, 3vw, 18px);
   color: var(--muted-foreground);
   line-height: 1.6;
-  margin-bottom: 32px;
+  margin-bottom: clamp(24px, 4vw, 32px);
+  word-break: break-word;
 }
 
 .stats {
   display: flex;
-  gap: 24px;
-  margin-bottom: 40px;
+  gap: clamp(12px, 2vw, 24px);
+  margin-bottom: clamp(32px, 5vw, 40px);
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .stat {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 20px;
+  gap: clamp(8px, 1.5vw, 10px);
+  padding: clamp(10px, 2vw, 14px) clamp(16px, 3vw, 20px);
   background: linear-gradient(135deg, var(--card) 0%, var(--muted) 100%);
   border-radius: 12px;
   border: 2px solid var(--border);
@@ -168,17 +179,22 @@
   color: white;
   border: none;
   border-radius: 14px;
-  padding: 18px 56px;
-  font-size: 19px;
+  padding: clamp(14px, 2.5vw, 18px) clamp(40px, 6vw, 56px);
+  font-size: clamp(16px, 3vw, 19px);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
-  margin-bottom: 24px;
+  margin-bottom: clamp(20px, 3vw, 24px);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  width: 100%;
+  max-width: 400px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .getCertifiedButton::before {
@@ -234,29 +250,32 @@
 }
 
 .companiesTitle {
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
   color: var(--muted-foreground);
-  margin-bottom: 32px;
+  margin-bottom: clamp(24px, 4vw, 32px);
   font-weight: 500;
+  word-break: break-word;
+  padding: 0 clamp(16px, 4vw, 24px);
 }
 
 .logos {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  max-width: 400px;
+  gap: clamp(16px, 3vw, 24px);
+  max-width: min(400px, 90vw);
   margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 24px);
 }
 
 .logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 70px;
+  height: clamp(50px, 8vw, 70px);
   background: linear-gradient(135deg, var(--card) 0%, var(--muted) 100%);
   border-radius: 14px;
   border: 2px solid var(--border);
-  font-size: 15px;
+  font-size: clamp(12px, 2.5vw, 15px);
   font-weight: 700;
   color: var(--foreground);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -288,10 +307,27 @@
 }
 
 /* Responsive design */
-@media (max-width: 1024px) {
+@media (min-width: 1024px) {
   .content {
-    grid-template-columns: 1fr;
-    gap: 60px;
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .textContent {
+    text-align: left;
+  }
+  
+  .companies {
+    order: 0;
+  }
+  
+  .getCertifiedButton {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 1023px) {
+  .content {
     text-align: center;
   }
   
@@ -301,75 +337,19 @@
 }
 
 @media (max-width: 768px) {
-  .hero {
-    padding: 60px 0 80px;
-  }
-  
-  .container {
-    padding: 0 16px;
-  }
-  
-  .content {
-    gap: 40px;
-  }
-  
-  .title {
-    font-size: 36px;
-    margin-bottom: 20px;
-  }
-  
-  .description {
-    font-size: 16px;
-    margin-bottom: 24px;
-  }
-  
-  .stats {
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-  
-  .stat {
-    padding: 10px 12px;
-  }
-  
-  .getCertifiedButton {
-    padding: 14px 40px;
-    font-size: 16px;
-  }
-  
   .logos {
     grid-template-columns: 1fr;
-    gap: 16px;
-    max-width: 300px;
-  }
-  
-  .logo {
-    height: 50px;
-    font-size: 12px;
+    max-width: min(300px, 90vw);
   }
 }
 
 @media (max-width: 480px) {
-  .hero {
-    padding: 40px 0 60px;
-  }
-  
-  .title {
-    font-size: 28px;
-  }
-  
-  .description {
-    font-size: 14px;
-  }
-  
   .stats {
     flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    align-items: stretch;
   }
   
-  .getCertifiedButton {
-    padding: 12px 32px;
-    font-size: 14px;
+  .stat {
+    justify-content: center;
   }
 }

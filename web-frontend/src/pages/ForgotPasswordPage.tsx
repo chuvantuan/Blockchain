@@ -4,6 +4,8 @@ import AuthForm from '../components/molecules/AuthForm'
 import Input from '../components/atoms/Input'
 import SuccessMessage from '../components/atoms/SuccessMessage'
 import { validateEmail } from '../utils/authValidation'
+import styles from '../assets/css/ForgotPasswordPage.module.css'
+import authFormStyles from '../assets/css/AuthForm.module.css'
 
 export default function ForgotPasswordPage(): JSX.Element {
 	const [formData, setFormData] = useState({
@@ -44,32 +46,26 @@ export default function ForgotPasswordPage(): JSX.Element {
 	}
 
 	return (
-		<AuthForm
-			title="Đặt lại mật khẩu"
-			subtitle="Nhập email để nhận hướng dẫn đặt lại mật khẩu"
-			onSubmit={handleSubmit}
-			buttonText="Gửi liên kết đặt lại"
-			loading={loading}
-			footer={
-				<p style={{ margin: 0 }}>
-					Nhớ mật khẩu?{' '}
-					<Link 
-						to="/auth/login"
-						style={{
-							background: 'none',
-							border: 'none',
-							color: 'var(--primary)',
-							cursor: 'pointer',
-							textDecoration: 'underline',
-							fontSize: 'inherit',
-							fontFamily: 'inherit'
-						}}
-					>
-						Đăng nhập
-					</Link>
-				</p>
-			}
-		>
+		<div className={styles.page}>
+			<div className={styles.container}>
+				<AuthForm
+					title="Đặt lại mật khẩu"
+					subtitle="Nhập email để nhận hướng dẫn đặt lại mật khẩu"
+					onSubmit={handleSubmit}
+					buttonText="Gửi liên kết đặt lại"
+					loading={loading}
+					footer={
+						<p>
+							Nhớ mật khẩu?{' '}
+							<Link 
+								to="/auth/login"
+								className={authFormStyles.footerLink}
+							>
+								Đăng nhập
+							</Link>
+						</p>
+					}
+				>
 			{showSuccess && (
 				<SuccessMessage
 					message="Liên kết đặt lại mật khẩu đã được gửi đến email của bạn!"
@@ -77,16 +73,18 @@ export default function ForgotPasswordPage(): JSX.Element {
 				/>
 			)}
 			
-			<Input
-				id="email"
-				name="email"
-				type="email"
-				value={formData.email}
-				onChange={handleInputChange}
-				placeholder="Nhập email của bạn"
-				error={errors.email}
-				required
-			/>
-		</AuthForm>
+					<Input
+						id="email"
+						name="email"
+						type="email"
+						value={formData.email}
+						onChange={handleInputChange}
+						placeholder="Nhập email của bạn"
+						error={errors.email}
+						required
+					/>
+				</AuthForm>
+			</div>
+		</div>
 	)
 }

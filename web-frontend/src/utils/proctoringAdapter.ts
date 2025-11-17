@@ -158,8 +158,9 @@ export function backendEventToViolation(event: BackendProctoringEvent | ApiProct
   if (!evidenceUrl && backendAny.metadata?.storagePath && getMediaUrlFn) {
     evidenceUrl = getMediaUrlFn(backendAny.metadata.storagePath)
   } else if (!evidenceUrl && backendAny.metadata?.storagePath) {
-    // Fallback: construct URL manually
-    evidenceUrl = `http://localhost:8082${backendAny.metadata.storagePath}`
+    // Fallback: construct URL via API Gateway
+    const gatewayUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+    evidenceUrl = `${gatewayUrl}/api/proctoring${backendAny.metadata.storagePath}`
   }
   
   return {

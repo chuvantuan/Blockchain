@@ -1,11 +1,20 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { io, type Socket } from 'socket.io-client'
 import { ProctoringSession, ProctoringFilters, SessionStats } from '../types/proctoring'
 import { proctoringApi } from '../services/proctoringApi'
 // Import adapter để convert giữa backend và frontend
 import { 
 	backendSessionToProctoringSession,
-	mapBackendSessionsToProctoringSessions 
+	mapBackendSessionsToProctoringSessions,
+	backendEventToViolation
 } from '../../utils/proctoringAdapter'
+
+const isBrowser = typeof window !== 'undefined'
+// Use API Gateway WebSocket endpoint for proctoring (Socket.IO path)
+const DEFAULT_PROCTORING_WS_URL =
+	(isBrowser && (window as any)?.__PROCTORING_WS_URL) ??
+	((import.meta as any)?.env?.VITE_PROCTORING_WS_URL as string | undefined) ??
+	`${import.meta.env.VITE_API_BASE_URL?.replace('http://', 'ws://').replace('https://', 'wss://') || 'ws://localhost:8080'}/socket.io`
 
 export default function useProctoring() {
 	const [sessions, setSessions] = useState<ProctoringSession[]>([])
@@ -18,10 +27,17 @@ export default function useProctoring() {
 	})
 	const [selectedSession, setSelectedSession] = useState<ProctoringSession | null>(null)
 	const [autoRefresh, setAutoRefresh] = useState(true)
+	
+	// WebSocket connections for realtime updates
+	const socketsRef = useRef<Record<string, Socket>>({})
+	const sessionsRef = useRef<ProctoringSession[]>([])
 
 	// Filter sessions
 	const filteredSessions = useMemo(() => {
 		let result = [...sessions]
+
+		// ✅ Tự động filter out completed sessions (ẩn phiên thi đã hoàn thành)
+		result = result.filter(s => s.status !== 'completed')
 
 		// Search
 		if (filters.search) {
@@ -140,7 +156,193 @@ export default function useProctoring() {
 		setFilters(prev => ({ ...prev, [key]: value }))
 	}, [])
 
+	// Keep sessionsRef in sync with sessions state
+	useEffect(() => {
+		sessionsRef.current = sessions
+	}, [sessions])
+
+	// WebSocket setup for realtime updates
+	useEffect(() => {
+		if (!isBrowser || sessions.length === 0) return
+
+		// Get unique examIds from sessions
+		const examIds = Array.from(new Set(sessions.map(s => s.examId)))
+
+		// Create socket connections for each exam
+		examIds.forEach(examId => {
+			if (socketsRef.current[examId]) {
+				// Socket already exists for this exam
+				return
+			}
+
+			const socket = io(DEFAULT_PROCTORING_WS_URL, {
+				query: {
+					examId: String(examId),
+					userId: 'admin-dashboard',
+					userType: 'proctor'
+				},
+				transports: ['websocket']
+			})
+
+			socket.on('connect', () => {
+				console.log(`[useProctoring] WebSocket connected for exam ${examId}`)
+			})
+
+			socket.on('disconnect', () => {
+				console.warn(`[useProctoring] WebSocket disconnected for exam ${examId}`)
+			})
+
+			// Listen for proctoring alerts (violations)
+			socket.on('proctoring_alert', (event: any) => {
+				console.log('[useProctoring] Received proctoring_alert:', event)
+				
+				// Find the session that matches this event
+				const sessionId = event.sessionId || event.id
+				if (!sessionId) return
+
+				setSessions(prev => {
+					const sessionIndex = prev.findIndex(s => s.id === sessionId)
+					if (sessionIndex === -1) {
+						// Session not found, might need to refresh
+						return prev
+					}
+
+					const session = prev[sessionIndex]
+					
+					// Convert backend event to violation
+					const newViolation = backendEventToViolation(event)
+					
+					// Check if violation already exists
+					const violationExists = session.violations.some(v => v.id === newViolation.id)
+					if (violationExists) {
+						return prev
+					}
+
+					// Add new violation to session
+					const updatedViolations = [...session.violations, newViolation]
+					
+					// Update session with new violation
+					const updatedSession: ProctoringSession = {
+						...session,
+						violations: updatedViolations,
+						totalViolations: updatedViolations.length,
+						tabSwitches: updatedViolations.filter(v => v.type === 'tab_switch').length,
+						// Update face detection status based on violations
+						faceDetected: updatedViolations.filter(v => v.type === 'no_face_detected').length === 0 && session.faceDetected,
+						faceCount: updatedViolations.some(v => v.type === 'multiple_faces') ? 2 : 1
+					}
+
+					// Update risk level based on new violations
+					const unresolvedViolations = updatedViolations.filter(v => !v.resolved).length
+					const criticalViolations = updatedViolations.filter(v => 
+						v.severity === 'critical' && !v.resolved
+					).length
+
+					let riskLevel: typeof session.riskLevel = 'low'
+					if (criticalViolations > 0 || unresolvedViolations >= 5) {
+						riskLevel = 'critical'
+					} else if (unresolvedViolations >= 3) {
+						riskLevel = 'high'
+					} else if (unresolvedViolations >= 1) {
+						riskLevel = 'medium'
+					}
+					updatedSession.riskLevel = riskLevel
+
+					// Update selected session if it's the one being updated
+					setSelectedSession(prev => {
+						if (prev?.id === sessionId) {
+							return updatedSession
+						}
+						return prev
+					})
+
+					// Return updated sessions array
+					const newSessions = [...prev]
+					newSessions[sessionIndex] = updatedSession
+					return newSessions
+				})
+			})
+
+			// Listen for session status updates (camera, mic, face, connection)
+			socket.on('session_status_update', (update: any) => {
+				console.log('[useProctoring] Received session_status_update:', update)
+				
+				const sessionId = update.sessionId
+				if (!sessionId) return
+
+				setSessions(prev => {
+					const sessionIndex = prev.findIndex(s => s.id === sessionId)
+					if (sessionIndex === -1) return prev
+
+					const session = prev[sessionIndex]
+					const updatedSession: ProctoringSession = {
+						...session,
+						// Update status fields if provided
+						cameraEnabled: update.cameraEnabled !== undefined ? update.cameraEnabled : session.cameraEnabled,
+						audioEnabled: update.audioEnabled !== undefined ? update.audioEnabled : session.audioEnabled,
+						faceDetected: update.faceDetected !== undefined ? update.faceDetected : session.faceDetected,
+						faceCount: update.faceCount !== undefined ? update.faceCount : session.faceCount,
+						connectionStatus: update.connectionStatus !== undefined ? update.connectionStatus : session.connectionStatus,
+						lastPing: update.timestamp || new Date().toISOString()
+					}
+
+					// Update selected session if it's the one being updated
+					setSelectedSession(prev => {
+						if (prev?.id === sessionId) {
+							return updatedSession
+						}
+						return prev
+					})
+
+					const newSessions = [...prev]
+					newSessions[sessionIndex] = updatedSession
+					return newSessions
+				})
+			})
+
+			// ✅ Listen for session completed event - tự động remove session khỏi danh sách
+			socket.on('proctoring_session_completed', (data: any) => {
+				console.log('[useProctoring] Received proctoring_session_completed:', data)
+				
+				const sessionId = data.sessionId || data.id
+				if (!sessionId) return
+
+				setSessions(prev => {
+					const sessionIndex = prev.findIndex(s => s.id === sessionId)
+					if (sessionIndex === -1) return prev
+
+					// Remove session khỏi danh sách (hoặc mark as completed để filter out)
+					const newSessions = prev.filter(s => s.id !== sessionId)
+					
+					// Close modal nếu đang xem session này
+					setSelectedSession(prevSelected => {
+						if (prevSelected?.id === sessionId) {
+							return null
+						}
+						return prevSelected
+					})
+
+					console.log(`[useProctoring] Đã tự động ẩn session ${sessionId} vì đã hoàn thành`)
+					return newSessions
+				})
+			})
+
+			socketsRef.current[examId] = socket
+		})
+
+		// Cleanup: disconnect sockets for exams that no longer have sessions
+		return () => {
+			Object.keys(socketsRef.current).forEach(examId => {
+				if (!examIds.includes(examId)) {
+					socketsRef.current[examId]?.disconnect()
+					delete socketsRef.current[examId]
+				}
+			})
+		}
+	}, [sessions.map(s => s.examId).join(',')])
+
 	// ✅ FIX: Auto refresh without transformSession in dependency to avoid re-creating interval
+	// Reduced frequency since we have WebSocket updates now
 	useEffect(() => {
 		if (!autoRefresh) return
 
@@ -171,7 +373,7 @@ export default function useProctoring() {
 			} catch (error) {
 				console.error('Error refreshing sessions:', error)
 			}
-		}, 5000) // Update every 5 seconds
+		}, 30000) // Update every 30 seconds (reduced from 5s since we have WebSocket)
 
 		return () => clearInterval(interval)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -197,10 +399,13 @@ export default function useProctoring() {
 	}, [selectedSession])
 
 	// Send warning
-	const sendWarning = useCallback((sessionId: string) => {
-		// In real app, this would trigger a notification to the student
-		console.log(`Warning sent to session ${sessionId}`)
-		// Could add a warning event to violations here
+	const sendWarning = useCallback(async (sessionId: string) => {
+		const success = await proctoringApi.sendWarning(sessionId)
+		if (success) {
+			// Optionally update UI to show warning was sent
+			console.log(`Warning sent to session ${sessionId}`)
+		}
+		return success
 	}, [])
 
 	// Resolve violation

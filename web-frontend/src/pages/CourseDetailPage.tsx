@@ -1,26 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { 
-  BookOpen, 
-  Clock, 
-  Users, 
-  Star,
-  Award,
-  ChevronRight,
-  Play,
-  FileText,
-  CheckCircle,
-  ArrowLeft,
-  TrendingUp,
-  Clapperboard,
-  ClipboardList,
-  PlayCircle,
-  BadgeCheck,
-  LockKeyhole
-} from 'lucide-react'
+import { BookOpen, Clock, Users, Star, Award, ChevronRight, Play, FileText, CheckCircle, TrendingUp, Clapperboard, ClipboardList, PlayCircle, BadgeCheck, LockKeyhole } from 'lucide-react'
 import courseApi, { Course, Material, Progress } from '../services/api/courseApi'
 import { useAppSelector } from '../store/hooks'
 import '../assets/css/CourseDetailPage.css'
+
+type ProgressState = Progress & {
+  progressPercentage?: number;
+  completedMaterials?: string[];
+};
+
+const COURSE_COMPLETION_REWARD = Number(import.meta.env.VITE_COURSE_COMPLETION_REWARD ?? 100);
 
 export default function CourseDetailPage(): JSX.Element {
   const { courseId } = useParams<{ courseId: string }>()
@@ -29,15 +19,52 @@ export default function CourseDetailPage(): JSX.Element {
   
   const [course, setCourse] = useState<Course | null>(null)
   const [materials, setMaterials] = useState<Material[]>([])
-  const [progress, setProgress] = useState<Progress | null>(null)
+  const [progress, setProgress] = useState<ProgressState | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'curriculum' | 'instructor'>('overview')
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [hasFetched, setHasFetched] = useState(false)
 
-const completedMaterials = progress?.completedMaterials ?? []
-const progressPercent = progress?.progressPercentage ?? progress?.percentComplete ?? 0
+  const getDerivedCompletedCount = (total: number, percent: number): number => {
+    if (!Number.isFinite(percent) || total <= 0) return 0
+    if (percent >= 100) return total
+    const approx = Math.round((percent / 100) * total)
+    return Math.min(Math.max(approx, 0), total)
+  }
+
+  const getPercentComplete = (value?: ProgressState | null): number => {
+    if (!value) {
+      return 0
+    }
+    const rawPercent =
+      value.percentComplete ??
+      value.progressPercentage ??
+      ((value as unknown) as Record<string, unknown>).progress ??
+      0
+    const numeric = Number(rawPercent)
+    return Number.isFinite(numeric) ? numeric : 0
+  }
+
+  const normalizeProgress = (data: any): ProgressState | null => {
+    if (!data) {
+      return null
+    }
+    const percent = Number(
+      data?.percentComplete ?? data?.progressPercentage ?? data?.progress ?? 0
+    )
+    const normalizedPercent = Number.isFinite(percent) ? percent : 0
+    const completedMaterials = Array.isArray(data?.completedMaterials)
+      ? data.completedMaterials
+      : []
+
+    return {
+      ...data,
+      percentComplete: normalizedPercent,
+      progressPercentage: normalizedPercent,
+      completedMaterials,
+    } as ProgressState
+  }
 
   // ✅ FIX: Add guard to prevent duplicate fetch in React StrictMode
   useEffect(() => {
@@ -55,28 +82,27 @@ const progressPercent = progress?.progressPercentage ?? progress?.percentComplet
       
       // Fetch course details
       const courseResponse = await courseApi.getCourseById(courseId)
-      setCourse(courseResponse?.data ?? null)
+      setCourse(courseResponse.data ?? null)
 
       // Fetch materials
       try {
         const materialsResponse = await courseApi.getCourseMaterials(courseId)
-        setMaterials(materialsResponse?.data ?? [])
+        setMaterials(materialsResponse.data ?? [])
       } catch (err) {
         console.log('No materials found or error fetching materials')
-        setMaterials([])
       }
 
       // Fetch progress if user is enrolled
       if (user?.id) {
         try {
           const progressResponse = await courseApi.getStudentProgress(Number(user.id), courseId)
-          const progressData = progressResponse?.data ?? null
-          setProgress(progressData)
-          setIsEnrolled(Boolean(progressData))
+          const normalizedProgress = normalizeProgress(progressResponse.data)
+          setProgress(normalizedProgress)
+          setIsEnrolled(true)
         } catch (err) {
           console.log('User not enrolled or no progress found')
-          setIsEnrolled(false)
           setProgress(null)
+          setIsEnrolled(false)
         }
       }
 
@@ -193,7 +219,16 @@ const progressPercent = progress?.progressPercentage ?? progress?.percentComplet
     }
   }
 
-  const isMaterialCompleted = (materialId: string) => completedMaterials.includes(materialId)
+  const isMaterialCompleted = (materialId: string) => {
+    const completed = progress?.completedMaterials ?? []
+    if (Array.isArray(completed) && completed.includes(materialId)) return true
+    const total = materials.length
+    if (total === 0) return false
+    const derivedCount = getDerivedCompletedCount(total, getPercentComplete(progress))
+    if (derivedCount <= 0) return false
+    const index = materials.findIndex(m => m.id === materialId)
+    return index > -1 && index < derivedCount
+  }
 
   const getMaterialStatusMeta = (materialId: string) => {
     if (isMaterialCompleted(materialId)) {
@@ -218,6 +253,13 @@ const progressPercent = progress?.progressPercentage ?? progress?.percentComplet
       icon: <PlayCircle size={20} />
     }
   }
+
+  const percentComplete = getPercentComplete(progress)
+  const completedMaterialsCount = (() => {
+    const listCount = Array.isArray(progress?.completedMaterials) ? progress!.completedMaterials!.length : 0
+    const derived = getDerivedCompletedCount(materials.length, percentComplete)
+    return Math.max(listCount, derived)
+  })()
 
   if (loading) {
     return (
@@ -271,16 +313,16 @@ const progressPercent = progress?.progressPercentage ?? progress?.percentComplet
                 </div>
               )}
 
-              {course.enrollmentCount !== undefined && (
+              {(course as any).enrollmentCount !== undefined || (course as any).studentsCount !== undefined || (course as any).learnersCount !== undefined ? (
                 <div className="stat">
                   <Users size={20} />
-                  <span>{course.enrollmentCount} học viên</span>
+                  <span>{(course as any).enrollmentCount ?? (course as any).studentsCount ?? (course as any).learnersCount} học viên</span>
                 </div>
-              )}
+              ) : null}
 
               <div className="stat">
                 <Clock size={20} />
-                <span>{formatDuration(course.duration)}</span>
+                <span>{formatDuration((course as any).duration ?? (course as any).totalDurationMinutes ?? (course as any).durationMinutes)}</span>
               </div>
 
               {course.certificateAvailable && (
@@ -315,7 +357,7 @@ const progressPercent = progress?.progressPercentage ?? progress?.percentComplet
                   <Play size={20} />
                   <span>Tiếp tục học</span>
                   {progress && (
-                    <span className="progress-badge">{Math.round(progressPercent)}%</span>
+                    <span className="progress-badge">{percentComplete}%</span>
                   )}
                 </button>
               ) : (
@@ -336,14 +378,19 @@ const progressPercent = progress?.progressPercentage ?? progress?.percentComplet
                   </>
                 )}
               </div>
+
+              <div className="reward-info">
+                <Award />
+                <span>Hoàn thành khóa học để nhận {COURSE_COMPLETION_REWARD} LEARN.</span>
+              </div>
             </div>
           </div>
 
-          <div className="course-summary-side">
+            <div className="course-summary-side">
             {/* Thumbnail */}
             <div className="course-thumbnail">
-              {course.thumbnail ? (
-                <img src={course.thumbnail} alt={course.title} />
+              {course.thumbnailUrl || (course as any).thumbnail ? (
+                <img src={(course as any).thumbnailUrl || (course as any).thumbnail} alt={course.title} />
               ) : (
                 <div className="thumbnail-placeholder">
                   <BookOpen size={64} />
@@ -361,11 +408,11 @@ const progressPercent = progress?.progressPercentage ?? progress?.percentComplet
                 <div className="progress-bar">
                   <div 
                     className="progress-fill" 
-                    style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
+                    style={{ width: `${percentComplete}%` }}
                   ></div>
                 </div>
                 <p className="progress-text">
-                  {completedMaterials.length} / {materials.length} tài liệu hoàn thành
+                  {completedMaterialsCount} / {materials.length} tài liệu hoàn thành
                 </p>
               </div>
             )}
@@ -500,13 +547,14 @@ const progressPercent = progress?.progressPercentage ?? progress?.percentComplet
                           <div className={`material-icon ${typeMeta.className}`}>
                             {typeMeta.icon}
                           </div>
-                          <div className="material-info">
-                            <div className="material-header">
-                              <h3>{material.title}</h3>
-                              <span className={`material-type-badge ${typeMeta.className}`}>
-                                {typeMeta.label}
-                              </span>
-                            </div>
+                          <div
+                            className="material-info"
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
+                          >
+                            <h3 style={{ margin: 0, flex: 1 }}>{material.title}</h3>
+                            <span className={`material-type-badge ${typeMeta.className}`}>
+                              {typeMeta.label}
+                            </span>
                             {material.description && (
                               <p>{material.description}</p>
                             )}

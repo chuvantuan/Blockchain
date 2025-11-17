@@ -145,12 +145,12 @@ export default function RandomExamModal({
 					</select>
 					{propSubjects && propSubjects.length > 0 && (
 						<small style={{ color: 'var(--muted-foreground)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-							📊 {availableSubjects.length} môn học từ hệ thống
+							{availableSubjects.length} môn học từ hệ thống
 						</small>
 					)}
 					{(!propSubjects || propSubjects.length === 0) && (
 						<small style={{ color: 'var(--warning)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-							⚠️ Sử dụng danh sách mặc định (chưa có dữ liệu từ API)
+							Sử dụng danh sách mặc định (chưa có dữ liệu từ API)
 						</small>
 					)}
 				</div>
@@ -273,7 +273,7 @@ export default function RandomExamModal({
 											marginTop: '8px'
 										}}
 									>
-										⚠️ Tổng số câu ({easyCount + mediumCount + hardCount}) 
+										Tổng số câu ({easyCount + mediumCount + hardCount}) 
 										phải bằng {totalQuestions}
 									</div>
 								)}

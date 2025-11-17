@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import Modal from '../../components/common/Modal'
 import { User } from 'lucide-react'
 import { User as UserType } from '../../types/user'
@@ -14,16 +14,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 	onClose,
 	onSave
 }) => {
-	const handleSubmit = (e: React.FormEvent<HTMLButtonElement>) => {
-		const form = (e.target as HTMLButtonElement).closest('.modal-content-modern')?.querySelector('form')
-		if (form) {
-			const formData = new FormData(form)
+	const formRef = useRef<HTMLFormElement>(null)
+
+	const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault()
+		if (formRef.current) {
+			const formData = new FormData(formRef.current)
 			const userData = {
 				name: formData.get('name') as string,
 				email: formData.get('email') as string,
-				phone: formData.get('phone') as string,
+				phone: formData.get('phone') as string || '',
 				role: formData.get('role') as any,
-				department: formData.get('department') as string,
 				status: 'active' as const
 			}
 			if (userData.name && userData.email) {
@@ -58,7 +59,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 			}
 		>
 			<div className="modal-content-wrapper">
-				<form>
+				<form ref={formRef}>
 					<div className="modal-form-section">
 						<div className="section-title">
 							<User />
@@ -123,19 +124,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 									<option value="user">Người dùng</option>
 								</select>
 							</div>
-						</div>
-
-						<div className="modal-form-group">
-							<label className="form-label">
-								<User />
-								Phòng ban
-							</label>
-							<input
-								type="text"
-								name="department"
-								className="form-input"
-								placeholder="Nhập tên phòng ban"
-							/>
 						</div>
 					</div>
 				</form>

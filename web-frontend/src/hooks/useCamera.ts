@@ -43,7 +43,6 @@ export const useCamera = (): UseCameraReturn => {
         hasClientRef.current = false;
       }
 
-      console.error('Error accessing camera:', err);
       let errorMessage = 'Không thể truy cập camera';
 
       if (err instanceof Error) {

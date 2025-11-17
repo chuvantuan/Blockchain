@@ -1,10 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { Activity, AlertTriangle, Eye, Users, LayoutGrid, List, Search } from 'lucide-react'
 import useProctoring from '../hooks/useProctoring'
 import SessionGrid from '../components/proctoring/SessionGrid'
 import SearchBar from '../components/common/SearchBar'
+import LiveCameraWall from '../components/proctoring/LiveCameraWall'
 import SessionDetailModal from '../modal/Proctoring/SessionDetailModal'
 import Badge from '../components/common/Badge'
+import { useProctoringStreams } from '../hooks/useProctoringStreams'
+import ActiveRosterPanel from '../components/proctoring/ActiveRosterPanel'
+import useActiveProctoringRoster from '../hooks/useActiveProctoringRoster'
+import type { ProctoringSession } from '../types/proctoring'
 import '../styles/common.css'
 import '../styles/proctoring.css'
 
@@ -13,6 +18,7 @@ type ViewMode = 'grid' | 'list'
 export default function ProctoringPage(): JSX.Element {
 	const {
 		sessions,
+		allSessions,
 		filters,
 		updateFilter,
 		stats,
@@ -26,6 +32,113 @@ export default function ProctoringPage(): JSX.Element {
 		resolveViolation,
 		loading
 	} = useProctoring()
+
+	const {
+		roster: activeRoster,
+		loading: rosterLoading,
+		error: rosterError,
+		lastFetchedAt: rosterLastFetchedAt,
+		refresh: refreshRoster
+	} = useActiveProctoringRoster(autoRefresh ? 15000 : 0)
+
+	const matchesFilters = useCallback((session: ProctoringSession) => {
+		const search = filters.search.trim().toLowerCase()
+		if (search) {
+			const matchSearch =
+				session.userName.toLowerCase().includes(search) ||
+				session.examTitle.toLowerCase().includes(search) ||
+				session.userId.toLowerCase().includes(search)
+			if (!matchSearch) {
+				return false
+			}
+		}
+
+		if (filters.status !== 'all' && session.status !== filters.status) {
+			return false
+		}
+
+		if (filters.riskLevel !== 'all' && session.riskLevel !== filters.riskLevel) {
+			return false
+		}
+
+		if (filters.examId !== 'all' && session.examId !== filters.examId) {
+			return false
+		}
+
+		return true
+	}, [filters])
+
+	const streamSessions = useMemo<ProctoringSession[]>(() => {
+		if (!activeRoster.length) {
+			return allSessions
+		}
+
+		const merged = new Map<string, ProctoringSession>(allSessions.map(session => [session.id, session]))
+
+		for (const entry of activeRoster) {
+			const normalizedId = entry.sessionId && entry.sessionId.trim().length > 0
+				? entry.sessionId
+				: `${entry.examId ?? 'exam'}::${entry.studentId ?? 'student'}`
+
+			const existing = merged.get(normalizedId)
+			if (existing) {
+				merged.set(normalizedId, {
+					...existing,
+					startTime: existing.startTime || entry.startedAt || existing.startTime,
+					duration: existing.duration || (entry.timeSpentSeconds ? Math.floor(entry.timeSpentSeconds / 60) : existing.duration),
+					lastPing: entry.lastUpdatedAt || existing.lastPing,
+				})
+			} else {
+				merged.set(normalizedId, {
+					id: normalizedId,
+					examId: entry.examId ? String(entry.examId) : 'unknown',
+					examTitle: entry.examTitle ?? `Bài thi ${entry.examId ?? '—'}`,
+					userId: entry.studentId !== null && entry.studentId !== undefined ? String(entry.studentId) : 'unknown',
+					userName: `Thí sinh ${entry.studentId ?? '—'}`,
+					userAvatar: undefined,
+					startTime: entry.startedAt ?? new Date().toISOString(),
+					endTime: null,
+					duration: entry.timeSpentSeconds ? Math.floor(entry.timeSpentSeconds / 60) : 0,
+					status: 'active',
+					riskLevel: 'low',
+					cameraEnabled: true,
+					audioEnabled: true,
+					videoStreamUrl: undefined,
+					faceDetected: true,
+					faceCount: 1,
+					gazeDirection: 'center',
+					audioDetected: false,
+					totalViolations: 0,
+					violations: [],
+					tabSwitches: 0,
+					fullscreenExited: 0,
+					browserChanged: false,
+					connectionStatus: 'online',
+					lastPing: entry.lastUpdatedAt,
+				})
+			}
+		}
+
+		return Array.from(merged.values())
+	}, [activeRoster, allSessions])
+
+	const displayedCameraSessions = useMemo<ProctoringSession[]>(() => {
+		if (!streamSessions.length) {
+			return sessions
+		}
+
+		const existing = new Map(sessions.map(session => [session.id, session]))
+		const extras = streamSessions.filter(session => !existing.has(session.id) && matchesFilters(session))
+
+		return [...sessions, ...extras]
+	}, [matchesFilters, sessions, streamSessions])
+
+	const {
+		streamStates,
+		requestStream,
+		stopStream,
+		stats: streamConnectionStats
+	} = useProctoringStreams(streamSessions)
 
 	const [viewMode, setViewMode] = useState<ViewMode>('grid')
 	const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
@@ -72,6 +185,15 @@ export default function ProctoringPage(): JSX.Element {
 							<div className="realtime-pulse" />
 							<span>Cập nhật trực tiếp</span>
 						</div>
+								<div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '12px', color: 'var(--muted-foreground)' }}>
+									<div>
+										<span style={{ color: '#10b981', fontWeight: 600 }}>{streamConnectionStats.totalLive}</span> luồng đang phát
+									</div>
+									<div>
+										<span style={{ color: '#f59e0b', fontWeight: 600 }}>{streamConnectionStats.totalConnecting}</span> đang kết nối ·{' '}
+										<span style={{ color: '#ef4444', fontWeight: 600 }}>{streamConnectionStats.totalError}</span> lỗi
+									</div>
+								</div>
 						
 						<label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
 							<input
@@ -85,6 +207,14 @@ export default function ProctoringPage(): JSX.Element {
 					</div>
 				</div>
 			</div>
+
+			<ActiveRosterPanel
+				roster={activeRoster}
+				loading={rosterLoading}
+				error={rosterError}
+				onRefresh={refreshRoster}
+				lastFetchedAt={rosterLastFetchedAt}
+			/>
 
 			{/* Stats Overview */}
 			<div style={{ 
@@ -379,49 +509,14 @@ export default function ProctoringPage(): JSX.Element {
 			</div>
 
 			{/* Sessions Display */}
-			<div style={{ 
-				background: 'var(--card)',
-				borderRadius: 'var(--radius-lg)',
-				padding: '20px',
-				boxShadow: 'var(--shadow-sm)',
-				minHeight: '400px'
-			}}>
-				{loading ? (
-					<div style={{ 
-						display: 'flex', 
-						justifyContent: 'center', 
-						alignItems: 'center', 
-						minHeight: '400px',
-						flexDirection: 'column',
-						gap: '16px'
-					}}>
-						<div style={{ fontSize: '16px', color: 'var(--muted-foreground)' }}>
-							Đang tải dữ liệu...
-						</div>
-					</div>
-				) : sessions.length === 0 ? (
-					<div style={{ 
-						display: 'flex', 
-						justifyContent: 'center', 
-						alignItems: 'center', 
-						minHeight: '400px',
-						flexDirection: 'column',
-						gap: '16px'
-					}}>
-						<div style={{ fontSize: '16px', color: 'var(--muted-foreground)' }}>
-							Chưa có phiên thi nào
-						</div>
-						<div style={{ fontSize: '14px', color: 'var(--muted-foreground)' }}>
-							Dữ liệu sẽ hiển thị khi có thí sinh đang làm bài
-						</div>
-					</div>
-				) : (
-					<SessionGrid
-						sessions={sessions}
-						onSessionClick={handleSessionClick}
-					/>
-				)}
-			</div>
+			<LiveCameraWall
+				sessions={displayedCameraSessions}
+				streamStates={streamStates}
+				onRequestStream={requestStream}
+				onSessionClick={handleSessionClick}
+				title="Camera trực tiếp từ thí sinh đang hoạt động"
+				subtitle={activeRoster.length ? 'Danh sách dựa trên /api/proctoring/active-sessions' : 'Danh sách dựa trên dữ liệu proctoring'}
+			/>
 
 			{/* Detail Modal */}
 			<SessionDetailModal
@@ -431,9 +526,12 @@ export default function ProctoringPage(): JSX.Element {
 					setSelectedSession(null)
 				}}
 				session={selectedSession}
+				streamState={selectedSession ? streamStates[selectedSession.id] : undefined}
 				onResolveViolation={handleResolveViolation}
 				onTerminate={handleTerminate}
 				onSendWarning={handleSendWarning}
+				onRequestStream={(sessionId, options) => requestStream(sessionId, options)}
+				onStopStream={sessionId => stopStream(sessionId, 'idle')}
 			/>
 		</div>
 	)

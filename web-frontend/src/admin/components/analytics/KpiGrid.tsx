@@ -63,6 +63,20 @@ const formatValue = (value: number, unit: string) => {
 }
 
 export const KpiGrid: React.FC<KpiGridProps> = ({ kpis, onKpiClick }) => {
+	console.log('KpiGrid rendered with', kpis.length, 'KPIs:', kpis)
+	
+	if (!kpis || kpis.length === 0) {
+		return (
+			<div style={{ 
+				padding: '40px',
+				textAlign: 'center',
+				color: '#64748b'
+			}}>
+				<p>Chưa có dữ liệu KPI</p>
+			</div>
+		)
+	}
+	
 	return (
 		<div style={{ 
 			display: 'grid', 

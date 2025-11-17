@@ -174,8 +174,10 @@ export default function RewardStoreModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px'
+            zIndex: 10000, // Higher than header (9999)
+            padding: '20px',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)'
         }}>
             <div style={{
                 background: 'var(--card)',

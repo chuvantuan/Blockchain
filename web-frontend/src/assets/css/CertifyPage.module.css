@@ -3,6 +3,8 @@
   background: var(--gradient-background);
   position: relative;
   animation: fadeIn 0.6s ease-out;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 @keyframes fadeIn {

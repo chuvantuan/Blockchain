@@ -193,7 +193,7 @@ export default function CopyrightUploadModal({
     // Warn if high similarity detected
     if (showSimilarityWarning && similarityResult && similarityResult.similarityScore > 0.5) {
       const confirmContinue = window.confirm(
-        `⚠️ Cảnh báo: Tài liệu này có độ tương đồng rất cao (${(similarityResult.similarityScore * 100).toFixed(1)}%) với các tài liệu đã có trong hệ thống.\n\n` +
+        `Cảnh báo: Tài liệu này có độ tương đồng rất cao (${(similarityResult.similarityScore * 100).toFixed(1)}%) với các tài liệu đã có trong hệ thống.\n\n` +
         `Bạn có chắc chắn muốn tiếp tục đăng ký?`
       );
       if (!confirmContinue) {
@@ -418,8 +418,8 @@ export default function CopyrightUploadModal({
                     <div>
                       <h4>
                         {similarityResult.isSimilar 
-                          ? `⚠️ Phát hiện tương đồng: ${(similarityResult.similarityScore * 100).toFixed(1)}%`
-                          : '✅ Không phát hiện tương đồng đáng kể'
+                          ? `Phát hiện tương đồng: ${(similarityResult.similarityScore * 100).toFixed(1)}%`
+                          : 'Không phát hiện tương đồng đáng kể'
                         }
                       </h4>
                       <p>

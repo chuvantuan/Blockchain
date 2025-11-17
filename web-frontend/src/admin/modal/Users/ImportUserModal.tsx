@@ -64,7 +64,6 @@ const ImportUserModal: React.FC<ImportUserModalProps> = ({
 									<th>Họ và tên</th>
 									<th>Email</th>
 									<th>Vai trò</th>
-									<th>Phòng ban</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -79,7 +78,6 @@ const ImportUserModal: React.FC<ImportUserModalProps> = ({
 												 user.role === 'student' ? 'Học viên' : 'Người dùng'}
 											</span>
 										</td>
-										<td>{user.department || '-'}</td>
 									</tr>
 								))}
 							</tbody>

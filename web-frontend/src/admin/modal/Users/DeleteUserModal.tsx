@@ -1,6 +1,7 @@
 import React from 'react'
 import Modal from '../../components/common/Modal'
 import { User } from '../../types/user'
+import '../../styles/_modal-common.scss'
 
 interface DeleteUserModalProps {
 	isOpen: boolean
@@ -20,6 +21,7 @@ const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
 			isOpen={isOpen}
 			onClose={onClose}
 			title="Xác nhận xóa người dùng"
+			maxWidth="500px"
 			footer={
 				<>
 					<button 
@@ -37,11 +39,21 @@ const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
 				</>
 			}
 		>
-			<p style={{ margin: 0 }}>
-				Bạn có chắc chắn muốn xóa người dùng <strong>{user?.name}</strong>?
-				<br />
-				Hành động này không thể hoàn tác.
-			</p>
+			<div style={{ 
+				padding: '32px 36px',
+				background: 'white'
+			}}>
+				<p style={{ 
+					margin: 0, 
+					fontSize: '16px', 
+					lineHeight: '1.6', 
+					color: '#1e293b',
+					fontWeight: 400
+				}}>
+					Bạn có chắc chắn muốn xóa người dùng <strong style={{ fontWeight: 600, color: '#1e293b' }}>{user?.name}</strong>? 
+					Hành động này không thể hoàn tác.
+				</p>
+			</div>
 		</Modal>
 	)
 }

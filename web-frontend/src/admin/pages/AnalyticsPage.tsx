@@ -75,16 +75,6 @@ export const AnalyticsPage: React.FC = () => {
 		refreshTopList,
 		viewAllItems,
 		onItemClick,
-		getRevenueData,
-		getUserGrowthData,
-		getCourseAnalytics,
-		getUserAnalytics,
-		getOrganizationAnalytics,
-		getInstructorAnalytics,
-		getCertificateAnalytics,
-		getGeographicData,
-		getDeviceAnalytics,
-		getTrafficSources,
 		compareMetrics,
 		getSegments,
 		getGoals,
@@ -442,7 +432,6 @@ export const AnalyticsPage: React.FC = () => {
 								<div className={`activity-badge ${activity.impact}`}>
 									{activity.impact === 'high' ? 'Cao' : activity.impact === 'medium' ? 'Trung bình' : 'Thấp'}
 								</div>
-								<div className={`activity-status ${activity.status || 'completed'}`}></div>
 							</div>
 						))}
 					</div>
@@ -511,8 +500,6 @@ export const AnalyticsPage: React.FC = () => {
 	)
 
 	const renderRevenueTab = () => {
-		const revenueData = getRevenueData(filters.dateRange)
-		
 		return (
 			<div className="analytics-revenue">
 				<div className="section">
@@ -530,21 +517,15 @@ export const AnalyticsPage: React.FC = () => {
 									}).format(dashboard.overview.totalRevenue)}
 								</p>
 							</div>
-							<div className="stat-item">
-								<h3>Giao dịch trung bình</h3>
-								<p className="stat-value">
-									{new Intl.NumberFormat('vi-VN', {
-										style: 'currency',
-										currency: 'VND'
-									}).format(revenueData.reduce((sum, item) => sum + item.avgOrderValue, 0) / revenueData.length)}
-								</p>
-							</div>
-							<div className="stat-item">
-								<h3>Tỷ lệ hoàn tiền</h3>
-								<p className="stat-value">
-									{((revenueData.reduce((sum, item) => sum + item.refunds, 0) / revenueData.reduce((sum, item) => sum + item.revenue, 0)) * 100).toFixed(2)}%
-								</p>
-							</div>
+						</div>
+						<div style={{ 
+							padding: '40px', 
+							textAlign: 'center', 
+							color: '#64748b',
+							fontSize: '16px'
+						}}>
+							<Info className="w-12 h-12" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+							<p>Dữ liệu doanh thu chi tiết chưa có sẵn từ API</p>
 						</div>
 					</Card>
 				</div>
@@ -553,8 +534,6 @@ export const AnalyticsPage: React.FC = () => {
 	}
 
 	const renderUsersTab = () => {
-		const userData = getUserAnalytics(filters)
-		
 		return (
 			<div className="analytics-users">
 				<div className="section">
@@ -576,6 +555,16 @@ export const AnalyticsPage: React.FC = () => {
 								<p className="stat-value">{dashboard.overview.newUsersToday.toLocaleString('vi-VN')}</p>
 							</div>
 						</div>
+						<div style={{ 
+							padding: '40px', 
+							textAlign: 'center', 
+							color: '#64748b',
+							fontSize: '16px',
+							marginTop: '20px'
+						}}>
+							<Info className="w-12 h-12" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+							<p>Dữ liệu phân tích người dùng chi tiết chưa có sẵn từ API</p>
+						</div>
 					</Card>
 				</div>
 			</div>
@@ -583,8 +572,6 @@ export const AnalyticsPage: React.FC = () => {
 	}
 
 	const renderCoursesTab = () => {
-		const courseData = getCourseAnalytics(filters)
-		
 		return (
 			<div className="analytics-courses">
 				<div className="section">
@@ -610,6 +597,16 @@ export const AnalyticsPage: React.FC = () => {
 								<p className="stat-value">{dashboard.overview.avgRating.toFixed(1)} ⭐</p>
 							</div>
 						</div>
+						<div style={{ 
+							padding: '40px', 
+							textAlign: 'center', 
+							color: '#64748b',
+							fontSize: '16px',
+							marginTop: '20px'
+						}}>
+							<Info className="w-12 h-12" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+							<p>Dữ liệu phân tích khóa học chi tiết chưa có sẵn từ API</p>
+						</div>
 					</Card>
 				</div>
 			</div>
@@ -617,8 +614,6 @@ export const AnalyticsPage: React.FC = () => {
 	}
 
 	const renderGeographicTab = () => {
-		const geoData = getGeographicData()
-		
 		return (
 			<div className="analytics-geographic">
 				<div className="section">
@@ -626,18 +621,14 @@ export const AnalyticsPage: React.FC = () => {
 						<h2>Phân tích địa lý</h2>
 					</div>
 					<Card className="geographic-summary">
-						<div className="geographic-stats">
-							{geoData.map((country) => (
-								<div key={country.countryCode} className="country-item">
-									<div className="country-info">
-										<h4>{country.country}</h4>
-										<p>{country.users.toLocaleString('vi-VN')} người dùng</p>
-									</div>
-									<div className="country-stats">
-										<span>{country.percentage.toFixed(1)}%</span>
-									</div>
-								</div>
-							))}
+						<div style={{ 
+							padding: '40px', 
+							textAlign: 'center', 
+							color: '#64748b',
+							fontSize: '16px'
+						}}>
+							<Info className="w-12 h-12" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+							<p>Dữ liệu phân tích địa lý chưa có sẵn từ API</p>
 						</div>
 					</Card>
 				</div>
@@ -646,8 +637,6 @@ export const AnalyticsPage: React.FC = () => {
 	}
 
 	const renderDevicesTab = () => {
-		const deviceData = getDeviceAnalytics()
-		
 		return (
 			<div className="analytics-devices">
 				<div className="section">
@@ -655,18 +644,14 @@ export const AnalyticsPage: React.FC = () => {
 						<h2>Phân tích thiết bị</h2>
 					</div>
 					<Card className="devices-summary">
-						<div className="devices-stats">
-							{deviceData.map((device) => (
-								<div key={device.device} className="device-item">
-									<div className="device-info">
-										<h4>{device.device}</h4>
-										<p>{device.users.toLocaleString('vi-VN')} người dùng</p>
-									</div>
-									<div className="device-stats">
-										<span>{device.percentage.toFixed(1)}%</span>
-									</div>
-								</div>
-							))}
+						<div style={{ 
+							padding: '40px', 
+							textAlign: 'center', 
+							color: '#64748b',
+							fontSize: '16px'
+						}}>
+							<Info className="w-12 h-12" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+							<p>Dữ liệu phân tích thiết bị chưa có sẵn từ API</p>
 						</div>
 					</Card>
 				</div>
@@ -675,8 +660,6 @@ export const AnalyticsPage: React.FC = () => {
 	}
 
 	const renderTrafficTab = () => {
-		const trafficData = getTrafficSources()
-		
 		return (
 			<div className="analytics-traffic">
 				<div className="section">
@@ -684,18 +667,14 @@ export const AnalyticsPage: React.FC = () => {
 						<h2>Phân tích lưu lượng</h2>
 					</div>
 					<Card className="traffic-summary">
-						<div className="traffic-stats">
-							{trafficData.map((source) => (
-								<div key={source.source} className="traffic-item">
-									<div className="traffic-info">
-										<h4>{source.source}</h4>
-										<p>{source.users.toLocaleString('vi-VN')} người dùng</p>
-									</div>
-									<div className="traffic-stats">
-										<span>{source.percentage.toFixed(1)}%</span>
-									</div>
-								</div>
-							))}
+						<div style={{ 
+							padding: '40px', 
+							textAlign: 'center', 
+							color: '#64748b',
+							fontSize: '16px'
+						}}>
+							<Info className="w-12 h-12" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+							<p>Dữ liệu phân tích lưu lượng chưa có sẵn từ API</p>
 						</div>
 					</Card>
 				</div>
@@ -724,6 +703,30 @@ export const AnalyticsPage: React.FC = () => {
 		}
 	}
 
+	if (loading && kpis.length === 0) {
+		return (
+			<div className="analytics-page">
+				<div className="page-header">
+					<div className="header-content">
+						<h1>Phân tích và Báo cáo</h1>
+						<p>Dashboard tổng quan và phân tích chi tiết hệ thống</p>
+					</div>
+				</div>
+				<div style={{ 
+					display: 'flex', 
+					justifyContent: 'center', 
+					alignItems: 'center', 
+					minHeight: '400px',
+					flexDirection: 'column',
+					gap: '16px'
+				}}>
+					<RefreshCw className="w-8 h-8 animate-spin" style={{ color: 'var(--primary)' }} />
+					<p style={{ color: '#64748b', fontSize: '16px' }}>Đang tải dữ liệu phân tích...</p>
+				</div>
+			</div>
+		)
+	}
+
 	return (
 		<div className="analytics-page">
 			<div className="page-header">
@@ -744,7 +747,7 @@ export const AnalyticsPage: React.FC = () => {
 					<button
 						className="btn btn-secondary"
 						onClick={() => setShowExportModal(true)}
-						disabled={isExporting}
+						disabled={isExporting || loading}
 					>
 						<Download className={`w-4 h-4 ${isExporting ? 'animate-pulse' : ''}`} />
 						{isExporting ? 'Đang xuất...' : 'Xuất dữ liệu'}
@@ -752,6 +755,7 @@ export const AnalyticsPage: React.FC = () => {
 					<button
 						className="btn btn-secondary"
 						onClick={handlePrint}
+						disabled={loading}
 					>
 						<Printer className="w-4 h-4" />
 						In báo cáo
@@ -759,6 +763,7 @@ export const AnalyticsPage: React.FC = () => {
 					<button
 						className="btn btn-secondary"
 						onClick={handleShare}
+						disabled={loading}
 					>
 						<Share2 className="w-4 h-4" />
 						Chia sẻ
@@ -766,10 +771,10 @@ export const AnalyticsPage: React.FC = () => {
 					<button
 						className="btn btn-primary"
 						onClick={handleRefreshAll}
-						disabled={isRefreshing}
+						disabled={isRefreshing || loading}
 					>
-						<RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-						{isRefreshing ? 'Đang làm mới...' : 'Làm mới'}
+						<RefreshCw className={`w-4 h-4 ${isRefreshing || loading ? 'animate-spin' : ''}`} />
+						{isRefreshing || loading ? 'Đang làm mới...' : 'Làm mới'}
 					</button>
 				</div>
 			</div>
@@ -832,9 +837,34 @@ export const AnalyticsPage: React.FC = () => {
 
 			{/* Error Display */}
 			{error && (
-				<div className="error-banner">
+				<div className="error-banner" style={{
+					background: '#fee2e2',
+					border: '1px solid #fecaca',
+					borderRadius: '8px',
+					padding: '16px',
+					margin: '16px 0',
+					display: 'flex',
+					alignItems: 'center',
+					gap: '12px',
+					color: '#991b1b'
+				}}>
 					<AlertTriangle className="w-5 h-5" />
 					<span>{error}</span>
+					<button
+						onClick={() => refreshData()}
+						style={{
+							marginLeft: 'auto',
+							padding: '6px 12px',
+							background: '#ef4444',
+							color: 'white',
+							border: 'none',
+							borderRadius: '4px',
+							cursor: 'pointer',
+							fontSize: '14px'
+						}}
+					>
+						Thử lại
+					</button>
 				</div>
 			)}
 

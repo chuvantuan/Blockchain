@@ -1,12 +1,8 @@
-export const parseOwnerIds = (input: string): string[] => {
-	return Array.from(
-		new Set(
-			input
-				.split(/[\n,]/)
-				.map((owner) => owner.trim())
-				.filter((owner) => owner.length > 0),
-		),
-	)
+export const parseOwners = (input: string): string[] => {
+	return input
+		.split(/[\n,]/)
+		.map((owner) => owner.trim())
+		.filter((owner) => owner.length > 0)
 }
 
 export const formatWeiToEth = (valueInWei: string): string => {

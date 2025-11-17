@@ -1,23 +1,14 @@
-import { RefreshCcw, Shield, UserRound } from 'lucide-react'
-import { MultisigWallet, IdentityUser } from '../../services/api/multisigApi'
+import { RefreshCcw, Shield } from 'lucide-react'
+import { MultisigWallet } from '../../services/api/multisigApi'
 import { formatWeiToEth } from '../../utils/multisig'
 import styles from '../../assets/css/MultisigWalletPage.module.css'
 
 type WalletSummaryProps = {
 	wallet: MultisigWallet
 	onRefresh: () => void
-	creator?: IdentityUser | null
-	creatorLoading?: boolean
-	creatorError?: string | null
 }
 
-const WalletSummary = ({
-	wallet,
-	onRefresh,
-	creator,
-	creatorLoading = false,
-	creatorError = null,
-}: WalletSummaryProps): JSX.Element => {
+const WalletSummary = ({ wallet, onRefresh }: WalletSummaryProps): JSX.Element => {
 	return (
 		<div className={styles.card}>
 			<div className={styles.summaryHeader}>
@@ -55,72 +46,14 @@ const WalletSummary = ({
 				</div>
 			</div>
 
-			{wallet.creatorId && (
-				<div className={styles.summaryUserSection}>
-					<div className={styles.summaryUserHeader}>
-						<div className={styles.summaryUserIcon}>
-							<UserRound size={18} />
-						</div>
-						<div>
-							<div className={styles.summaryUserLabel}>Người tạo ví</div>
-							{creatorLoading ? (
-								<div className={styles.summaryUserLoading}>Đang tải thông tin người dùng...</div>
-							) : creator ? (
-								<>
-									<div className={styles.summaryUserName}>
-										{creator.firstName || creator.lastName
-											? `${creator.firstName ?? ''} ${creator.lastName ?? ''}`.trim()
-											: creator.username}
-									</div>
-									<div className={styles.summaryUserMeta}>
-										<span>Email: {creator.email || '—'}</span>
-										{creator.roles && creator.roles.length > 0 && (
-											<span>Roles: {creator.roles.map((role) => role.toLowerCase()).join(', ')}</span>
-										)}
-									</div>
-								</>
-							) : (
-								<div className={styles.summaryUserError}>
-									{creatorError || 'Không thể tải thông tin người tạo ví.'}
-								</div>
-							)}
-						</div>
-					</div>
-				</div>
-			)}
-
 			<div>
 				<h3 className={styles.summaryOwnerTitle}>Danh sách owners</h3>
 				<div className={styles.ownerList}>
-					{wallet.ownerDetails && wallet.ownerDetails.length > 0 ? (
-						wallet.ownerDetails.map((owner) => (
-							<div key={`${owner.userId}-${owner.address}`} className={styles.ownerCard}>
-								<div className={styles.ownerCardHeader}>
-									<div className={styles.ownerCardName}>
-										{owner.identity?.firstName || owner.identity?.lastName
-											? `${owner.identity?.firstName ?? ''} ${owner.identity?.lastName ?? ''}`.trim()
-											: owner.identity?.username || `User #${owner.userId}`}
-									</div>
-									<span className={styles.ownerCardId}>ID #{owner.userId}</span>
-								</div>
-								<div className={styles.ownerCardMeta}>Địa chỉ: {owner.address}</div>
-								{owner.identity?.email && (
-									<div className={styles.ownerCardMeta}>Email: {owner.identity.email}</div>
-								)}
-								{owner.privateKeyMasked && (
-									<div className={styles.ownerCardKey}>Private key: {owner.privateKeyMasked}</div>
-								)}
-							</div>
-						))
-					) : wallet.owners && wallet.owners.length > 0 ? (
-						wallet.owners.map((owner) => (
-							<span key={owner} className={styles.ownerBadge}>
-								{owner}
-							</span>
-						))
-					) : (
-						<div className={styles.ownerEmpty}>Chưa có owner nào được cấu hình.</div>
-					)}
+					{wallet.owners?.map((owner) => (
+						<span key={owner} className={styles.ownerBadge}>
+							{owner}
+						</span>
+					))}
 				</div>
 				{wallet.onChainWarning && (
 					<div className={styles.warning}>

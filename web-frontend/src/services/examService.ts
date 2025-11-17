@@ -1,12 +1,12 @@
 import { ExamDetails, ExamQuestion, ExamSubmission, ExamResult } from '../utils/types';
 import onlineExamApi, { type Quiz, type Question as ApiQuestion, type SubmitAnswer } from './api/onlineExamApi';
-import { EXAM_API } from '../config/api';
 
 class ExamService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || EXAM_API || 'http://localhost:3001/api';
+    // Use API Gateway for all requests
+    this.baseUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/exam`;
   }
 
   /**
@@ -59,7 +59,7 @@ class ExamService {
     
     // Debug log to see what backend actually sends
     if (typeof questionText !== 'string') {
-      console.error('⚠️ Question content is not a string!', {
+      console.error('Question content is not a string!', {
         questionId: question.id,
         contentType: typeof questionText,
         content: questionText,

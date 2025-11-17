@@ -4,31 +4,13 @@ import LoginPage from '../../pages/LoginPage'
 import RegisterPage from '../../pages/RegisterPage'
 import ForgotPasswordPage from '../../pages/ForgotPasswordPage'
 import ThemeToggle from '../atoms/ThemeToggle'
+import styles from '../../assets/css/AuthLayout.module.css'
 
 export default function AuthLayout(): JSX.Element {
 	return (
-		<div style={{
-			minHeight: '100vh',
-			width: '100vw',
-			display: 'flex',
-			alignItems: 'center',
-			justifyContent: 'center',
-			background: 'var(--background)',
-			color: 'var(--foreground)',
-			fontFamily: 'var(--font-sans)',
-			padding: '2rem',
-			boxSizing: 'border-box'
-		}}>
+		<div className={styles.layout}>
 			<ThemeToggle />
-			<div style={{
-				width: '100%',
-				maxWidth: '24rem',
-				minWidth: '18rem',
-				display: 'flex',
-				flexDirection: 'column',
-				alignItems: 'center',
-				justifyContent: 'center'
-			}}>
+			<div className={styles.contentContainer}>
 				<Routes>
 					<Route index element={<Navigate to="/auth/login" replace />} />
 					<Route path="login" element={<LoginPage />} />

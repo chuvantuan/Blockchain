@@ -47,6 +47,7 @@ export default function OrganizationsPage(): JSX.Element {
 		updateOrganization,
 		deleteOrganization,
 		toggleOrganizationStatus,
+		toggleOrganizationVerification,
 		loading,
 		totalCount,
 		filteredCount
@@ -75,6 +76,10 @@ export default function OrganizationsPage(): JSX.Element {
 
 	const handleToggleOrganizationStatus = (organizationId: string, newStatus: any) => {
 		toggleOrganizationStatus(organizationId, newStatus)
+	}
+
+	const handleToggleOrganizationVerification = (organizationId: string, newStatus: any) => {
+		toggleOrganizationVerification(organizationId, newStatus)
 	}
 
 	const handleOrganizationClick = (organization: any) => {
@@ -576,6 +581,7 @@ export default function OrganizationsPage(): JSX.Element {
 					onEditOrganization={handleEditOrganization}
 					onDeleteOrganization={handleDeleteOrganization}
 					onToggleStatus={handleToggleOrganizationStatus}
+					onToggleVerification={handleToggleOrganizationVerification}
 					loading={loading}
 					emptyMessage="Không có tổ chức nào phù hợp với bộ lọc"
 				/>

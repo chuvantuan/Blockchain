@@ -11,13 +11,11 @@ import {
   CopyrightVerificationResult
 } from '../../types/copyright';
 
-// Base API configuration
-import { API_BASE } from '../../config/api';
-
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || API_BASE) || '/api';
+// Use API Gateway for all requests
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/copyrights`;
 
 const copyrightApi = axios.create({
-  baseURL: `${API_BASE_URL}/copyright`,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

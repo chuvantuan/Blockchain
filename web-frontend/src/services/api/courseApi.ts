@@ -1,9 +1,8 @@
 // Course API Service
 import axios from 'axios';
 
-import { COURSE_API } from '../../config/api';
-
-const API_BASE_URL = import.meta.env.VITE_COURSE_API_URL || COURSE_API || 'http://localhost:9001/api';
+// Use API Gateway for all requests
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/v1`;
 
 // Create axios instance with interceptors
 const courseAxios = axios.create({
@@ -71,7 +70,6 @@ export type CourseVisibility = 'draft' | 'published' | 'archived' | 'suspended' 
 
 export interface Course {
   id: string;
-  instructorId: number;
   title: string;
   slug: string;
   description: string;
@@ -85,7 +83,7 @@ export interface Course {
 export interface CreateCourseRequest {
   id: string;
   title: string;
-  instructorId: number;
+  organizationId: string;
   description: string;
   thumbnailUrl?: string;
   visibility: CourseVisibility;
@@ -105,9 +103,12 @@ export interface Material {
   storageKey?: string;
   content?: string;
   displayOrder?: number;
-  duration?: number | string | null;
-  description?: string;
+  order?: number;
   createdAt?: string;
+  videoUrl?: string;
+  contentUrl?: string;
+  description?: string;
+  duration?: number;
 }
 
 export interface CreateMaterialRequest {
@@ -143,7 +144,8 @@ export interface Quiz {
   id: string;
   title: string;
   description?: string;
-  timeLimitMinutes?: number;
+  timeLimit?: number;
+  passingScore?: number;
   createdAt?: string;
   questions: QuizQuestion[];
 }
@@ -152,6 +154,28 @@ export interface SubmitQuizRequest {
   studentId: number;
   answers: Record<string, string[]>;
 }
+
+export interface CreateQuizOption {
+  content: string;
+  isCorrect?: boolean;
+}
+
+export interface CreateQuizQuestion {
+  content: string;
+  type: string;
+  options?: CreateQuizOption[];
+  displayOrder?: number;
+}
+
+export interface CreateQuizRequest {
+  title: string;
+  description?: string;
+  timeLimit?: number;
+  passingScore?: number;
+  questions: CreateQuizQuestion[];
+}
+
+export interface UpdateQuizRequest extends Partial<CreateQuizRequest> {}
 
 export interface QuizResult {
   id: string;
@@ -171,6 +195,7 @@ export interface Progress {
   updatedAt: string;
   progressPercentage?: number;
   completedMaterials?: string[];
+  lastAccessedAt?: string;
 }
 
 export interface PageResponse<T> {
@@ -263,8 +288,17 @@ export const createCourse = async (courseData: CreateCourseRequest): Promise<Api
     const response = await courseAxios.post('/courses', courseData);
     return response.data;
   } catch (error: any) {
-    console.error('Error creating course:', error);
-    throw new Error(error.response?.data?.message || 'Failed to create course');
+    const server = error?.response?.data;
+    let details: string | undefined;
+    const errorsArray = (server?.errors || server?.error || server) as any;
+    if (Array.isArray(errorsArray)) {
+      details = errorsArray.map((e: any) => e?.defaultMessage || e?.message || String(e)).join('; ');
+    } else if (typeof errorsArray === 'object' && errorsArray) {
+      details = errorsArray.message || errorsArray.error || errorsArray.detail;
+    }
+    const msg = server?.message || details || 'Failed to create course';
+    console.error('Error creating course:', { server, msg });
+    throw new Error(msg);
   }
 };
 
@@ -300,6 +334,54 @@ export const deleteCourse = async (
     const msg = serverMessage ? `Failed to delete course (${status}): ${serverMessage}` : `Failed to delete course (${status || 'unknown'})`
     console.error('Error deleting course:', { status, serverMessage, url: `/courses/${courseId}` })
     throw new Error(msg)
+  }
+};
+
+/**
+ * Publish course (sets course to published state)
+ */
+export const publishCourse = async (courseId: string): Promise<ApiResponse<Course>> => {
+  try {
+    const response = await courseAxios.put(`/courses/${courseId}/publish`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error publishing course:', error);
+    throw new Error(error.response?.data?.message || 'Failed to publish course');
+  }
+};
+
+/**
+ * Get course roster (members)
+ */
+export const getCourseRoster = async (
+  courseId: string
+): Promise<ApiResponse<Array<{ userId: number; role: string }>>> => {
+  try {
+    const response = await courseAxios.get(`/courses/${courseId}/roster`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error getting course roster:', error);
+    throw new Error(error.response?.data?.message || 'Failed to get course roster');
+  }
+};
+
+/**
+ * Upload course image (thumbnail or gallery)
+ */
+export const uploadCourseImage = async (
+  courseId: string,
+  file: File
+): Promise<ApiResponse<{ id?: string; url?: string; imageUrl?: string }>> => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await courseAxios.post(`/courses/${courseId}/images/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error uploading course image:', error);
+    throw new Error(error.response?.data?.message || 'Failed to upload course image');
   }
 };
 
@@ -358,6 +440,26 @@ export const deleteMaterial = async (materialId: string): Promise<ApiResponse<vo
   }
 };
 
+/**
+ * Upload material file and return a storageKey/url
+ */
+export const uploadMaterialFile = async (
+  courseId: string,
+  file: File
+): Promise<ApiResponse<{ storageKey: string; url?: string; filename?: string }>> => {
+  try {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await courseAxios.post(`/courses/${courseId}/materials/upload`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error uploading material:', error);
+    throw new Error(error.response?.data?.message || 'Failed to upload material');
+  }
+};
+
 // ==================== Quiz Operations ====================
 
 /**
@@ -370,6 +472,58 @@ export const getQuizDetails = async (quizId: string): Promise<ApiResponse<Quiz>>
   } catch (error: any) {
     console.error('Error getting quiz:', error);
     throw new Error(error.response?.data?.message || 'Failed to get quiz');
+  }
+};
+
+/**
+ * Admin: Create quiz for a course
+ */
+export const createQuiz = async (courseId: string, data: CreateQuizRequest): Promise<ApiResponse<any>> => {
+  try {
+    const response = await courseAxios.post(`/courses/${courseId}/quizzes`, data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error creating quiz:', error);
+    throw new Error(error.response?.data?.message || 'Failed to create quiz');
+  }
+};
+
+/**
+ * Admin: Get quizzes of a course
+ */
+export const getCourseQuizzes = async (courseId: string): Promise<ApiResponse<any[]>> => {
+  try {
+    const response = await courseAxios.get(`/courses/${courseId}/quizzes`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching quizzes:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch quizzes');
+  }
+};
+
+/**
+ * Admin: Update quiz
+ */
+export const updateQuiz = async (quizId: string, data: UpdateQuizRequest): Promise<ApiResponse<any>> => {
+  try {
+    const response = await courseAxios.put(`/quizzes/${quizId}`, data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error updating quiz:', error);
+    throw new Error(error.response?.data?.message || 'Failed to update quiz');
+  }
+};
+
+/**
+ * Admin: Delete quiz
+ */
+export const deleteQuiz = async (quizId: string): Promise<ApiResponse<void>> => {
+  try {
+    const response = await courseAxios.delete(`/quizzes/${quizId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error deleting quiz:', error);
+    throw new Error(error.response?.data?.message || 'Failed to delete quiz');
   }
 };
 
@@ -491,6 +645,9 @@ const courseApi = {
   createCourse,
   updateCourse,
   deleteCourse,
+  publishCourse,
+  getCourseRoster,
+  uploadCourseImage,
   
   // Material operations
   getCourseMaterials,
@@ -500,6 +657,10 @@ const courseApi = {
   
   // Quiz operations
   getQuizDetails,
+  createQuiz,
+  getCourseQuizzes,
+  updateQuiz,
+  deleteQuiz,
   submitQuiz,
   
   // Progress operations
@@ -510,6 +671,9 @@ const courseApi = {
   // Reward operations
   getStudentRewards,
   grantReward,
+  
+  // Material file
+  uploadMaterialFile,
 };
 
 export default courseApi;

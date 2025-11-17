@@ -9,6 +9,7 @@ import { ExamReadySection } from '../components/sections/ExamReadySection';
 import Button from '../components/atoms/Button';
 import { fetchExamDetails, startExamSession, setCameraReady, setCameraError } from '../store/slices/examSlice';
 import { RootState, AppDispatch } from '../store';
+import styles from '../assets/css/ExamPreCheckPage.module.css';
 
 export const ExamPreCheckPage: React.FC = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -74,40 +75,13 @@ export const ExamPreCheckPage: React.FC = () => {
   // Loading State
   if (status === 'loading' || currentStep === 'loading') {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'var(--background)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'var(--font-sans)'
-      }}>
-        <div style={{
-          background: 'var(--card)',
-          padding: '40px',
-          borderRadius: 'var(--radius-lg)',
-          textAlign: 'center',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-lg)'
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid var(--muted)',
-            borderTop: '3px solid var(--primary)',
-            borderRadius: '50%',
-            margin: '0 auto 20px',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <h2 style={{ 
-            fontSize: '20px', 
-            fontWeight: 600, 
-            marginBottom: '8px',
-            color: 'var(--foreground)'
-          }}>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingCard}>
+          <div className={styles.loadingSpinner} />
+          <h2 className={styles.loadingTitle}>
             Đang tải...
           </h2>
-          <p style={{ color: 'var(--muted-foreground)', fontSize: '14px' }}>
+          <p className={styles.loadingText}>
             Vui lòng chờ trong giây lát
           </p>
         </div>
@@ -118,38 +92,13 @@ export const ExamPreCheckPage: React.FC = () => {
   // Error State
   if (error) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'var(--background)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'var(--font-sans)'
-      }}>
-        <div style={{
-          background: 'var(--card)',
-          padding: '40px',
-          borderRadius: 'var(--radius-lg)',
-          textAlign: 'center',
-          maxWidth: '400px',
-          border: '1px solid var(--destructive)',
-          boxShadow: 'var(--shadow-lg)'
-        }}>
-          <AlertCircle style={{ 
-            width: '64px', 
-            height: '64px', 
-            color: 'var(--destructive)',
-            margin: '0 auto 20px'
-          }} />
-          <h2 style={{ 
-            fontSize: '20px', 
-            fontWeight: 600, 
-            marginBottom: '12px',
-            color: 'var(--foreground)'
-          }}>
+      <div className={styles.errorContainer}>
+        <div className={styles.errorCard}>
+          <AlertCircle className={styles.errorIcon} />
+          <h2 className={styles.errorTitle}>
             Lỗi
           </h2>
-          <p style={{ color: 'var(--muted-foreground)', marginBottom: '24px' }}>{error}</p>
+          <p className={styles.errorMessage}>{error}</p>
           <Button onClick={handleGoBack} variant="secondary">
             Quay lại
           </Button>
@@ -160,29 +109,14 @@ export const ExamPreCheckPage: React.FC = () => {
 
   // Main Content
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--background)',
-      fontFamily: 'var(--font-sans)',
-      padding: 'var(--space-6)'
-    }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <div className={styles.page}>
+      <div className={styles.container}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-          <h1 style={{
-            fontSize: '32px',
-            fontWeight: 700,
-            marginBottom: 'var(--space-3)',
-            color: 'var(--foreground)',
-            fontFamily: 'var(--font-display)'
-          }}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>
             Kiểm tra trước khi thi
           </h1>
-          <p style={{
-            fontSize: '18px',
-            color: 'var(--muted-foreground)',
-            fontWeight: 500
-          }}>
+          <p className={styles.subtitle}>
             {currentExam?.title}
           </p>
         </div>
@@ -191,13 +125,7 @@ export const ExamPreCheckPage: React.FC = () => {
         <ExamProgressIndicator currentStep={currentStep} />
 
         {/* Main Content */}
-        <div style={{
-          background: 'var(--card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-sm)',
-          overflow: 'hidden'
-        }}>
+        <div className={styles.mainContent}>
           {currentStep === 'instructions' && currentExam && (
             <ExamInstructionsSection exam={currentExam} />
           )}
@@ -218,68 +146,52 @@ export const ExamPreCheckPage: React.FC = () => {
 
         {/* Navigation Buttons */}
         {(currentStep === 'instructions' || currentStep === 'camera-check') && (
-          <div style={{
-            maxWidth: '1100px',
-            margin: 'var(--space-8) auto 0',
-            display: 'flex',
-            justifyContent: 'space-between'
-          }}>
-            <Button 
-              onClick={handleGoBack} 
-              variant="secondary"
-              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
-            >
-              <ArrowLeft style={{ width: '18px', height: '18px' }} />
-              Quay lại
-            </Button>
-            
-            {currentStep === 'instructions' && (
-              <Button onClick={handleStartCameraCheck}>
-                Kiểm tra camera
-                <Camera style={{ width: '18px', height: '18px' }} />
+          <div className={styles.navigationContainer}>
+            <div className={styles.navigationButtons}>
+              <Button 
+                onClick={handleGoBack} 
+                variant="secondary"
+                className={styles.navigationButton}
+              >
+                <ArrowLeft />
+                Quay lại
               </Button>
-            )}
-            
-            {currentStep === 'camera-check' && isCameraWorking && (
-              <Button onClick={() => setCurrentStep('ready')}>
-                Tiếp tục
-              </Button>
-            )}
+              
+              {currentStep === 'instructions' && (
+                <Button 
+                  onClick={handleStartCameraCheck}
+                  className={styles.navigationButton}
+                >
+                  Kiểm tra camera
+                  <Camera />
+                </Button>
+              )}
+              
+              {currentStep === 'camera-check' && isCameraWorking && (
+                <Button 
+                  onClick={() => setCurrentStep('ready')}
+                  className={styles.navigationButton}
+                >
+                  Tiếp tục
+                </Button>
+              )}
+            </div>
           </div>
         )}
 
         {/* Final Action Button */}
         {currentStep === 'ready' && (
-          <div style={{
-            maxWidth: '1100px',
-            margin: 'var(--space-8) auto 0',
-            textAlign: 'center'
-          }}>
+          <div className={styles.finalActionContainer}>
             <Button 
               onClick={handleProceedToExam}
-              style={{
-                padding: 'var(--space-4) var(--space-8)',
-                fontSize: '18px',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-3)',
-                margin: '0 auto'
-              }}
+              className={styles.finalActionButton}
             >
               Bắt đầu làm bài
-              <ArrowRight style={{ width: '20px', height: '20px' }} />
+              <ArrowRight />
             </Button>
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };

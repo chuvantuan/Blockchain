@@ -28,7 +28,6 @@ export default function UserTable({
 	const columns = [
 		{ key: 'name', label: 'Người dùng', sortable: true },
 		{ key: 'role', label: 'Vai trò', sortable: true, width: '120px' },
-		{ key: 'department', label: 'Phòng ban', sortable: true },
 		{ key: 'phone', label: 'Số điện thoại', width: '140px' },
 		{ key: 'status', label: 'Trạng thái', sortable: true, width: '140px' },
 		{ key: 'lastLogin', label: 'Đăng nhập lần cuối', sortable: true, width: '180px' },

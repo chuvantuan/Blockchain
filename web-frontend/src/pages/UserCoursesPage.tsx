@@ -119,6 +119,33 @@ export default function UserCoursesPage(): JSX.Element {
     }
   }
 
+  const resolveThumbnail = (c: Course): string | undefined => {
+    return (c.thumbnailUrl || (c as any).thumbnail || (c as any).imageUrl || (c as any).coverUrl) as string | undefined
+  }
+
+  const getDurationText = (c: Course): string => {
+    const hours = Number((c as any).durationHours ?? (c as any).duration ?? (c as any).totalDurationHours)
+    const minutes = Number((c as any).durationMinutes ?? (c as any).totalDurationMinutes)
+    if (Number.isFinite(hours) && hours > 0) return `${hours}${Number.isInteger(hours) ? '' : ''} giờ`
+    if (Number.isFinite(minutes) && minutes > 0) {
+      if (minutes >= 60) {
+        const h = Math.floor(minutes / 60)
+        const m = minutes % 60
+        return m > 0 ? `${h} giờ ${m} phút` : `${h} giờ`
+      }
+      return `${minutes} phút`
+    }
+    return '0 giờ'
+  }
+
+  const getEnrollmentCount = (c: Course): number | undefined => {
+    const v = (c as any).enrollmentCount ?? (c as any).learnersCount ?? (c as any).studentsCount ?? (c as any).enrolledCount
+    if (Number.isFinite(Number(v))) return Number(v)
+    const roster = (c as any).roster
+    if (Array.isArray(roster)) return roster.length
+    return undefined
+  }
+
   return (
     <div className="user-courses-page">
       {/* Header */}
@@ -218,7 +245,16 @@ export default function UserCoursesPage(): JSX.Element {
                     onClick={() => handleCourseClick(course.id)}
                   >
                     <div className="course-icon">
-                      <BookOpen size={28} />
+                      {resolveThumbnail(course) ? (
+                        <img
+                          src={resolveThumbnail(course)}
+                          alt={course.title}
+                          style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8 }}
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                        />
+                      ) : (
+                        <BookOpen size={28} />
+                      )}
                     </div>
 
                     <div className="course-card-content">
@@ -290,13 +326,13 @@ export default function UserCoursesPage(): JSX.Element {
                         <div className="course-meta">
                           <div className="meta-item">
                             <Clock size={16} />
-                            <span>{course.duration} giờ</span>
+                            <span>{getDurationText(course)}</span>
                           </div>
 
-                          {course.enrollmentCount !== undefined && (
+                          {getEnrollmentCount(course) !== undefined && (
                             <div className="meta-item">
                               <Users size={16} />
-                              <span>{course.enrollmentCount} học viên</span>
+                              <span>{getEnrollmentCount(course)} học viên</span>
                             </div>
                           )}
 

@@ -17,6 +17,7 @@ import {
 } from '../store/slices/examSlice';
 import { examService } from '../services/examService';
 import { RootState, AppDispatch } from '../store';
+import proctoringApi from '../services/api/proctoringApi';
 
 export const useExamSession = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -39,6 +40,8 @@ export const useExamSession = () => {
     flaggedQuestions,
     session
   } = useSelector((state: RootState) => state.exam);
+
+  const authUser = useSelector((state: RootState) => state.auth.user);
 
   // Memoize current question to prevent recalculation
   const currentQuestion = useMemo(
@@ -145,6 +148,26 @@ export const useExamSession = () => {
       const result = await dispatch(submitExam()).unwrap();
       // ✅ Wait for backend to return submissionId
       if (result.submissionId) {
+        // ✅ Complete proctoring session after successful exam submission
+        try {
+          if (examId && authUser?.id) {
+            // Find proctoring session by examId and userId
+            const allSessions = await proctoringApi.getAllSessions();
+            const proctoringSession = allSessions.find(
+              (s) => s.examId === examId && s.userId?.toString() === authUser.id && s.status === 'in_progress'
+            );
+
+            if (proctoringSession) {
+              await proctoringApi.completeSession(proctoringSession.id);
+            } else {
+              console.warn('[useExamSession] Không tìm thấy proctoring session để complete', { examId, userId: authUser.id });
+            }
+          }
+        } catch (proctoringError) {
+          // Non-critical error - log but don't block navigation
+          console.error('[useExamSession] Lỗi khi complete proctoring session (non-critical):', proctoringError);
+        }
+
         // Navigate to result page with submission ID
         navigate(`/exam/${examId}/result?submissionId=${result.submissionId}`);
       } else {
@@ -155,7 +178,7 @@ export const useExamSession = () => {
       setIsSubmitting(false);
       setShowSubmitModal(false);
     }
-  }, [dispatch, navigate, examId]);
+  }, [dispatch, navigate, examId, authUser]);
 
   const handleTimeUp = useCallback(() => {
     setShowSubmitModal(true);

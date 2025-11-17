@@ -124,6 +124,10 @@
 	--primary-light: oklch(0.6489 0.2370 26.9728 / 0.15);
 	--accent-light: oklch(0.7323 0.2492 142.4953 / 0.15);
 	--primary-rgb: 255, 107, 53;
+	
+	/* Hover colors - more subtle and readable */
+	--hover-bg: oklch(0.28 0 0);
+	--hover-border: var(--primary);
 
 	/* Typography */
 	--tracking-normal: 0em;
@@ -188,11 +192,16 @@
 	--primary-light: rgba(16, 185, 129, 0.2);
 	--accent-light: rgba(245, 158, 11, 0.2);
 	--primary-rgb: 16, 185, 129;
+	
+	/* Hover colors - more subtle and readable for light mode */
+	--hover-bg: oklch(0.95 0 0);
+	--hover-border: var(--primary);
 }
 
 /* Dark Theme - Class based (user toggle) */
 .dark {
 	/* Uses default :root variables */
+	color-scheme: dark;
 }
 
 /* Ensure smooth theme transitions */

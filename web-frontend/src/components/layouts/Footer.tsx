@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from '../../assets/css/Footer.module.css'
 
 export default function Footer(): JSX.Element {
 	const footerLinks = [
@@ -12,42 +13,13 @@ export default function Footer(): JSX.Element {
 	]
 
 	return (
-		<footer style={{
-			background: 'var(--card)',
-			borderRadius: '6px',
-			padding: '20px 8px',
-			margin: '24px auto 16px',
-			maxWidth: '1000px',
-			border: '1px solid var(--border)',
-			boxShadow: 'var(--shadow-sm)'
-		}}>
-			<div style={{
-				display: 'flex',
-				justifyContent: 'center',
-				alignItems: 'center',
-				flexWrap: 'wrap',
-				gap: '20px'
-			}}>
+		<footer className={styles.footer}>
+			<div className={styles.linksContainer}>
 				{footerLinks.map((link, index) => (
 					<a
 						key={index}
 						href="#"
-						style={{
-							color: 'var(--muted-foreground)',
-							textDecoration: 'none',
-							fontSize: '14px',
-							fontWeight: 500,
-							transition: 'color 0.3s ease',
-							cursor: 'pointer',
-							padding: '4px 8px',
-							borderRadius: '6px'
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.color = 'var(--accent)'
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.color = 'var(--muted-foreground)'
-						}}
+						className={styles.footerLink}
 					>
 						{link}
 					</a>

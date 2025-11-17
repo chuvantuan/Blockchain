@@ -17,8 +17,9 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  z-index: 9999 !important;
+  z-index: 10000 !important; /* Higher than header (9999) */
   backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
   padding: 16px !important;
   animation: fadeInOverlay 0.3s ease-out;
 }
@@ -768,13 +769,14 @@
     }
 
     &.btn-secondary {
-      background: #f8fafc;
-      color: #475569;
+      background: white;
+      color: #64748b;
       border: 2px solid #e2e8f0;
 
       &:hover:not(:disabled) {
-        background: #f1f5f9;
+        background: #f8fafc;
         border-color: #cbd5e1;
+        color: #475569;
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
       }
@@ -788,6 +790,23 @@
       &:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+      }
+    }
+
+    &.btn-danger {
+      background: #ef4444;
+      color: white;
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+
+      &:hover:not(:disabled) {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(239, 68, 68, 0.4);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
       }
     }
 

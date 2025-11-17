@@ -2,13 +2,16 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 20px;
+  padding: clamp(12px, 2.5vw, 20px);
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 20px;
+  gap: clamp(16px, 2.5vw, 20px);
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .contestListItem:hover {
@@ -20,68 +23,78 @@
 .contestInfo {
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
 .header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(8px, 1.5vw, 12px);
+  margin-bottom: clamp(6px, 1vw, 8px);
 }
 
 .title {
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
   font-weight: 600;
   color: var(--foreground);
   margin: 0;
   line-height: 1.4;
+  word-break: break-word;
+  width: 100%;
 }
 
 .statusBadge {
-  font-size: 12px;
+  font-size: clamp(10px, 2vw, 12px);
   font-weight: 600;
-  padding: 4px 8px;
+  padding: clamp(3px, 0.8vw, 4px) clamp(6px, 1.5vw, 8px);
   border-radius: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .description {
-  font-size: 14px;
+  font-size: clamp(12px, 2.5vw, 14px);
   color: var(--muted-foreground);
-  margin: 0 0 8px 0;
+  margin: 0 0 clamp(6px, 1vw, 8px) 0;
   line-height: 1.4;
+  word-break: break-word;
 }
 
 .meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(8px, 1.5vw, 12px);
+  flex-wrap: wrap;
 }
 
 .region {
-  font-size: 12px;
+  font-size: clamp(10px, 2vw, 12px);
   color: var(--muted-foreground);
   font-weight: 500;
+  word-break: break-word;
 }
 
 .actionContainer {
   flex-shrink: 0;
+  width: 100%;
 }
 
 .actionButton {
   background: linear-gradient(135deg, var(--primary), var(--accent));
   border: none;
   color: white;
-  font-size: 14px;
+  font-size: clamp(12px, 2.5vw, 14px);
   font-weight: 500;
-  padding: 8px 16px;
+  padding: clamp(6px, 1.5vw, 8px) clamp(12px, 2vw, 16px);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 120px;
+  width: 100%;
   box-shadow: none;
+  box-sizing: border-box;
 }
 
 .actionButton:hover {
@@ -103,46 +116,24 @@
 }
 
 
-/* Responsive design */
-@media (max-width: 768px) {
+/* Responsive design - Most styles now use clamp() so minimal media queries needed */
+@media (min-width: 768px) {
   .contestListItem {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-    padding: 16px;
+    flex-direction: row;
+    align-items: center;
   }
   
   .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
   }
   
   .actionContainer {
-    align-self: stretch;
+    width: auto;
   }
   
   .actionButton {
-    width: 100%;
-    min-width: auto;
-  }
-}
-
-@media (max-width: 480px) {
-  .contestListItem {
-    padding: 12px;
-  }
-  
-  .title {
-    font-size: 15px;
-  }
-  
-  .description {
-    font-size: 13px;
-  }
-  
-  .actionButton {
-    font-size: 13px;
-    padding: 6px 12px;
+    width: auto;
+    min-width: 120px;
   }
 }

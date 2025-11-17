@@ -5,6 +5,7 @@ import { Trophy, Award, Clock, CheckCircle, XCircle, Target, TrendingUp, Calenda
 import Button from '../components/atoms/Button';
 import { RootState } from '../store';
 import { examService } from '../services/examService';
+import styles from '../assets/css/ExamResultPage.module.css';
 
 interface ExamResultData {
   examId: string;
@@ -137,33 +138,13 @@ export const ExamResultPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'var(--background)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{
-          background: 'var(--card)',
-          padding: '40px',
-          borderRadius: 'var(--radius-lg)',
-          textAlign: 'center',
-          border: '1px solid var(--border)'
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid var(--muted)',
-            borderTop: '3px solid var(--primary)',
-            borderRadius: '50%',
-            margin: '0 auto 20px',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '8px' }}>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingCard}>
+          <div className={styles.loadingSpinner} />
+          <h2 className={styles.loadingTitle}>
             Đang tải kết quả...
           </h2>
-          <p style={{ color: 'var(--muted-foreground)', fontSize: '14px' }}>
+          <p className={styles.loadingText}>
             Vui lòng chờ trong giây lát
           </p>
         </div>
@@ -173,24 +154,11 @@ export const ExamResultPage: React.FC = () => {
 
   if (error) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'var(--background)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{
-          background: 'var(--card)',
-          padding: '40px',
-          borderRadius: 'var(--radius-lg)',
-          textAlign: 'center',
-          maxWidth: '400px',
-          border: '1px solid var(--destructive)'
-        }}>
-          <XCircle style={{ width: '64px', height: '64px', color: 'var(--destructive)', margin: '0 auto 20px' }} />
-          <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px' }}>Lỗi</h2>
-          <p style={{ color: 'var(--muted-foreground)', marginBottom: '24px' }}>{error}</p>
+      <div className={styles.errorContainer}>
+        <div className={styles.errorCard}>
+          <XCircle className={styles.errorIcon} />
+          <h2 className={styles.errorTitle}>Lỗi</h2>
+          <p className={styles.errorMessage}>{error}</p>
           <Button onClick={handleGoToDashboard} variant="secondary">
             Quay lại
           </Button>
@@ -206,80 +174,31 @@ export const ExamResultPage: React.FC = () => {
   const circleProgress = (result.score / 100) * 251; // 2 * PI * 40
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--gradient-background)',
-      fontFamily: 'var(--font-sans)',
-      paddingTop: 'var(--space-8)',
-      paddingBottom: 'var(--space-12)'
-    }}>
-      <div style={{
-        maxWidth: '1000px',
-        margin: '0 auto',
-        padding: '0 var(--space-6)'
-      }}>
+    <div className={styles.page}>
+      <div className={styles.container}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-          <h1 style={{
-            fontSize: '36px',
-            fontWeight: 700,
-            marginBottom: 'var(--space-3)',
-            color: 'var(--foreground)',
-            fontFamily: 'var(--font-display)'
-          }}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>
             Kết quả bài thi
           </h1>
-          <p style={{
-            fontSize: '18px',
-            color: 'var(--muted-foreground)',
-            fontWeight: 500
-          }}>
-            {result.examTitle || currentExam?.title || 'Bài thi'}
+          <p className={styles.subtitle}>
+            {result.examTitle || 'Bài thi'}
           </p>
         </div>
 
         {/* Main Result Card */}
-        <div style={{
-          background: 'var(--card)',
-          borderRadius: 'var(--radius-xl)',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-2xl)',
-          padding: 'var(--space-10)',
-          marginBottom: 'var(--space-6)',
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
+        <div className={styles.mainResultCard}>
           {/* Background Pattern */}
           {result.passed && (
-            <div style={{
-              position: 'absolute',
-              top: '-50%',
-              left: '-50%',
-              width: '200%',
-              height: '200%',
-              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
-              animation: 'pulse 3s ease-in-out infinite'
-            }} />
+            <div className={styles.backgroundPattern} />
           )}
 
-          <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className={styles.contentWrapper}>
             {/* Score Circle with Animation */}
-            <div style={{
-              position: 'relative',
-              width: '200px',
-              height: '200px',
-              margin: '0 auto var(--space-8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <div className={styles.scoreCircleContainer}>
               <svg 
+                className={styles.scoreCircle}
                 style={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  transform: 'rotate(-90deg)',
                   filter: result.passed ? 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.3))' : 'drop-shadow(0 0 20px rgba(239, 68, 68, 0.3))'
                 }}
                 viewBox="0 0 100 100"
@@ -310,166 +229,97 @@ export const ExamResultPage: React.FC = () => {
                 />
               </svg>
               
-              <div style={{
-                position: 'absolute',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center'
-              }}>
-                <div style={{
-                  fontSize: '56px',
-                  fontWeight: 800,
-                  color: scoreColor,
-                  fontFamily: 'var(--font-display)',
-                  lineHeight: 1,
-                  marginBottom: '4px'
-                }}>
+              <div className={styles.scoreCircleContent}>
+                <div 
+                  className={styles.scoreValue}
+                  style={{ color: scoreColor }}
+                >
                   {result.score}%
                 </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: 'var(--muted-foreground)',
-                  fontWeight: 600,
-                  letterSpacing: '0.5px'
-                }}>
+                <div className={styles.scoreLabel}>
                   Điểm số
                 </div>
               </div>
             </div>
 
             {/* Result Status Badge */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              padding: '12px 32px',
-              borderRadius: 'var(--radius-full)',
-              background: result.passed 
-                ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' 
-                : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
-              border: `2px solid ${scoreColor}`,
-              fontSize: '20px',
-              fontWeight: 700,
-              color: scoreColor,
-              marginBottom: 'var(--space-8)',
-              boxShadow: `0 4px 20px ${scoreColor}40`
-            }}>
+            <div className={`${styles.statusBadge} ${result.passed ? styles.passed : styles.failed}`}>
               {result.passed ? (
                 <>
-                  <Trophy style={{ width: '24px', height: '24px' }} />
+                  <Trophy />
                   ĐẠT
                 </>
               ) : (
                 <>
-                  <XCircle style={{ width: '24px', height: '24px' }} />
+                  <XCircle />
                   KHÔNG ĐẠT
                 </>
               )}
             </div>
 
             {/* Stats Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: 'var(--space-4)',
-              marginBottom: 'var(--space-8)'
-            }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-                padding: 'var(--space-5)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid #93c5fd'
-              }}>
-                <CheckCircle style={{ width: '28px', height: '28px', color: '#1e40af', margin: '0 auto var(--space-2)' }} />
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#1e40af', marginBottom: 'var(--space-1)' }}>
+            <div className={styles.statsGrid}>
+              <div className={`${styles.statCard} ${styles.correct}`}>
+                <CheckCircle />
+                <div className={styles.statValue}>
                   {result.correctAnswers}
                 </div>
-                <div style={{ fontSize: '13px', color: '#1e3a8a', fontWeight: 600 }}>
+                <div className={styles.statLabel}>
                   Câu đúng
                 </div>
               </div>
 
-              <div style={{
-                background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
-                padding: 'var(--space-5)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid #fca5a5'
-              }}>
-                <XCircle style={{ width: '28px', height: '28px', color: '#991b1b', margin: '0 auto var(--space-2)' }} />
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#991b1b', marginBottom: 'var(--space-1)' }}>
+              <div className={`${styles.statCard} ${styles.wrong}`}>
+                <XCircle />
+                <div className={styles.statValue}>
                   {result.wrongAnswers || result.totalQuestions - result.correctAnswers}
                 </div>
-                <div style={{ fontSize: '13px', color: '#7f1d1d', fontWeight: 600 }}>
+                <div className={styles.statLabel}>
                   Câu sai
                 </div>
               </div>
 
-              <div style={{
-                background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
-                padding: 'var(--space-5)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid #a5b4fc'
-              }}>
-                <Target style={{ width: '28px', height: '28px', color: '#4338ca', margin: '0 auto var(--space-2)' }} />
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#4338ca', marginBottom: 'var(--space-1)' }}>
+              <div className={`${styles.statCard} ${styles.total}`}>
+                <Target />
+                <div className={styles.statValue}>
                   {result.totalQuestions}
                 </div>
-                <div style={{ fontSize: '13px', color: '#3730a3', fontWeight: 600 }}>
+                <div className={styles.statLabel}>
                   Tổng câu hỏi
                 </div>
               </div>
 
-              <div style={{
-                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                padding: 'var(--space-5)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid #fbbf24'
-              }}>
-                <Clock style={{ width: '28px', height: '28px', color: '#92400e', margin: '0 auto var(--space-2)' }} />
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#92400e', marginBottom: 'var(--space-1)' }}>
+              <div className={`${styles.statCard} ${styles.time}`}>
+                <Clock />
+                <div className={styles.statValue}>
                   {result.timeSpent}
                 </div>
-                <div style={{ fontSize: '13px', color: '#78350f', fontWeight: 600 }}>
+                <div className={styles.statLabel}>
                   Phút
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 'var(--space-4)',
-              flexWrap: 'wrap'
-            }}>
+            <div className={styles.actionButtons}>
               <Button 
                 onClick={handleGoToDashboard} 
                 variant="secondary"
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 'var(--space-2)',
-                  padding: '12px 24px'
-                }}
+                className={styles.actionButton}
               >
-                <ArrowLeft style={{ width: '18px', height: '18px' }} />
+                <ArrowLeft />
                 Về trang chủ
               </Button>
               
               <Button 
                 onClick={handleViewAnswers}
                 style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 'var(--space-2)',
                   background: 'var(--gradient-primary)',
-                  color: 'white',
-                  padding: '12px 24px'
+                  color: 'white'
                 }}
+                className={styles.actionButton}
               >
-                <FileText style={{ width: '18px', height: '18px' }} />
+                <FileText />
                 Xem chi tiết
               </Button>
               
@@ -477,13 +327,10 @@ export const ExamResultPage: React.FC = () => {
                 <Button 
                   onClick={handleRetakeExam}
                   style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 'var(--space-2)',
                     background: 'var(--gradient-accent)',
-                    color: 'white',
-                    padding: '12px 24px'
+                    color: 'white'
                   }}
+                  className={styles.actionButton}
                 >
                   Thi lại
                 </Button>
@@ -493,65 +340,31 @@ export const ExamResultPage: React.FC = () => {
         </div>
 
         {/* Additional Information Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 'var(--space-6)'
-        }}>
+        <div className={styles.infoGrid}>
           {/* Left Card - Exam Info */}
-          <div style={{
-            background: 'var(--card)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-md)',
-            padding: 'var(--space-6)'
-          }}>
-            <h3 style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              marginBottom: 'var(--space-5)',
-              color: 'var(--foreground)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)'
-            }}>
-              <BarChart3 style={{ width: '20px', height: '20px', color: 'var(--primary)' }} />
+          <div className={styles.infoCard}>
+            <h3 className={styles.infoCardTitle}>
+              <BarChart3 />
               Thông tin bài thi
             </h3>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 'var(--space-3)',
-                background: 'var(--background)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <Clock style={{ width: '16px', height: '16px', color: 'var(--muted-foreground)' }} />
-                  <span style={{ fontSize: '14px', color: 'var(--muted-foreground)' }}>Thời gian làm bài:</span>
+            <div className={styles.infoList}>
+              <div className={styles.infoItem}>
+                <div className={styles.infoItemLeft}>
+                  <Clock />
+                  <span className={styles.infoItemLabel}>Thời gian làm bài:</span>
                 </div>
-                <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: '15px' }}>
+                <span className={styles.infoItemValue}>
                   {result.timeSpent} phút
                 </span>
               </div>
 
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 'var(--space-3)',
-                background: 'var(--background)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <Calendar style={{ width: '16px', height: '16px', color: 'var(--muted-foreground)' }} />
-                  <span style={{ fontSize: '14px', color: 'var(--muted-foreground)' }}>Thời gian nộp:</span>
+              <div className={styles.infoItem}>
+                <div className={styles.infoItemLeft}>
+                  <Calendar />
+                  <span className={styles.infoItemLabel}>Thời gian nộp:</span>
                 </div>
-                <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: '14px' }}>
+                <span className={styles.infoItemValue}>
                   {new Date(result.submittedAt).toLocaleString('vi-VN', {
                     day: '2-digit',
                     month: '2-digit',
@@ -562,42 +375,34 @@ export const ExamResultPage: React.FC = () => {
                 </span>
               </div>
 
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 'var(--space-3)',
-                background: 'var(--background)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <TrendingUp style={{ width: '16px', height: '16px', color: 'var(--muted-foreground)' }} />
-                  <span style={{ fontSize: '14px', color: 'var(--muted-foreground)' }}>Xếp hạng:</span>
+              <div className={styles.infoItem}>
+                <div className={styles.infoItemLeft}>
+                  <TrendingUp />
+                  <span className={styles.infoItemLabel}>Xếp hạng:</span>
                 </div>
-                <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: '15px' }}>
+                <span className={styles.infoItemValue}>
                   Top {result.percentile}%
                 </span>
               </div>
 
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 'var(--space-3)',
-                background: scoreBg,
-                borderRadius: 'var(--radius-md)',
-                border: `1px solid ${scoreColor}`
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <div 
+                className={`${styles.infoItem} ${styles.status}`}
+                style={{
+                  background: scoreBg,
+                  border: `1px solid ${scoreColor}`
+                }}
+              >
+                <div className={styles.infoItemLeft}>
                   {result.passed ? (
-                    <CheckCircle style={{ width: '16px', height: '16px', color: scoreColor }} />
+                    <CheckCircle style={{ color: scoreColor }} />
                   ) : (
-                    <XCircle style={{ width: '16px', height: '16px', color: scoreColor }} />
+                    <XCircle style={{ color: scoreColor }} />
                   )}
-                  <span style={{ fontSize: '14px', color: scoreColor, fontWeight: 600 }}>Trạng thái:</span>
+                  <span className={styles.infoItemLabel} style={{ color: scoreColor }}>
+                    Trạng thái:
+                  </span>
                 </div>
-                <span style={{ fontWeight: 700, color: scoreColor, fontSize: '15px' }}>
+                <span className={styles.infoItemValue} style={{ color: scoreColor }}>
                   {result.passed ? 'Đã hoàn thành' : 'Chưa đạt yêu cầu'}
                 </span>
               </div>
@@ -605,148 +410,57 @@ export const ExamResultPage: React.FC = () => {
           </div>
 
           {/* Right Card - Next Steps */}
-          <div style={{
-            background: 'var(--card)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-md)',
-            padding: 'var(--space-6)'
-          }}>
-            <h3 style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              marginBottom: 'var(--space-5)',
-              color: 'var(--foreground)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)'
-            }}>
-              <Award style={{ width: '20px', height: '20px', color: 'var(--accent)' }} />
+          <div className={styles.infoCard}>
+            <h3 className={styles.infoCardTitle}>
+              <Award />
               Tiếp theo
             </h3>
 
             {result.passed ? (
               <div>
-                <div style={{
-                  background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
-                  padding: 'var(--space-5)',
-                  borderRadius: 'var(--radius-lg)',
-                  marginBottom: 'var(--space-4)',
-                  border: '1px solid #6ee7b7'
-                }}>
-                  <div style={{
-                    fontSize: '40px',
-                    textAlign: 'center',
-                    marginBottom: 'var(--space-3)'
-                  }}>
-                    🎉
-                  </div>
-                  <p style={{
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    color: '#065f46',
-                    marginBottom: 'var(--space-2)',
-                    textAlign: 'center'
-                  }}>
+                <div className={`${styles.messageCard} ${styles.success}`}>
+                  <p className={styles.messageTitle}>
                     Chúc mừng! Bạn đã vượt qua bài thi.
                   </p>
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#047857',
-                    textAlign: 'center',
-                    lineHeight: 1.6
-                  }}>
+                  <p className={styles.messageText}>
                     Kết quả tuyệt vời! Tiếp tục phát huy nhé.
                   </p>
                 </div>
 
-                <div style={{
-                  background: 'var(--background)',
-                  padding: 'var(--space-4)',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)'
-                }}>
-                  <h4 style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    marginBottom: 'var(--space-3)',
-                    color: 'var(--foreground)'
-                  }}>
-                    📚 Gợi ý tiếp theo:
+                <div className={styles.suggestionsCard}>
+                  <h4 className={styles.suggestionsTitle}>
+                    Gợi ý tiếp theo:
                   </h4>
-                  <ul style={{
-                    fontSize: '13px',
-                    color: 'var(--muted-foreground)',
-                    lineHeight: 1.8,
-                    paddingLeft: 0,
-                    listStyle: 'none'
-                  }}>
-                    <li style={{ marginBottom: 'var(--space-2)' }}>• Xem lại đáp án để cải thiện</li>
-                    <li style={{ marginBottom: 'var(--space-2)' }}>• Tải chứng chỉ của bạn</li>
-                    <li style={{ marginBottom: 'var(--space-2)' }}>• Thi thử các bài nâng cao hơn</li>
+                  <ul className={styles.suggestionsList}>
+                    <li>• Xem lại đáp án để cải thiện</li>
+                    <li>• Tải chứng chỉ của bạn</li>
+                    <li>• Thi thử các bài nâng cao hơn</li>
                     <li>• Chia sẻ thành tích với bạn bè</li>
                   </ul>
                 </div>
               </div>
             ) : (
               <div>
-                <div style={{
-                  background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
-                  padding: 'var(--space-5)',
-                  borderRadius: 'var(--radius-lg)',
-                  marginBottom: 'var(--space-4)',
-                  border: '1px solid #fca5a5'
-                }}>
-                  <div style={{
-                    fontSize: '40px',
-                    textAlign: 'center',
-                    marginBottom: 'var(--space-3)'
-                  }}>
+                <div className={`${styles.messageCard} ${styles.error}`}>
+                  <div className={styles.messageEmoji}>
                     💪
                   </div>
-                  <p style={{
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    color: '#991b1b',
-                    marginBottom: 'var(--space-2)',
-                    textAlign: 'center'
-                  }}>
+                  <p className={styles.messageTitle}>
                     Đừng nản lòng!
                   </p>
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#7f1d1d',
-                    textAlign: 'center',
-                    lineHeight: 1.6
-                  }}>
+                  <p className={styles.messageText}>
                     Bạn cần đạt ít nhất 70% để vượt qua. Hãy ôn tập và thử lại.
                   </p>
                 </div>
 
-                <div style={{
-                  background: 'var(--background)',
-                  padding: 'var(--space-4)',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)'
-                }}>
-                  <h4 style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    marginBottom: 'var(--space-3)',
-                    color: 'var(--foreground)'
-                  }}>
+                <div className={styles.suggestionsCard}>
+                  <h4 className={styles.suggestionsTitle}>
                     📖 Hãy thử:
                   </h4>
-                  <ul style={{
-                    fontSize: '13px',
-                    color: 'var(--muted-foreground)',
-                    lineHeight: 1.8,
-                    paddingLeft: 0,
-                    listStyle: 'none'
-                  }}>
-                    <li style={{ marginBottom: 'var(--space-2)' }}>• Xem lại đáp án để hiểu rõ hơn</li>
-                    <li style={{ marginBottom: 'var(--space-2)' }}>• Ôn tập lại kiến thức cần thiết</li>
-                    <li style={{ marginBottom: 'var(--space-2)' }}>• Làm bài tập thêm</li>
+                  <ul className={styles.suggestionsList}>
+                    <li>• Xem lại đáp án để hiểu rõ hơn</li>
+                    <li>• Ôn tập lại kiến thức cần thiết</li>
+                    <li>• Làm bài tập thêm</li>
                     <li>• Thử lại sau khi đã chuẩn bị kỹ</li>
                   </ul>
                 </div>
@@ -756,109 +470,42 @@ export const ExamResultPage: React.FC = () => {
         </div>
 
         {/* Performance Breakdown */}
-        <div style={{
-          background: 'var(--card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-md)',
-          padding: 'var(--space-6)',
-          marginTop: 'var(--space-6)'
-        }}>
-          <h3 style={{
-            fontSize: '18px',
-            fontWeight: 600,
-            marginBottom: 'var(--space-5)',
-            color: 'var(--foreground)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)'
-          }}>
-            <TrendingUp style={{ width: '20px', height: '20px', color: 'var(--accent)' }} />
+        <div className={styles.performanceCard}>
+          <h3 className={styles.performanceTitle}>
+            <TrendingUp />
             Chi tiết kết quả
           </h3>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 'var(--space-4)'
-          }}>
-            <div style={{
-              padding: 'var(--space-4)',
-              background: 'var(--background)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '32px',
-                fontWeight: 700,
-                color: '#10b981',
-                marginBottom: 'var(--space-2)',
-                fontFamily: 'var(--font-display)'
-              }}>
+          <div className={styles.performanceGrid}>
+            <div className={styles.performanceItem}>
+              <div className={`${styles.performanceValue} ${styles.accuracy}`}>
                 {Math.round((result.correctAnswers / result.totalQuestions) * 100)}%
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              <div className={styles.performanceLabel}>
                 Độ chính xác
               </div>
             </div>
 
-            <div style={{
-              padding: 'var(--space-4)',
-              background: 'var(--background)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '32px',
-                fontWeight: 700,
-                color: '#3b82f6',
-                marginBottom: 'var(--space-2)',
-                fontFamily: 'var(--font-display)'
-              }}>
+            <div className={styles.performanceItem}>
+              <div className={`${styles.performanceValue} ${styles.speed}`}>
                 {(result.timeSpent / result.totalQuestions).toFixed(1)}
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              <div className={styles.performanceLabel}>
                 Phút/câu
               </div>
             </div>
 
-            <div style={{
-              padding: 'var(--space-4)',
-              background: 'var(--background)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '32px',
-                fontWeight: 700,
-                color: '#f59e0b',
-                marginBottom: 'var(--space-2)',
-                fontFamily: 'var(--font-display)'
-              }}>
+            <div className={styles.performanceItem}>
+              <div className={`${styles.performanceValue} ${styles.rank}`}>
                 {result.percentile}%
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              <div className={styles.performanceLabel}>
                 Xếp hạng
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-      `}</style>
     </div>
   );
 };

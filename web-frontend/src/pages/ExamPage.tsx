@@ -4,6 +4,7 @@ import { Clock, FileText, CheckCircle, AlertCircle, Calendar } from 'lucide-reac
 import { examService } from '../services/examService';
 import { ExamDetails } from '../utils/types';
 import Button from '../components/atoms/Button';
+import styles from '../assets/css/ExamPage.module.css';
 
 interface ExamWithStatus extends ExamDetails {
 	status?: 'not-started' | 'in-progress' | 'completed';
@@ -96,52 +97,22 @@ export default function ExamPage(): JSX.Element {
 		switch (status) {
 			case 'completed':
 				return (
-					<span style={{
-						display: 'inline-flex',
-						alignItems: 'center',
-						gap: '4px',
-						padding: '4px 12px',
-						borderRadius: '12px',
-						fontSize: '12px',
-						fontWeight: 600,
-						background: '#dcfce7',
-						color: '#166534'
-					}}>
-						<CheckCircle size={14} />
+					<span className={`${styles.statusBadge} ${styles.completed}`}>
+						<CheckCircle />
 						Đã hoàn thành
 					</span>
 				);
 			case 'in-progress':
 				return (
-					<span style={{
-						display: 'inline-flex',
-						alignItems: 'center',
-						gap: '4px',
-						padding: '4px 12px',
-						borderRadius: '12px',
-						fontSize: '12px',
-						fontWeight: 600,
-						background: '#fef3c7',
-						color: '#92400e'
-					}}>
-						<AlertCircle size={14} />
+					<span className={`${styles.statusBadge} ${styles.inProgress}`}>
+						<AlertCircle />
 						Đang làm
 					</span>
 				);
 			default:
 				return (
-					<span style={{
-						display: 'inline-flex',
-						alignItems: 'center',
-						gap: '4px',
-						padding: '4px 12px',
-						borderRadius: '12px',
-						fontSize: '12px',
-						fontWeight: 600,
-						background: '#e5e7eb',
-						color: '#374151'
-					}}>
-						<Calendar size={14} />
+					<span className={`${styles.statusBadge} ${styles.notStarted}`}>
+						<Calendar />
 						Chưa làm
 					</span>
 				);
@@ -150,25 +121,10 @@ export default function ExamPage(): JSX.Element {
 
 	if (loading) {
 		return (
-			<div style={{
-				minHeight: '100vh',
-				background: 'var(--background)',
-				display: 'flex',
-				alignItems: 'center',
-				justifyContent: 'center',
-				padding: '24px'
-			}}>
-				<div style={{ textAlign: 'center' }}>
-					<div style={{
-						width: '48px',
-						height: '48px',
-						border: '3px solid var(--muted)',
-						borderTop: '3px solid var(--primary)',
-						borderRadius: '50%',
-						animation: 'spin 1s linear infinite',
-						margin: '0 auto 16px'
-					}} />
-					<p style={{ color: 'var(--muted-foreground)' }}>Đang tải danh sách bài thi...</p>
+			<div className={styles.loadingContainer}>
+				<div className={styles.loadingContent}>
+					<div className={styles.spinner} />
+					<p className={styles.loadingText}>Đang tải danh sách bài thi...</p>
 				</div>
 			</div>
 		);
@@ -176,25 +132,11 @@ export default function ExamPage(): JSX.Element {
 
 	if (error) {
 		return (
-			<div style={{
-				minHeight: '100vh',
-				background: 'var(--background)',
-				display: 'flex',
-				alignItems: 'center',
-				justifyContent: 'center',
-				padding: '24px'
-			}}>
-				<div style={{
-					background: 'var(--card)',
-					padding: '40px',
-					borderRadius: 'var(--radius-lg)',
-					textAlign: 'center',
-					border: '1px solid var(--border)',
-					maxWidth: '400px'
-				}}>
-					<AlertCircle size={48} style={{ color: '#ef4444', marginBottom: '16px' }} />
-					<h2 style={{ marginBottom: '8px', color: 'var(--foreground)' }}>Lỗi</h2>
-					<p style={{ color: 'var(--muted-foreground)', marginBottom: '24px' }}>{error}</p>
+			<div className={styles.errorContainer}>
+				<div className={styles.errorCard}>
+					<AlertCircle className={styles.errorIcon} />
+					<h2 className={styles.errorTitle}>Lỗi</h2>
+					<p className={styles.errorMessage}>{error}</p>
 					<Button onClick={loadExams} variant="primary">Thử lại</Button>
 				</div>
 			</div>
@@ -202,120 +144,67 @@ export default function ExamPage(): JSX.Element {
 	}
 
 	return (
-		<div style={{
-			minHeight: '100vh',
-			background: 'var(--background)',
-			padding: '24px'
-		}}>
-			<div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+		<div className={styles.page}>
+			<div className={styles.container}>
 				{/* Header */}
-				<div style={{ marginBottom: '32px' }}>
-					<h1 style={{
-						fontSize: '32px',
-						fontWeight: 700,
-						marginBottom: '8px',
-						color: 'var(--foreground)'
-					}}>
+				<div className={styles.header}>
+					<h1 className={styles.title}>
 						Danh sách bài thi
 					</h1>
-					<p style={{ color: 'var(--muted-foreground)', fontSize: '16px' }}>
+					<p className={styles.subtitle}>
 						Chọn bài thi để bắt đầu làm bài hoặc xem lại kết quả
 					</p>
 				</div>
 
 				{/* Exams Grid */}
 				{exams.length === 0 ? (
-					<div style={{
-						background: 'var(--card)',
-						padding: '60px 24px',
-						borderRadius: 'var(--radius-lg)',
-						textAlign: 'center',
-						border: '1px solid var(--border)'
-					}}>
-						<FileText size={64} style={{ color: 'var(--muted-foreground)', marginBottom: '16px' }} />
-						<h3 style={{ marginBottom: '8px', color: 'var(--foreground)' }}>Chưa có bài thi</h3>
-						<p style={{ color: 'var(--muted-foreground)' }}>
+					<div className={styles.emptyState}>
+						<FileText />
+						<h3>Chưa có bài thi</h3>
+						<p>
 							Hiện tại chưa có bài thi nào được phân công cho bạn
 						</p>
 					</div>
 				) : (
-					<div style={{
-						display: 'grid',
-						gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-						gap: '24px'
-					}}>
+					<div className={styles.examsGrid}>
 						{exams.map((exam) => (
 							<div
 								key={exam.id}
-								style={{
-									background: 'var(--card)',
-									border: '1px solid var(--border)',
-									borderRadius: 'var(--radius-lg)',
-									padding: '24px',
-									transition: 'all 0.2s',
-									cursor: 'pointer'
-								}}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-									e.currentTarget.style.transform = 'translateY(-4px)';
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.boxShadow = 'none';
-									e.currentTarget.style.transform = 'translateY(0)';
-								}}
+								className={styles.examCard}
 							>
 								{/* Status Badge */}
-								<div style={{ marginBottom: '16px' }}>
+								<div className={styles.statusBadgeContainer}>
 									{getStatusBadge(exam.status)}
 								</div>
 
 								{/* Exam Title */}
-								<h3 style={{
-									fontSize: '20px',
-									fontWeight: 600,
-									marginBottom: '8px',
-									color: 'var(--foreground)'
-								}}>
+								<h3 className={styles.examTitle}>
 									{exam.title}
 								</h3>
 
 								{/* Description */}
-								<p style={{
-									color: 'var(--muted-foreground)',
-									fontSize: '14px',
-									marginBottom: '16px',
-									lineHeight: 1.5,
-									minHeight: '42px'
-								}}>
+								<p className={styles.examDescription}>
 									{exam.description || 'Không có mô tả'}
 								</p>
 
 								{/* Exam Info */}
-								<div style={{
-									display: 'flex',
-									flexDirection: 'column',
-									gap: '8px',
-									marginBottom: '20px',
-									padding: '12px',
-									background: 'var(--muted)',
-									borderRadius: 'var(--radius-md)'
-								}}>
-									<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-										<Clock size={16} style={{ color: 'var(--muted-foreground)' }} />
-										<span style={{ fontSize: '14px', color: 'var(--muted-foreground)' }}>
+								<div className={styles.examInfo}>
+									<div className={styles.examInfoItem}>
+										<Clock />
+										<span>
 											Thời gian: {exam.duration} phút
 										</span>
 									</div>
-									<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-										<FileText size={16} style={{ color: 'var(--muted-foreground)' }} />
-										<span style={{ fontSize: '14px', color: 'var(--muted-foreground)' }}>
+									<div className={styles.examInfoItem}>
+										<FileText />
+										<span>
 											Số câu hỏi: {exam.totalQuestions}
 										</span>
 									</div>
 									{exam.status === 'completed' && exam.score !== undefined && (
-										<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-											<CheckCircle size={16} style={{ color: '#10b981' }} />
-											<span style={{ fontSize: '14px', fontWeight: 600, color: '#10b981' }}>
+										<div className={styles.examInfoItem}>
+											<CheckCircle className={styles.scoreIcon} />
+											<span className={styles.score}>
 												Điểm: {exam.score}/100
 											</span>
 										</div>
@@ -323,12 +212,11 @@ export default function ExamPage(): JSX.Element {
 								</div>
 
 								{/* Actions */}
-								<div style={{ display: 'flex', gap: '12px' }}>
+								<div className={styles.examActions}>
 									{exam.status === 'not-started' && (
 										<Button
 											onClick={() => handleStartExam(exam.id)}
 											variant="primary"
-											style={{ flex: 1 }}
 										>
 											Bắt đầu làm bài
 										</Button>
@@ -337,7 +225,6 @@ export default function ExamPage(): JSX.Element {
 										<Button
 											onClick={() => handleContinueExam(exam.id)}
 											variant="primary"
-											style={{ flex: 1 }}
 										>
 											Tiếp tục làm bài
 										</Button>
@@ -346,7 +233,6 @@ export default function ExamPage(): JSX.Element {
 										<Button
 											onClick={() => handleViewResult(exam.id, exam.submissionId!)}
 											variant="secondary"
-											style={{ flex: 1 }}
 										>
 											Xem kết quả
 										</Button>

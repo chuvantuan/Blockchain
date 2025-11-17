@@ -1,7 +1,8 @@
 // Proctoring API Service
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8082/api';
+// Use API Gateway for all requests
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/proctoring`;
 
 // Create axios instance with JWT interceptors
 const proctoringAxios = axios.create({
@@ -98,7 +99,7 @@ export interface SessionWithEvents extends ProctoringSession {
  */
 export const analyzeFrame = async (request: FrameAnalysisRequest): Promise<FrameAnalysisResponse> => {
   try {
-    const response = await proctoringAxios.post('/proctoring/analyze-frame', request);
+    const response = await proctoringAxios.post('/analyze-frame', request);
     return response.data;
   } catch (error: any) {
     console.error('Error analyzing frame:', error);
@@ -114,7 +115,7 @@ export const analyzeFrame = async (request: FrameAnalysisRequest): Promise<Frame
  */
 export const getAllSessions = async (): Promise<ProctoringSession[]> => {
   try {
-    const response = await proctoringAxios.get('/proctoring/sessions');
+    const response = await proctoringAxios.get('/sessions');
     return response.data;
   } catch (error: any) {
     console.error('Error fetching sessions:', error);
@@ -127,7 +128,7 @@ export const getAllSessions = async (): Promise<ProctoringSession[]> => {
  */
 export const getSessionById = async (sessionId: string): Promise<ProctoringSession | null> => {
   try {
-    const response = await proctoringAxios.get(`/proctoring/sessions/${sessionId}`);
+    const response = await proctoringAxios.get(`/sessions/${sessionId}`);
     return response.data;
   } catch (error: any) {
     console.error('Error fetching session:', error);
@@ -168,10 +169,38 @@ export const getSessionWithDetails = async (sessionId: string): Promise<SessionW
  */
 export const terminateSession = async (sessionId: string): Promise<boolean> => {
   try {
-    const response = await proctoringAxios.post(`/proctoring/sessions/${sessionId}/terminate`);
+    const response = await proctoringAxios.post(`/sessions/${sessionId}/terminate`);
     return response.status === 200;
   } catch (error: any) {
     console.error('Error terminating session:', error);
+    return false;
+  }
+};
+
+/**
+ * Send warning to student
+ */
+export const sendWarning = async (sessionId: string, message?: string): Promise<boolean> => {
+  try {
+    const response = await proctoringAxios.post(`/sessions/${sessionId}/warning`, {
+      message: message || 'Bạn đã nhận được cảnh báo từ giám thị'
+    });
+    return response.status === 200;
+  } catch (error: any) {
+    console.error('Error sending warning:', error);
+    return false;
+  }
+};
+
+/**
+ * Complete proctoring session (mark as completed)
+ */
+export const completeSession = async (sessionId: string): Promise<boolean> => {
+  try {
+    const response = await proctoringAxios.post(`/sessions/${sessionId}/complete`);
+    return response.status === 200;
+  } catch (error: any) {
+    console.error('Error completing session:', error);
     return false;
   }
 };
@@ -196,7 +225,7 @@ export const getEventsBySession = async (sessionId: string): Promise<ProctoringE
  */
 export const reviewEvent = async (eventId: string, isReviewed: boolean): Promise<boolean> => {
   try {
-    const response = await proctoringAxios.patch(`/proctoring/events/${eventId}/review`, {
+    const response = await proctoringAxios.patch(`/events/${eventId}/review`, {
       isReviewed
     });
     return response.status === 200;
@@ -213,7 +242,7 @@ export const reviewEvent = async (eventId: string, isReviewed: boolean): Promise
  */
 export const getMediaByEventId = async (eventId: string): Promise<MediaCapture[]> => {
   try {
-    const response = await proctoringAxios.get(`/proctoring/events/${eventId}/media`);
+    const response = await proctoringAxios.get(`/events/${eventId}/media`);
     return response.data;
   } catch (error: any) {
     // If endpoint doesn't exist, return empty array
@@ -229,9 +258,9 @@ export const getMediaByEventId = async (eventId: string): Promise<MediaCapture[]
  * Get media file URL (local or CDN)
  */
 export const getMediaUrl = (storagePath: string): string => {
-  // If it's a relative path, prepend backend URL
+  // If it's a relative path, prepend API Gateway URL
   if (storagePath.startsWith('/')) {
-    return `http://localhost:8082${storagePath}`;
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/proctoring${storagePath}`;
   }
   return storagePath;
 };
@@ -247,6 +276,8 @@ const proctoringApi = {
   getSessionById,
   getSessionWithDetails,
   terminateSession,
+  completeSession,
+  sendWarning,
   
   // Events
   getEventsBySession,

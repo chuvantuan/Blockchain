@@ -269,7 +269,7 @@ export default function ModuleStatusCard({ module, onClick }: ModuleStatusCardPr
 					</div>
 					{module.vulnerabilities > 0 && (
 						<div style={{ fontSize: '11px', color: '#ef4444' }}>
-							⚠️ {module.vulnerabilities} lỗ hổng
+							{module.vulnerabilities} lỗ hổng
 						</div>
 					)}
 				</div>

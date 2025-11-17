@@ -2,6 +2,11 @@ import React from 'react'
 import Modal from '../../components/common/Modal'
 import SessionDetailView from '../../components/proctoring/SessionDetailView'
 import { type ProctoringSession } from '../../types/proctoring'
+import type { StreamState } from '../../hooks/useProctoringStreams'
+
+interface RequestOptions {
+	force?: boolean
+}
 
 interface SessionDetailModalProps {
 	isOpen: boolean
@@ -10,6 +15,9 @@ interface SessionDetailModalProps {
 	onResolveViolation: (violationId: string) => void
 	onTerminate: (sessionId: string) => void
 	onSendWarning: (sessionId: string) => void
+	onRequestStream?: (sessionId: string, options?: RequestOptions) => void
+	onStopStream?: (sessionId: string) => void
+	streamState?: StreamState
 }
 
 const SessionDetailModal: React.FC<SessionDetailModalProps> = ({
@@ -18,7 +26,10 @@ const SessionDetailModal: React.FC<SessionDetailModalProps> = ({
 	session,
 	onResolveViolation,
 	onTerminate,
-	onSendWarning
+	onSendWarning,
+	onRequestStream,
+	onStopStream,
+	streamState
 }) => {
 	if (!session) return null
 
@@ -34,6 +45,9 @@ const SessionDetailModal: React.FC<SessionDetailModalProps> = ({
 				onResolveViolation={onResolveViolation}
 				onTerminate={onTerminate}
 				onSendWarning={onSendWarning}
+				onRequestStream={onRequestStream}
+				onStopStream={onStopStream}
+				streamState={streamState}
 			/>
 		</Modal>
 	)

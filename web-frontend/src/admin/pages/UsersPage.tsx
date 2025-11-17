@@ -30,7 +30,9 @@ export default function UsersPage(): JSX.Element {
 		deleteUser,
 		toggleUserStatus,
 		updateUser,
-		addUser
+		addUser,
+		loading,
+		error
 	} = useUsers()
 
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -56,35 +58,51 @@ export default function UsersPage(): JSX.Element {
 	}
 
 	// Xác nhận xóa
-	const confirmDelete = () => {
+	const confirmDelete = async () => {
 		if (userToDelete) {
-			deleteUser(userToDelete.id)
-			setIsDeleteModalOpen(false)
-			setUserToDelete(null)
+			try {
+				await deleteUser(userToDelete.id)
+				setIsDeleteModalOpen(false)
+				setUserToDelete(null)
+			} catch (error) {
+				console.error('loi:', error)
+			}
 		}
 	}
 
 	// Xử lý toggle status
-	const handleToggleStatus = (user: User) => {
-		toggleUserStatus(user.id)
+	const handleToggleStatus = async (user: User) => {
+		try {
+			await toggleUserStatus(user.id)
+		} catch (error) {
+			console.error('loi:', error)
+		}
 	}
 
 	// Xử lý thêm user mới
-	const handleAddUser = (userData: Partial<User>) => {
-		addUser(userData as Omit<User, 'id' | 'createdAt'>)
-		setIsAddModalOpen(false)
+	const handleAddUser = async (userData: Partial<User>) => {
+		try {
+			await addUser(userData as Omit<User, 'id' | 'createdAt'>)
+			setIsAddModalOpen(false)
+		} catch (error) {
+			console.error('loi:', error)
+		}
 	}
 
 	// Xử lý cập nhật user
-	const handleUpdateUser = (userData: Partial<User>) => {
+	const handleUpdateUser = async (userData: Partial<User>) => {
 		if (userToEdit) {
-			const updatedUser: User = {
-				...userToEdit,
-				...userData
+			try {
+				const updatedUser: User = {
+					...userToEdit,
+					...userData
+				}
+				await updateUser(updatedUser)
+				setIsEditModalOpen(false)
+				setUserToEdit(null)
+			} catch (error) {
+				console.error('loi:', error)
 			}
-			updateUser(updatedUser)
-			setIsEditModalOpen(false)
-			setUserToEdit(null)
 		}
 	}
 
@@ -111,15 +129,19 @@ export default function UsersPage(): JSX.Element {
 	}
 
 	// Xác nhận import
-	const confirmImport = () => {
-		importPreview.forEach(userData => {
-			addUser(userData as Omit<User, 'id' | 'createdAt'>)
-		})
-		setIsImportModalOpen(false)
-		setImportFile(null)
-		setImportPreview([])
-		if (fileInputRef.current) {
-			fileInputRef.current.value = ''
+	const confirmImport = async () => {
+		try {
+			for (const userData of importPreview) {
+				await addUser(userData as Omit<User, 'id' | 'createdAt'>)
+			}
+			setIsImportModalOpen(false)
+			setImportFile(null)
+			setImportPreview([])
+			if (fileInputRef.current) {
+				fileInputRef.current.value = ''
+			}
+		} catch (error) {
+			console.error('loi:', error)
 		}
 	}
 
@@ -187,6 +209,35 @@ export default function UsersPage(): JSX.Element {
 				</div>
 			</div>
 
+			{/* Error Message */}
+			{error && (
+				<div style={{
+					padding: '12px 16px',
+					background: 'var(--destructive)',
+					color: 'white',
+					borderRadius: 'var(--radius-md)',
+					marginBottom: '16px',
+					display: 'flex',
+					justifyContent: 'space-between',
+					alignItems: 'center'
+				}}>
+					<span>{error}</span>
+					<button
+						onClick={() => window.location.reload()}
+						style={{
+							background: 'rgba(255,255,255,0.2)',
+							border: 'none',
+							color: 'white',
+							padding: '4px 12px',
+							borderRadius: '4px',
+							cursor: 'pointer'
+						}}
+					>
+						Refresh
+					</button>
+				</div>
+			)}
+
 			{/* Filters */}
 			<div className="filters-container">
 				<div className="filter-group">
@@ -241,6 +292,7 @@ export default function UsersPage(): JSX.Element {
 			}}>
 				<UserTable
 					users={users}
+					loading={loading}
 					onEdit={handleEdit}
 					onDelete={handleDelete}
 					onToggleStatus={handleToggleStatus}

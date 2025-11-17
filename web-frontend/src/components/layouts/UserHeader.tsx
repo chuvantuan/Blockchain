@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { logoutUser } from '../../store/slices/authSlice'
 import { useTheme } from '../../contexts/ThemeContext'
 import Logo from '../atoms/Logo'
+import styles from '../../assets/css/UserHeader.module.css'
 
 export default function UserHeader(): JSX.Element {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -68,401 +69,151 @@ export default function UserHeader(): JSX.Element {
 		}
 	}, [userMenuOpen])
 
+	// Prevent body scroll when mobile menu is open
+	useEffect(() => {
+		if (mobileMenuOpen) {
+			document.body.style.overflow = 'hidden'
+		} else {
+			document.body.style.overflow = ''
+		}
+
+		return () => {
+			document.body.style.overflow = ''
+		}
+	}, [mobileMenuOpen])
+
 	return (
-		<header
-			style={{
-				position: 'fixed',
-				top: 0,
-				left: 0,
-				right: 0,
-				zIndex: 10,
-				background: 'var(--background)',
-				borderBottom: '1px solid var(--border)',
-				boxShadow: 'var(--shadow-sm)',
-				backdropFilter: 'blur(12px)',
-				WebkitBackdropFilter: 'blur(12px)',
-				transition: 'all var(--transition-normal)',
-				width: '100%',
-				boxSizing: 'border-box'
-			}}
-		>
-			<div 
-				style={{
-					padding: '16px 24px',
-					paddingRight: 'calc(24px + 1rem)',
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					width: '100%',
-					boxSizing: 'border-box',
-					maxWidth: '100vw'
-				}}
-			>
-				{/* Left Side - Logo */}
-				<div style={{ display: 'flex', alignItems: 'center' }}>
-					<Link to="/user" style={{ textDecoration: 'none' }}>
-						<Logo text="EduPlatform" />
-					</Link>
+		<>
+			<header className={styles.header}>
+				<div className={styles.container}>
+				{/* Left Side - Logo and Mobile Menu Button */}
+				<div className={styles.leftSection}>
+					{/* Mobile Menu Button */}
+					<button
+						className={styles.mobileMenuButton}
+						onClick={toggleMobileMenu}
+						aria-label="Toggle menu"
+					>
+						{mobileMenuOpen ? <X /> : <Menu />}
+					</button>
+
+					{/* Logo */}
+					<div className={styles.logoContainer}>
+						<Link to="/user" className={styles.logoLink}>
+							<Logo text="EduPlatform" />
+						</Link>
+					</div>
 				</div>
 
-				{/* Center - Navigation Menu */}
-				<nav style={{ display: 'flex', alignItems: 'center', gap: '32px', fontSize: '14px', fontWeight: 600 }}>
-					{/* Prepare */}
-					<Link 
-						to="/user/prepare" 
-						style={{ 
-							textDecoration: 'none',
-							transition: 'all var(--transition-normal)',
-							position: 'relative',
-							paddingBottom: '4px',
-							color: getActiveNavItem() === 'prepare' ? 'var(--foreground)' : 'var(--muted-foreground)'
-						}}
-					>
-						Chuẩn bị
-						{/* Green underline for active item */}
-						{getActiveNavItem() === 'prepare' && (
-							<div 
-								style={{
-									position: 'absolute',
-									bottom: '-2px',
-									left: 0,
-									right: 0,
-									height: '2px',
-									background: 'var(--primary)',
-									borderRadius: '1px'
-								}}
-							/>
-						)}
-					</Link>
+					{/* Center - Navigation Menu (Desktop) */}
+					<nav className={styles.navigation}>
+						{/* Prepare */}
+						<Link 
+							to="/user/prepare" 
+							className={`${styles.navLink} ${getActiveNavItem() === 'prepare' ? styles.navLinkActive : ''}`}
+						>
+							Chuẩn bị
+							{getActiveNavItem() === 'prepare' && (
+								<div className={styles.navLinkUnderline} />
+							)}
+						</Link>
 
-					{/* Certify */}
-					<Link 
-						to="/user/certify" 
-						style={{ 
-							textDecoration: 'none',
-							transition: 'all var(--transition-normal)',
-							position: 'relative',
-							paddingBottom: '4px',
-							color: getActiveNavItem() === 'certify' ? 'var(--foreground)' : 'var(--muted-foreground)'
-						}}
-					>
-						Chứng chỉ
-						{/* Green underline for active item */}
-						{getActiveNavItem() === 'certify' && (
-							<div 
-								style={{
-									position: 'absolute',
-									bottom: '-2px',
-									left: 0,
-									right: 0,
-									height: '2px',
-									background: 'var(--primary)',
-									borderRadius: '1px'
-								}}
-							/>
-						)}
-					</Link>
+						{/* Certify */}
+						<Link 
+							to="/user/certify" 
+							className={`${styles.navLink} ${getActiveNavItem() === 'certify' ? styles.navLinkActive : ''}`}
+						>
+							Chứng chỉ
+							{getActiveNavItem() === 'certify' && (
+								<div className={styles.navLinkUnderline} />
+							)}
+						</Link>
 
-					{/* Compete */}
-					<Link 
-						to="/user/compete" 
-						style={{ 
-							textDecoration: 'none',
-							transition: 'all var(--transition-normal)',
-							position: 'relative',
-							paddingBottom: '4px',
-							color: getActiveNavItem() === 'compete' ? 'var(--foreground)' : 'var(--muted-foreground)'
-						}}
-					>
-						Thi đấu
-						{/* Green underline for active item */}
-						{getActiveNavItem() === 'compete' && (
-							<div 
-								style={{
-									position: 'absolute',
-									bottom: '-2px',
-									left: 0,
-									right: 0,
-									height: '2px',
-									background: 'var(--primary)',
-									borderRadius: '1px'
-								}}
-							/>
-						)}
-					</Link>
-				</nav>
+						{/* Compete */}
+						<Link 
+							to="/user/compete" 
+							className={`${styles.navLink} ${getActiveNavItem() === 'compete' ? styles.navLinkActive : ''}`}
+						>
+							Thi đấu
+							{getActiveNavItem() === 'compete' && (
+								<div className={styles.navLinkUnderline} />
+							)}
+						</Link>
+					</nav>
 
 				{/* Right Side - Search, Notifications and User Actions */}
-				<div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 'none' }}>
-					{/* Search Bar */}
-					<div 
-						style={{ 
-							position: 'relative', 
-							display: 'block',
-							zIndex: 10,
-							backgroundColor: 'transparent'
-						}}
-					>
-						<Search 
-							style={{
-								position: 'absolute',
-								left: '12px',
-								top: '50%',
-								transform: 'translateY(-50%)',
-								width: '20px',
-								height: '20px',
-								color: '#6b7280',
-								zIndex: 2
-							}}
-						/>
-						<form onSubmit={handleSearch} style={{ display: 'block' }}>
+				<div className={styles.rightSection}>
+					{/* Search Bar (Desktop) */}
+					<div className={styles.searchContainer}>
+						<Search className={styles.searchIcon} />
+						<form onSubmit={handleSearch} className={styles.searchForm}>
 							<input 
 								type="text" 
 								placeholder="Tìm kiếm thử thách..." 
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
-								style={{
-									width: '220px',
-									height: '40px',
-									background: 'var(--input)',
-									border: '1px solid var(--border)',
-									borderRadius: '8px',
-									paddingLeft: '40px',
-									paddingRight: '16px',
-									fontSize: '14px',
-									color: 'var(--foreground)',
-									transition: 'all 0.2s ease',
-									display: 'block',
-									zIndex: 1,
-									position: 'relative'
-								}}
-								onFocus={(e) => {
-									e.target.style.borderColor = 'var(--primary)'
-									e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.2)'
-									e.target.style.outline = 'none'
-								}}
-								onBlur={(e) => {
-									e.target.style.borderColor = 'var(--border)'
-									e.target.style.boxShadow = 'none'
-								}}
+								className={styles.searchInput}
 							/>
 						</form>
 					</div>
 
 					{/* Notifications */}
-					<div style={{ position: 'relative' }}>
+					<div className={styles.notificationContainer}>
 						<button 
-							aria-label="Notifications" 
-							style={{
-								width: '40px',
-								height: '40px',
-								background: 'var(--card)',
-								border: '1px solid var(--border)',
-								borderRadius: '50%',
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								cursor: 'pointer',
-								color: 'var(--foreground)',
-								transition: 'all var(--transition-normal)',
-								position: 'relative',
-								overflow: 'hidden',
-								boxShadow: 'var(--shadow-sm)'
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.background = 'var(--accent)'
-								e.currentTarget.style.color = 'var(--accent-foreground)'
-								e.currentTarget.style.transform = 'scale(1.05)'
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.background = 'var(--card)'
-								e.currentTarget.style.color = 'var(--foreground)'
-								e.currentTarget.style.transform = 'scale(1)'
-							}}
+							aria-label="Notifications"
+							className={styles.iconButton}
 							onClick={() => handleDropdownToggle('notifications')}
 						>
-							<Bell style={{ width: '20px', height: '20px' }} />
-							<span style={{ 
-								position: 'absolute', 
-								top: '6px', 
-								right: '6px', 
-								width: '8px', 
-								height: '8px', 
-								background: 'var(--destructive)', 
-								borderRadius: '50%',
-								border: '2px solid var(--background)'
-							}} />
+							<Bell />
+							<span className={styles.notificationBadge} />
 						</button>
 					</div>
 
 					{/* Right Side Icons */}
-					<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+					<div className={styles.rightIcons}>
 						{/* Chat Icon */}
-						<button 
-							style={{
-								width: '40px',
-								height: '40px',
-								background: 'var(--card)',
-								border: '1px solid var(--border)',
-								borderRadius: '50%',
-								cursor: 'pointer',
-								color: 'var(--foreground)',
-								transition: 'all var(--transition-normal)',
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								boxShadow: 'var(--shadow-sm)'
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.background = 'var(--accent)'
-								e.currentTarget.style.color = 'var(--accent-foreground)'
-								e.currentTarget.style.transform = 'scale(1.05)'
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.background = 'var(--card)'
-								e.currentTarget.style.color = 'var(--foreground)'
-								e.currentTarget.style.transform = 'scale(1)'
-							}}
-						>
-							<MessageCircle style={{ width: '20px', height: '20px' }} />
+						<button className={styles.iconButton} aria-label="Chat">
+							<MessageCircle />
 						</button>
 
 						{/* Theme Toggle */}
 						<button 
 							onClick={toggleTheme}
-							style={{
-								width: '40px',
-								height: '40px',
-								background: 'var(--card)',
-								border: '1px solid var(--border)',
-								borderRadius: '50%',
-								cursor: 'pointer',
-								color: 'var(--foreground)',
-								transition: 'all var(--transition-normal)',
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								boxShadow: 'var(--shadow-sm)'
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.background = 'var(--accent)'
-								e.currentTarget.style.color = 'var(--accent-foreground)'
-								e.currentTarget.style.transform = 'scale(1.05)'
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.background = 'var(--card)'
-								e.currentTarget.style.color = 'var(--foreground)'
-								e.currentTarget.style.transform = 'scale(1)'
-							}}
+							className={styles.iconButton}
 							title={`Chuyển sang chế độ ${theme === 'light' ? 'tối' : 'sáng'}${isManualOverride ? '' : ' (theo trình duyệt)'}`}
+							aria-label="Toggle theme"
 						>
-							{theme === 'dark' ? (
-								<Sun style={{ width: '20px', height: '20px' }} />
-							) : (
-								<Moon style={{ width: '20px', height: '20px' }} />
-							)}
+							{theme === 'dark' ? <Sun /> : <Moon />}
 						</button>
 
 						{/* User Avatar with Dropdown */}
 						{user && (
-							<div style={{ position: 'relative' }} data-user-menu>
+							<div className={styles.userMenuContainer} data-user-menu>
 								<button 
 									onClick={toggleUserMenu}
-									style={{
-										width: '40px',
-										height: '40px',
-										background: 'var(--card)',
-										border: '1px solid var(--border)',
-										borderRadius: '50%',
-										cursor: 'pointer',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										color: 'var(--foreground)',
-										fontSize: '16px',
-										fontWeight: 600,
-										transition: 'all var(--transition-normal)',
-										position: 'relative',
-										boxShadow: 'var(--shadow-sm)'
-									}}
-									onMouseEnter={(e) => {
-										e.currentTarget.style.background = 'var(--accent)'
-										e.currentTarget.style.color = 'var(--accent-foreground)'
-										e.currentTarget.style.transform = 'scale(1.05)'
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.background = 'var(--card)'
-										e.currentTarget.style.color = 'var(--foreground)'
-										e.currentTarget.style.transform = 'scale(1)'
-									}}
+									className={styles.userAvatar}
 								>
 									{user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-									<ChevronDown 
-										style={{ 
-											width: '12px', 
-											height: '12px', 
-											position: 'absolute',
-											bottom: '-2px',
-											right: '-2px',
-											background: 'var(--background)',
-											borderRadius: '50%',
-											padding: '2px'
-										}} 
-									/>
+									<ChevronDown className={styles.userAvatarChevron} />
 								</button>
 
 								{/* User Dropdown Menu */}
 								{userMenuOpen && (
-									<div style={{
-										position: 'absolute',
-										top: '100%',
-										right: 0,
-										marginTop: '8px',
-										background: 'var(--card)',
-										borderRadius: '8px',
-										boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-										border: '1px solid var(--border)',
-										minWidth: '200px',
-										zIndex: 1000,
-										overflow: 'hidden'
-									}}>
-										{/* Menu Items */}
-										<div style={{ padding: '8px 0' }}>
+									<div className={styles.userDropdown}>
+										<div className={styles.userDropdownMenu}>
 											{[
-												{ icon: <User style={{ width: '16px', height: '16px' }} />, label: 'Hồ sơ', onClick: () => navigate('/user/profile') },
-												{ icon: <Clock style={{ width: '16px', height: '16px' }} />, label: 'Bài thi gần đây', onClick: () => navigate('/user/exams/recent') },
-												{ icon: <Trophy style={{ width: '16px', height: '16px' }} />, label: 'Bảng xếp hạng', onClick: () => navigate('/user/leaderboard') },
-												{ icon: <Settings style={{ width: '16px', height: '16px' }} />, label: 'Cài đặt', onClick: () => navigate('/user/settings') },
-												{ icon: <Shield style={{ width: '16px', height: '16px' }} />, label: 'Ví Multisig', onClick: () => navigate('/user/multisig') },
-												{ icon: <Copyright style={{ width: '16px', height: '16px' }} />, label: 'Bản quyền', onClick: () => navigate('/user/copyright') },
-												{ icon: <LogOut style={{ width: '16px', height: '16px' }} />, label: 'Đăng xuất', onClick: handleLogout }
+												{ icon: <User />, label: 'Hồ sơ', onClick: () => { navigate('/user/profile'); setUserMenuOpen(false); } },
+												{ icon: <Clock />, label: 'Bài thi gần đây', onClick: () => { navigate('/user/exams/recent'); setUserMenuOpen(false); } },
+												{ icon: <Trophy />, label: 'Bảng xếp hạng', onClick: () => { navigate('/user/leaderboard'); setUserMenuOpen(false); } },
+												{ icon: <Settings />, label: 'Cài đặt', onClick: () => { navigate('/user/settings'); setUserMenuOpen(false); } },
+												{ icon: <Shield />, label: 'Ví Multisig', onClick: () => { navigate('/user/multisig'); setUserMenuOpen(false); } },
+												{ icon: <Copyright />, label: 'Bản quyền', onClick: () => { navigate('/user/copyright'); setUserMenuOpen(false); } },
+												{ icon: <LogOut />, label: 'Đăng xuất', onClick: () => { handleLogout(); setUserMenuOpen(false); } }
 											].map((item, index) => (
 												<button
 													key={index}
-													onClick={item.onClick || (() => console.log(`Clicked ${item.label}`))}
-													style={{
-														width: '100%',
-														padding: '12px 16px',
-														background: 'transparent',
-														border: 'none',
-														cursor: 'pointer',
-														display: 'flex',
-														alignItems: 'center',
-														gap: '12px',
-														color: 'var(--muted-foreground)',
-														fontSize: '14px',
-														fontWeight: 400,
-														transition: 'all var(--transition-normal)',
-														textAlign: 'left'
-													}}
-													onMouseEnter={(e) => {
-														e.currentTarget.style.background = 'var(--accent)'
-														e.currentTarget.style.color = 'var(--accent-foreground)'
-													}}
-													onMouseLeave={(e) => {
-														e.currentTarget.style.background = 'transparent'
-														e.currentTarget.style.color = 'var(--muted-foreground)'
-													}}
+													onClick={item.onClick}
+													className={styles.userMenuItem}
 												>
 													{item.icon}
 													{item.label}
@@ -477,5 +228,125 @@ export default function UserHeader(): JSX.Element {
 				</div>
 			</div>
 		</header>
+
+		{/* Mobile Menu Overlay */}
+		{mobileMenuOpen && (
+			<div 
+				className={`${styles.mobileMenuOverlay} ${mobileMenuOpen ? styles.mobileMenuOverlayOpen : ''}`}
+				onClick={() => setMobileMenuOpen(false)}
+			/>
+		)}
+
+		{/* Mobile Menu */}
+		<div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
+			{/* Mobile Menu Header */}
+			<div className={styles.mobileMenuHeader}>
+				<h2 className={styles.mobileMenuTitle}>Menu</h2>
+				<button
+					className={styles.mobileMenuCloseButton}
+					onClick={() => setMobileMenuOpen(false)}
+					aria-label="Close menu"
+				>
+					<X />
+				</button>
+			</div>
+
+			{/* Mobile Search */}
+			<div className={styles.mobileSearchContainer}>
+				<form onSubmit={handleSearch} className={styles.mobileSearchForm}>
+					<Search className={styles.mobileSearchIcon} />
+					<input 
+						type="text" 
+						placeholder="Tìm kiếm thử thách..." 
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						className={styles.mobileSearchInput}
+					/>
+				</form>
+			</div>
+
+			{/* Mobile Navigation */}
+			<nav className={styles.mobileNav}>
+				<Link 
+					to="/user/prepare" 
+					className={`${styles.mobileNavLink} ${getActiveNavItem() === 'prepare' ? styles.mobileNavLinkActive : ''}`}
+					onClick={() => setMobileMenuOpen(false)}
+				>
+					Chuẩn bị
+				</Link>
+
+				<Link 
+					to="/user/certify" 
+					className={`${styles.mobileNavLink} ${getActiveNavItem() === 'certify' ? styles.mobileNavLinkActive : ''}`}
+					onClick={() => setMobileMenuOpen(false)}
+				>
+					Chứng chỉ
+				</Link>
+
+				<Link 
+					to="/user/compete" 
+					className={`${styles.mobileNavLink} ${getActiveNavItem() === 'compete' ? styles.mobileNavLinkActive : ''}`}
+					onClick={() => setMobileMenuOpen(false)}
+				>
+					Thi đấu
+				</Link>
+			</nav>
+
+			{/* Mobile Actions */}
+			{user && (
+				<div className={styles.mobileActions}>
+					<button 
+						className={styles.mobileActionButton}
+						onClick={() => { navigate('/user/profile'); setMobileMenuOpen(false); }}
+					>
+						<User />
+						Hồ sơ
+					</button>
+					<button 
+						className={styles.mobileActionButton}
+						onClick={() => { navigate('/user/exams/recent'); setMobileMenuOpen(false); }}
+					>
+						<Clock />
+						Bài thi gần đây
+					</button>
+					<button 
+						className={styles.mobileActionButton}
+						onClick={() => { navigate('/user/leaderboard'); setMobileMenuOpen(false); }}
+					>
+						<Trophy />
+						Bảng xếp hạng
+					</button>
+					<button 
+						className={styles.mobileActionButton}
+						onClick={() => { navigate('/user/settings'); setMobileMenuOpen(false); }}
+					>
+						<Settings />
+						Cài đặt
+					</button>
+					<button 
+						className={styles.mobileActionButton}
+						onClick={() => { navigate('/user/multisig'); setMobileMenuOpen(false); }}
+					>
+						<Shield />
+						Ví Multisig
+					</button>
+					<button 
+						className={styles.mobileActionButton}
+						onClick={() => { navigate('/user/copyright'); setMobileMenuOpen(false); }}
+					>
+						<Copyright />
+						Bản quyền
+					</button>
+					<button 
+						className={styles.mobileActionButton}
+						onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+					>
+						<LogOut />
+						Đăng xuất
+					</button>
+				</div>
+			)}
+		</div>
+		</>
 	)
 }

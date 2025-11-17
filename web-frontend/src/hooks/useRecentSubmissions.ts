@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-import { ONLINE_EXAM_API } from '../config/api'
-
-const API_BASE_URL = import.meta.env.VITE_ONLINE_EXAM_API_URL || ONLINE_EXAM_API || 'http://localhost:3000'
+// Use API Gateway for all requests
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/exam`
 
 interface Submission {
 	id: string
@@ -62,8 +61,8 @@ export function useRecentSubmissions() {
 				return
 			}
 
-			// Fetch submissions
-			const subsResponse = await axios.get(`${API_BASE_URL}/api/my-submissions`, {
+			// Fetch submissions via API Gateway
+			const subsResponse = await axios.get(`${API_BASE_URL}/my-submissions`, {
 				headers: { Authorization: `Bearer ${token}` }
 			})
 
@@ -88,7 +87,7 @@ export function useRecentSubmissions() {
 			const quizIds = [...new Set(recentSubmissions.map(sub => sub.quizId))]
 			const quizDetailsPromises = quizIds.map(async (quizId) => {
 				try {
-					const quizResponse = await axios.get(`${API_BASE_URL}/api/quizzes/${quizId}`, {
+					const quizResponse = await axios.get(`${API_BASE_URL}/quizzes/${quizId}`, {
 						headers: { Authorization: `Bearer ${token}` }
 					})
 					return quizResponse.data.success ? quizResponse.data.data : null

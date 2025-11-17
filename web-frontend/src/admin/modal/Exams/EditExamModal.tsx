@@ -379,7 +379,7 @@ const EditExamModal: React.FC<EditExamModalProps> = ({
 						<ul className="export-list">
 							<li>Các thay đổi sẽ được lưu ngay lập tức</li>
 							<li>Tổng điểm và điểm đạt sẽ tự động tính nếu để trống</li>
-							{exam.status === 'ongoing' && <li>⚠️ Không thể sửa đề đang thi!</li>}
+							{exam.status === 'ongoing' && <li>Không thể sửa đề đang thi!</li>}
 						</ul>
 					</div>
 				</form>

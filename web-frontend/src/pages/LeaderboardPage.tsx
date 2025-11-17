@@ -98,7 +98,7 @@ export default function LeaderboardPage(): JSX.Element {
         {/* Page Header */}
         <div className={styles.pageHeader}>
           <h1 className={styles.pageTitle}>
-            <Trophy style={{ width: '36px', height: '36px', display: 'inline-block', marginRight: '12px', verticalAlign: 'middle' }} />
+            <Trophy className={styles.pageTitleIcon} />
             Bảng Xếp Hạng
           </h1>
           <p className={styles.pageDescription}>
@@ -109,17 +109,17 @@ export default function LeaderboardPage(): JSX.Element {
         {/* Stats Banner */}
         <div className={styles.statsBanner}>
           <div className={styles.statItem}>
-            <Users style={{ width: '20px', height: '20px', margin: '0 auto 8px', display: 'block', color: 'var(--primary)' }} />
+            <Users className={styles.statIcon} />
             <span className={styles.statValue}>{mockLeaderboardData.pagination.totalItems}</span>
             <span className={styles.statLabel}>Người tham gia</span>
           </div>
           <div className={styles.statItem}>
-            <Trophy style={{ width: '20px', height: '20px', margin: '0 auto 8px', display: 'block', color: 'var(--primary)' }} />
+            <Trophy className={styles.statIcon} />
             <span className={styles.statValue}>{mockTabs.length}</span>
             <span className={styles.statLabel}>Cuộc thi</span>
           </div>
           <div className={styles.statItem}>
-            <TrendingUp style={{ width: '20px', height: '20px', margin: '0 auto 8px', display: 'block', color: 'var(--primary)' }} />
+            <TrendingUp className={styles.statIcon} />
             <span className={styles.statValue}>Live</span>
             <span className={styles.statLabel}>Trạng thái</span>
           </div>

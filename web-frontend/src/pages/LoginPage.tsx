@@ -1,27 +1,61 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import AuthForm from '../components/molecules/AuthForm'
 import Input from '../components/atoms/Input'
-import { IDENTITY_API } from '../config/api'
 import Checkbox from '../components/atoms/Checkbox'
 import SocialAuthButtons from '../components/molecules/SocialAuthButtons'
+import SuccessNotification from '../components/atoms/SuccessNotification'
 import { validateEmail, validatePassword } from '../utils/authValidation'
+import { useFormValidation } from '../hooks/useFormValidation'
 import { loginUser, clearError } from '../store/slices/authSlice'
+import styles from '../assets/css/LoginPage.module.css'
+import authFormStyles from '../assets/css/AuthForm.module.css'
 
 export default function LoginPage(): JSX.Element {
-	const [formData, setFormData] = useState({
-		email: '',
-		password: ''
-	})
-	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [rememberMe, setRememberMe] = useState(false)
-	const [showPassword, setShowPassword] = useState(false)
 	const [webAuthnLoading, setWebAuthnLoading] = useState(false)
 
 	const dispatch = useAppDispatch()
 	const navigate = useNavigate()
+	const location = useLocation()
 	const { loading, error, loggedIn, role } = useAppSelector((state) => state.auth)
+
+	// Check for registration success data
+	const registrationData = location.state?.registrationData || 
+		(() => {
+			const stored = sessionStorage.getItem('registrationSuccess')
+			if (stored) {
+				sessionStorage.removeItem('registrationSuccess') // Clean up
+				return JSON.parse(stored)
+			}
+			return null
+		})()
+
+	// Form validation setup
+	const {
+		formData,
+		fields,
+		handleChange,
+		handleBlur,
+		handleFocus,
+		handleSubmit,
+		setFieldError
+	} = useFormValidation(
+		{ 
+			email: registrationData?.email || '', 
+			password: '' 
+		},
+		{
+			email: validateEmail,
+			password: validatePassword
+		},
+		{
+			debounceMs: 500,
+			validateOnChange: true,
+			validateOnBlur: true
+		}
+	)
 
 	// Redirect based on role after successful login
 	useEffect(() => {
@@ -39,41 +73,34 @@ export default function LoginPage(): JSX.Element {
 		dispatch(clearError())
 	}, [dispatch])
 
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target
-		setFormData(prev => ({ ...prev, [name]: value }))
-		
-		// Clear error when user starts typing
-		if (errors[name]) {
-			setErrors(prev => ({ ...prev, [name]: '' }))
+	// Set server errors to form fields
+	useEffect(() => {
+		if (error) {
+			// Try to determine which field the error relates to
+			if (error.toLowerCase().includes('email')) {
+				setFieldError('email', error)
+			} else if (error.toLowerCase().includes('password')) {
+				setFieldError('password', error)
+			}
 		}
-	}
+	}, [error, setFieldError])
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault()
-		
-		// Validate form
-		const emailError = validateEmail(formData.email)
-		const passwordError = validatePassword(formData.password)
-		
-		if (emailError || passwordError) {
-			setErrors({
-				email: emailError || '',
-				password: passwordError || ''
-			})
-			return
-		}
-
+	const onSubmit = useCallback(async () => {
 		// Dispatch login action
-		dispatch(loginUser({
+		await dispatch(loginUser({
 			usernameOrEmail: formData.email,
 			password: formData.password
-		}))
-	}
+		})).unwrap()
+	}, [dispatch, formData.email, formData.password])
 
-	const handleGoogleAuth = () => {
-		console.log('Google authentication')
-		// TODO: Implement Google OAuth
+	const handleGoogleAuth = async () => {
+		try {
+			const { initiateGoogleLogin } = await import('../services/api/authApi');
+			initiateGoogleLogin();
+		} catch (error) {
+			console.error('Google authentication error:', error);
+			setFieldError('email', 'Không thể kết nối với Google. Vui lòng thử lại.');
+		}
 	}
 
 	const handleFacebookAuth = () => {
@@ -89,14 +116,14 @@ export default function LoginPage(): JSX.Element {
 	// WebAuthn Authentication
 	const startWebAuthnAuthentication = async () => {
 		if (!formData.email) {
-            setErrors(prev => ({ ...prev, email: 'Please enter your email to use WebAuthn.' }));
+            setFieldError('email', 'Please enter your email to use WebAuthn.');
             return;
         }
 
 		setWebAuthnLoading(true)
 		try {
 			// Step 1: Get assertion options from server (qua API Gateway - localhost:8080)
-			const response = await fetch(`${IDENTITY_API}/webauthn/assertion/options`, {
+			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/identity/api/webauthn/assertion/options`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -114,7 +141,6 @@ export default function LoginPage(): JSX.Element {
 			            const raw = await response.json()
 			            // Support both direct and wrapped shapes
 			            const options = (raw && (raw.publicKeyCredentialRequestOptions || raw.data?.publicKeyCredentialRequestOptions)) || raw
-			            console.log('Assertion options:', options)
 			
 			            // Step 2: Get assertion from authenticator
             const allowCredentials = (options.allowCredentials || []).map((cred: any) => {
@@ -141,7 +167,6 @@ export default function LoginPage(): JSX.Element {
             const assertion = await navigator.credentials.get({
                 publicKey: publicKeyOptions
             }) as PublicKeyCredential
-			console.log('Got assertion:', assertion)
 
 			// Step 3: Send assertion to server in Yubico's expected JSON format
 			const rawIdB64u = arrayBufferToBase64Url(assertion.rawId)
@@ -158,7 +183,7 @@ export default function LoginPage(): JSX.Element {
 				clientExtensionResults: (assertion as any).getClientExtensionResults ? (assertion as any).getClientExtensionResults() : {}
 			}
 
-			const response2 = await fetch(`${IDENTITY_API}/webauthn/assertion/result`, {
+			const response2 = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/identity/api/webauthn/assertion/result`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -237,70 +262,71 @@ export default function LoginPage(): JSX.Element {
 									typeof window.navigator.credentials.get === 'function'
 
 	return (
-		<AuthForm
-			title="Chào mừng trở lại"
-			subtitle="Đăng nhập vào tài khoản của bạn để tiếp tục"
-			onSubmit={handleSubmit}
-			buttonText="Đăng nhập"
-			loading={loading}
-			error={error}
-			afterButton={
-				<div>
-					<SocialAuthButtons
-						onGoogleAuth={handleGoogleAuth}
-						onGitHubAuth={handleGitHubAuth}
+		<div className={styles.page}>
+			<div className={styles.container}>
+				{/* Registration success message */}
+				{registrationData && (
+					<SuccessNotification
+						title="Đăng ký thành công!"
+						message={`Chào mừng ${registrationData.fullName}! Email của bạn đã được điền sẵn, chỉ cần nhập mật khẩu để đăng nhập.`}
 					/>
-					{isWebAuthnSupported && (
-						<div style={{ marginTop: '1rem', textAlign: 'center' }}>
-							<button
-								type="button"
-								onClick={startWebAuthnAuthentication}
-								disabled={webAuthnLoading}
-								style={{
-									width: '100%',
-									padding: '0.75rem',
-									backgroundColor: webAuthnLoading ? '#ccc' : '#28a745',
-									color: 'white',
-									border: 'none',
-									borderRadius: '0.375rem',
-									fontSize: '1rem',
-									cursor: webAuthnLoading ? 'not-allowed' : 'pointer'
-								}}
-							>
-								{webAuthnLoading ? '⏳ Đang xác thực...' : '🔐 Đăng nhập không mật khẩu (WebAuthn)'}
-							</button>
+				)}
+
+				<AuthForm
+					title={registrationData ? "Đăng nhập ngay" : "Chào mừng trở lại"}
+					subtitle={registrationData ? 
+						"Email của bạn đã được điền sẵn, chỉ cần nhập mật khẩu" : 
+						"Đăng nhập vào tài khoản của bạn để tiếp tục"
+					}
+					onSubmit={(e) => handleSubmit(onSubmit, e)}
+					buttonText="Đăng nhập"
+					loading={loading}
+					error={error}
+					afterButton={
+						<div>
+							<SocialAuthButtons
+								onGoogleAuth={handleGoogleAuth}
+								onGitHubAuth={handleGitHubAuth}
+							/>
+							{isWebAuthnSupported && (
+								<div className={styles.webAuthnContainer}>
+									<button
+										type="button"
+										onClick={startWebAuthnAuthentication}
+										disabled={webAuthnLoading}
+										className={styles.webAuthnButton}
+									>
+										{webAuthnLoading ? 'Đang xác thực...' : 'Đăng nhập không mật khẩu'}
+									</button>
+								</div>
+							)}
 						</div>
-					)}
-				</div>
-			}
-			footer={
-				<p style={{ margin: 0 }}>
-					Chưa có tài khoản?{' '}
-					<Link 
-						to="/auth/register"
-						style={{
-							background: 'none',
-							border: 'none',
-							color: 'var(--primary)',
-							cursor: 'pointer',
-							textDecoration: 'underline',
-							fontSize: 'inherit',
-							fontFamily: 'inherit'
-						}}
-					>
-						Đăng ký
-					</Link>
-				</p>
-			}
-		>
+					}
+					footer={
+						<p>
+							Chưa có tài khoản?{' '}
+							<Link 
+								to="/auth/register"
+								className={authFormStyles.footerLink}
+							>
+								Đăng ký
+							</Link>
+						</p>
+					}
+				>
 			<Input
 				id="email"
 				name="email"
 				type="email"
 				value={formData.email}
-				onChange={handleInputChange}
+				onChange={handleChange}
+				onBlur={handleBlur}
+				onFocus={handleFocus}
 				placeholder="Nhập email của bạn"
-				error={errors.email}
+				error={fields.email?.error || undefined}
+				success={fields.email?.isValid && fields.email?.value.length > 0}
+				suggestions={fields.email?.suggestions}
+				autoComplete="email"
 				required
 			/>
 			
@@ -309,38 +335,33 @@ export default function LoginPage(): JSX.Element {
 				name="password"
 				type="password"
 				value={formData.password}
-				onChange={handleInputChange}
+				onChange={handleChange}
+				onBlur={handleBlur}
+				onFocus={handleFocus}
 				placeholder="Nhập mật khẩu của bạn"
-				error={errors.password}
+				error={fields.password?.error || undefined}
+				success={fields.password?.isValid && fields.password?.value.length > 0}
+				suggestions={fields.password?.suggestions}
+				autoComplete="current-password"
 				required
 			/>
 			
-			<div style={{
-				display: 'flex',
-				justifyContent: 'space-between',
-				alignItems: 'center',
-				marginTop: '-0.5rem'
-			}}>
-				<Checkbox
-					id="remember"
-					label="Ghi nhớ đăng nhập"
-					checked={rememberMe}
-					onChange={setRememberMe}
-				/>
-				<Link 
-					to="/auth/forgot"
-					style={{
-						background: 'none',
-						border: 'none',
-						color: 'var(--primary)',
-						cursor: 'pointer',
-						fontSize: '0.875rem',
-						textDecoration: 'none'
-					}}
-				>
-					Quên mật khẩu?
-				</Link>
+					<div className={styles.rememberForgotContainer}>
+						<Checkbox
+							id="remember"
+							label="Ghi nhớ đăng nhập"
+							checked={rememberMe}
+							onChange={setRememberMe}
+						/>
+						<Link 
+							to="/auth/forgot"
+							className={styles.forgotPasswordLink}
+						>
+							Quên mật khẩu?
+						</Link>
+					</div>
+				</AuthForm>
 			</div>
-		</AuthForm>
+		</div>
 	)
 }
